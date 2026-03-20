@@ -15,7 +15,7 @@ translations = {
         "taxes": "податки",
         "fine": "штраф",
         "tech": "техніка",
-        "online subscriptions": "Онлайн підписки",
+        "online_subscription": "Онлайн підписки",
         "shopping": "покупки",
         "job": "робота",
         "credit": "кредит",
@@ -104,14 +104,15 @@ def validate_date_uk(text):
         return re.match(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$", text) is not None
 
     if text == "сьогодні" or text == "Сьогодні":
-        return datetime.date.today()
+        return datetime.date.today().isoformat()
     elif match_date(text):
         d = text.split(".")
 
         for i in range(len(d)):
             d[i] = int(d[i])
 
-        return datetime.datetime(d[2], d[1], d[0])
+        date = datetime.datetime.now(d[2], d[1], d[0])
+        return date.isoformat()
     else:
         return False
 
@@ -302,27 +303,27 @@ def user_data_en(msg, user_msg):
     cat_lines = ""
     for i, (cat, amount) in enumerate(top_categories[:5]):
         if i == 0:
-            cat_lines += f"🥇 *{cat}: {amount:+}*\n"
+            cat_lines += f"🥇 <b>{cat}: {amount:+}</b>\n"
         elif i == 1:
-            cat_lines += f"🥈 *{cat}: {amount:+}*\n"
+            cat_lines += f"🥈 <b>{cat}: {amount:+}</b>\n"
         elif i == 2:
-            cat_lines += f"🥉 *{cat}: {amount:+}*\n"
+            cat_lines += f"🥉 <b>{cat}: {amount:+}</b>\n"
         else:
             cat_lines += f"{cat}: {amount:+}\n"
 
     # --- Final message ---
     text = (
-        f"📊 *Your Stats*\n\n"
+        f"📊 <b>Your Stats</b>\n\n"
         f"💰 PnL: {total_pnl:+}\n\n"
-        f"🏷 *Top Categories:*\n{cat_lines or 'No categories'}\n"
-        f"🧾 *Recent Transactions:*\n{tx_lines or 'No transactions'}"
+        f"🏷 <b>Top Categories:</b>\n{cat_lines or 'No categories'}\n"
+        f"🧾 <b>Recent Transactions:</b>\n{tx_lines or 'No transactions'}"
     )
 
     kb = tb.types.InlineKeyboardMarkup()
     kb.row(go_back_btn("en", "menu"))
 
     bot.edit_message_text(
-        text, msg.chat.id, msg.id, parse_mode="Markdown", reply_markup=kb
+        text, msg.chat.id, msg.id, parse_mode="HTML", reply_markup=kb
     )
 
 def user_data_uk(msg, user_msg):
@@ -375,27 +376,27 @@ def user_data_uk(msg, user_msg):
     cat_lines = ""
     for i, (cat, amount) in enumerate(top_categories[:5]):
         if i == 0:
-            cat_lines += f"🥇 *{translations[cat]}: {amount:+}*\n"
+            cat_lines += f"🥇 <b>{translations[cat]}: {amount:+}</b>\n"
         elif i == 1:
-            cat_lines += f"🥈 *{translations[cat]}: {amount:+}*\n"
+            cat_lines += f"🥈 <b>{translations[cat]}: {amount:+}</b>\n"
         elif i == 2:
-            cat_lines += f"🥉 *{translations[cat]}: {amount:+}*\n"
+            cat_lines += f"🥉 <b>{translations[cat]}: {amount:+}</b>\n"
         else:
             cat_lines += f"{translations[cat]}: {amount:+}\n"
 
     # --- Final message ---
     text = (
-        f"📊 *Your Stats*\n\n"
+        f"📊 <b>Your Stats</b>\n\n"
         f"💰 PnL: {total_pnl:+}\n\n"
-        f"🏷 *Top Categories:*\n{cat_lines or 'Немає категорій'}\n"
-        f"🧾 *Recent Transactions:*\n{tx_lines or 'Немає транзакцій'}"
+        f"🏷 <b>Top Categories:</b>\n{cat_lines or 'Немає категорій'}\n"
+        f"🧾 <b>Recent Transactions:</b>\n{tx_lines or 'Немає транзакцій'}"
     )
 
     kb = tb.types.InlineKeyboardMarkup()
     kb.row(go_back_btn("uk", "menu"))
 
     bot.edit_message_text(
-        text, msg.chat.id, msg.id, parse_mode="Markdown", reply_markup=kb
+        text, msg.chat.id, msg.id, parse_mode="HTML", reply_markup=kb
     )
 
 def family_en(msg, user_msg):
@@ -462,7 +463,7 @@ def family_en(msg, user_msg):
     for i, (user, amount) in enumerate(top_spenders[:10]):
         name = uname(user)
         if i < 3:
-            spender_leaderboard += f"\t_{name}_: {amount}\n"
+            spender_leaderboard += f"\t<i>{name}</i>: {amount}\n"
         else:
             spender_leaderboard += f"\t{name}: {amount}\n"
 
@@ -470,25 +471,25 @@ def family_en(msg, user_msg):
     for i, (user, amount) in enumerate(top_earners[:10]):
         name = uname(user)
         if i < 3:
-            earner_leaderboard += f"\t_{name}_: {amount}\n"
+            earner_leaderboard += f"\t<i>{name}</i>: {amount}\n"
         else:
             earner_leaderboard += f"\t{name}: {amount}\n"
 
     # --- Final text ---
     text = (
-        f"📊 *Family Monthly Stats*\n\n"
+        f"📊 <b>Family Monthly Stats</b>\n\n"
         f"💰 Balance Change: {current_pnl}\n\n"
         f"🏆 Top Spender: {uname(top_spender[0])} ({top_spender[1]})\n"
         f"🏆 Top Earner: {uname(top_earner[0])} (+{top_earner[1]})\n\n"
         f"🛒 Most spent on: {top_category_spender[0]} ({top_category_spender[1]})\n"
         f"💸 Most earned from: {top_category_earner[0]} (+{top_category_earner[1]})\n\n"
-        f"📉 *Spender Leaderboard:*\n{spender_leaderboard or 'No spenders'}\n"
-        f"📈 *Earner Leaderboard:*\n{earner_leaderboard or 'No earners'}"
+        f"📉 <b>Spender Leaderboard:</b>\n{spender_leaderboard or 'No spenders'}\n"
+        f"📈 <b>Earner Leaderboard:</b>\n{earner_leaderboard or 'No earners'}"
     )
 
     kb = tb.types.InlineKeyboardMarkup()
     kb.row(go_back_btn("en", "menu"))
-    bot.edit_message_text(text, msg.chat.id, msg.id, reply_markup=kb, parse_mode="Markdown")
+    bot.edit_message_text(text, msg.chat.id, msg.id, reply_markup=kb, parse_mode="HTML")
 
 def family_uk(msg, user_msg):
     def get_usernames(user_ids):
@@ -554,7 +555,7 @@ def family_uk(msg, user_msg):
     for i, (user, amount) in enumerate(top_spenders[:10]):
         name = uname(user)
         if i < 3:
-            spender_leaderboard += f"\t_{name}_: {amount}\n"
+            spender_leaderboard += f"\t<i>{name}</i>: {amount}\n"
         else:
             spender_leaderboard += f"\t{name}: {amount}\n"
 
@@ -562,25 +563,25 @@ def family_uk(msg, user_msg):
     for i, (user, amount) in enumerate(top_earners[:10]):
         name = uname(user)
         if i < 3:
-            earner_leaderboard += f"\t_{name}_: {amount}\n"
+            earner_leaderboard += f"\t<i>{name}</i>: {amount}\n"
         else:
             earner_leaderboard += f"\t{name}: {amount}\n"
 
     # --- Final text ---
     text = (
-        f"📊 *Місячна Статистика Сім'ї*\n\n"
+        f"📊 <b>Місячна Статистика Сім'ї</b>\n\n"
         f"💰 Зміна Балансу: {current_pnl}\n\n"
-        f"🏆 Топ Витрачатель: {uname(top_spender[0])} ({top_spender[1]})\n"
+        f"🏆 Топ Витратників: {uname(top_spender[0])} ({top_spender[1]})\n"
         f"🏆 Топ Заробітник: {uname(top_earner[0])} (+{top_earner[1]})\n\n"
         f"🛒 Найбільш Витрачено На: {translations[top_category_spender[0]]} ({top_category_spender[1]})\n"
         f"💸 Найбільш Зароблено З: {translations[top_category_earner[0]]} (+{top_category_earner[1]})\n\n"
-        f"📉 *Таблиця Витрачателів:*\n{spender_leaderboard or 'Немає витрачателів'}\n"
-        f"📈 *Таблиця Заробітників:*\n{earner_leaderboard or 'Немає заробітників'}"
+        f"📉 <b>Таблиця Витратників:</b>\n{spender_leaderboard or 'Немає витратників'}\n"
+        f"📈 <b>Таблиця Заробітників:</b>\n{earner_leaderboard or 'Немає заробітників'}"
     )
 
     kb = tb.types.InlineKeyboardMarkup()
     kb.row(go_back_btn("uk", "menu"))
-    bot.edit_message_text(text, msg.chat.id, msg.id, reply_markup=kb, parse_mode="Markdown")
+    bot.edit_message_text(text, msg.chat.id, msg.id, reply_markup=kb, parse_mode="HTML")
 
 def payment_user_option_en(msg):
     kb = tb.types.InlineKeyboardMarkup()
@@ -660,6 +661,7 @@ def payment_process_uk(msg, category):
     amount = 0
 
     def get_date(msg):
+        nonlocal amount
         date = validate_date_uk(msg.text)
 
         if date == False:
@@ -668,6 +670,7 @@ def payment_process_uk(msg, category):
             return None
         
         result = payment_process(amount, date, msg.from_user.id, category)
+        print(type(amount), amount)
         if amount != 0:
             bot.send_message(msg.chat.id, "Успіх!")
 
@@ -1188,7 +1191,7 @@ def payment_process(amount, date, telegram_id, category):
 
     res = fetch("/transaction/new", {
         "familyId": user["family_id"],
-        "admount": amount,
+        "amount": -amount,
         "createdAt": date,
         "category": category,
     }, telegram_id)
@@ -1196,19 +1199,28 @@ def payment_process(amount, date, telegram_id, category):
     print(res.content)
 
 def recievement_process(recieved_amount, recieved_date, telegram_id, category):
-    # We'll refer to the database for family id, so we could insert into db
     db = get_db()
 
-    print(f"RECIEVEMENT:\n\tamount: {recieved_amount}\n\tdate: {recieved_date}\n\tcategory: {category}")
-
     try:
-        user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
+        family_id = db.execute("SELECT family_id FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()["family_id"]
     except Exception as e:
         print(e)
         db.close()
         return False
 
     db.close()
+
+    res = fetch("/transaction/new", {
+        "familyId": family_id,
+        "amount": recieved_amount,
+        "category": category,
+        "createdAt": recieved_date
+    }, telegram_id)
+
+    content = json.loads(res.content)
+    if content["statusCode"] >= 300: return False
+
+    return content
 
 def get_user_data(telegram_id):
     db = get_db()
