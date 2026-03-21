@@ -2,3 +2,4 @@
 /bot/database.db
 /bot/.venv
 /bot/__pycache__
+/frontend/.env
