@@ -10,10 +10,15 @@ import {
   CardTitle,
 } from "./ui/card";
 import { Input } from "./ui/input";
+import { useTranslation } from "react-i18next";
+import ChangeLanguage from "./ChangeLanguage";
 
 export default function Login({ setJwt }) {
+  const { t } = useTranslation()
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  // TODO FOR THIS ONE: on click of sign up redirect to /register
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -34,18 +39,19 @@ export default function Login({ setJwt }) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#1a191f]">
+    <div className="flex flex-col gap-10 min-h-screen items-center justify-center bg-[#1a191f]">
+      <ChangeLanguage />
       <form>
         <Card className="w-100">
           <CardHeader>
-            <CardTitle>Login to your account</CardTitle>
+            <CardTitle>{t("loginToAccount")}</CardTitle>
             <CardDescription>
-              Enter your username and password below to login to your account
+              {t("enterYourUsernameAnd")}
             </CardDescription>
-            <CardAction className="cursor-pointer">Sign Up</CardAction>
+            <CardAction className="cursor-pointer">{t("signUp")}</CardAction>
           </CardHeader>
           <CardContent>
-            <label htmlFor="username">Username</label>
+            <label htmlFor="username">{t("username")}</label>
             <Input
               id="username"
               className="mt-2 mb-5"
@@ -55,8 +61,8 @@ export default function Login({ setJwt }) {
               }}
             />
             <div className="flex w-full justify-between">
-              <label htmlFor="password">Password</label>
-              <label className="cursor-pointer">Forgot your password?</label>
+              <label htmlFor="password">{t("password")}</label>
+              <label className="cursor-pointer">{t("forgotYourPassword")}</label>
             </div>
             <Input
               id="password"
@@ -67,7 +73,7 @@ export default function Login({ setJwt }) {
               }}
             />
           </CardContent>
-          <CardFooter className="flex-col">
+          <CardFooter className="flex-col gap-3">
             <Button
               className="w-[100%]"
               type="submit"
@@ -75,10 +81,10 @@ export default function Login({ setJwt }) {
                 handleSubmit(e);
               }}
             >
-              Login
+              {t("login")}
             </Button>
             <Button className="w-[100%] bg-neutral-300 text-black">
-              Login with Google
+              {t("loginWithGoogle")}
             </Button>
           </CardFooter>
         </Card>
