@@ -9,6 +9,7 @@ interface IUserService {
   create(user: UserDto): Promise<void>;
   findById(id: string): Promise<UserEntity | null>;
   findByUsername(username: string): Promise<UserEntity | null>;
+  findByEmail(email: string): Promise<UserEntity | null>;
   changeUser(newUser: UserEntity): Promise<void>;
 }
 
@@ -22,6 +23,7 @@ export class UserService implements IUserService {
 
   async create(data: UserDto): Promise<void> {
     await this.userRepository.insert({
+      email: data.email,
       username: data.username,
       password: this.hashService.hash(data.password),
     });
@@ -33,6 +35,10 @@ export class UserService implements IUserService {
 
   async findByUsername(username: string): Promise<UserEntity | null> {
     return this.userRepository.findOneBy({ username });
+  }
+
+  findByEmail(email: string): Promise<UserEntity | null> {
+    return this.userRepository.findOneBy({ email });
   }
 
   async changeUser(newUser: UserEntity): Promise<void> {

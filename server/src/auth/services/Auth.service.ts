@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -55,7 +56,14 @@ export class AuthService implements IAuthService {
   }
 
   async login(data: LoginDto): Promise<IAccessToken | void> {
-    const user = await this.userService.findByUsername(data.username);
+    if (!data.username && !data.email) {
+      throw new BadRequestException('Provide either username or email');
+    }
+
+    const user = data.username
+      ? ((await this.userService.findByUsername(data.username)) as UserEntity)
+      : ((await this.userService.findByEmail(data.email!)) as UserEntity);
+
     if (user) {
       if (this.hashService.compare(data.password, user.password)) {
         return {
@@ -64,8 +72,9 @@ export class AuthService implements IAuthService {
             roles: JSON.parse(user.roles) as Roles[],
           }),
         };
-      } else throw new UnauthorizedException();
+      }
     }
+    throw new UnauthorizedException('Incorrect username or password');
   }
 
   async botLogin(data: BotLoginDto): Promise<IAccessToken | void> {
