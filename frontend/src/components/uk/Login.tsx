@@ -11,10 +11,19 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import ChangeLanguage from "../changeLanguage";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import type { IJwtToken } from "@/types/JwtToken.interface";
-import { useGoogleLogin } from "@react-oauth/google";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 
 type Props = {
   setJwt: (data: IJwtToken) => void;
@@ -25,49 +34,8 @@ export default function Login_en({ setJwt }: Props) {
   const [password, setPassword] = useState("");
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
-  const login = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      const userInfo = await fetch(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        {
-          headers: {
-            Authorization: `Bearer ${tokenResponse.access_token}`,
-          },
-        }
-      ).then((res) => res.json());
-
-      console.log({
-        username: userInfo.name,
-        email: userInfo.email,
-        googleId: userInfo.sub,
-      });
-
-      const data = await fetch(
-        import.meta.env.VITE_BACKEND_URL + "/auth/google_auth",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            username: userInfo.name,
-            email: userInfo.email,
-            googleId: userInfo.sub,
-          }),
-          mode: "cors",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      ).then((res) => res.json());
-
-      console.log(data);
-      if (data.password) {
-        alert(data.password);
-      }
-    },
-    onError: () => {
-      console.log("idk");
-    },
-    // flow: "auth-code",
-  });
+  const navigate = useNavigate();
+  const { googleAuth, generatedPassword } = useGoogleAuth(setJwt);
 
   // TODO FOR THIS ONE: on click of sign up redirect to /register
 
@@ -98,6 +66,7 @@ export default function Login_en({ setJwt }: Props) {
       }, 6000);
     } else {
       setJwt(data);
+      navigate("/uk");
     }
   }
 
@@ -106,14 +75,14 @@ export default function Login_en({ setJwt }: Props) {
       <ChangeLanguage
         className="relative top-8 left-45 h-10 w-10"
         iconClass="!w-5 !h-5"
-        route="/en/login"
+        route="/uk/login"
       />
       <form>
         <Card className="w-100">
           <CardHeader>
-            <CardTitle>Уведіть в ваш аккаунт</CardTitle>
+            <CardTitle>Увійдіть в аккаунт</CardTitle>
             <CardDescription>
-              Уведіть ім'я користувача і пароль щоб увійти в аккаунт
+              Уведіть свою ім'я користувача і пароль щоб ввійти в  аккаунт
             </CardDescription>
             <CardAction className="cursor-pointer">
               <Link to="/en/register">Зареєструватись</Link>
@@ -158,10 +127,10 @@ export default function Login_en({ setJwt }: Props) {
             <Button
               type="button"
               className="w-[100%] cursor-pointer bg-neutral-300 text-black"
-              onClick={() => login}
+              onClick={() => googleAuth()}
             >
               <img src="/google_logo.png" alt="google" className="h-6" />
-              Увійти за допомогою Google
+              Увійти через Google
             </Button>
           </CardFooter>
         </Card>
@@ -174,6 +143,29 @@ export default function Login_en({ setJwt }: Props) {
         <AlertTitle className="title"></AlertTitle>
         <AlertDescription className="desc"></AlertDescription>
       </Alert>
+      <AlertDialog open={generatedPassword !== ""}>
+        <AlertDialogContent className="gap-0">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Password</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            Ми згеренували пароль для вашого аккаунту. Він потрібен для того щоб ввійти в аккаунт в боті
+            <br />
+            Ось ваш пароль
+          </AlertDialogDescription>
+          <span className="password-span mt-3 mb-5">{generatedPassword}</span>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              className="bg-white !text-black"
+              onClick={() => {
+                navigate("/en");
+              }}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

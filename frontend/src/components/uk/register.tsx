@@ -10,39 +10,46 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ChangeLanguage from "../changeLanguage";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import type { IJwtToken } from "@/types/JwtToken.interface";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 
 type Props = {
   setJwt: (data: IJwtToken) => void;
 };
 
 export default function Register_en({ setJwt }: Props) {
-  const translations: Record<string, string> = {
-    Conflict: "Конфлікт",
-    "User with this username already exists":
-      "Користувач з таким ім'ям уже існує",
-  };
-
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
+  const { googleAuth, generatedPassword } = useGoogleAuth(setJwt);
 
   async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     if (!alertRef.current) return;
+
     e.preventDefault();
     e.stopPropagation();
 
     if ([email, password, repeatPassword].includes("")) {
       (alertRef.current.querySelector(".title")! as HTMLElement).innerText =
-        "Заповнено не всі поля";
+        "Fields missing";
       (alertRef.current.querySelector(".desc")! as HTMLElement).innerText =
-        "Будь-ласка заповніть всі поля";
+        "Please make sure to fill every field";
       setIsAlertVisible(true);
       setTimeout(() => {
         setIsAlertVisible(false);
@@ -70,15 +77,16 @@ export default function Register_en({ setJwt }: Props) {
     const data = await res.json();
     if (data.error) {
       (alertRef.current.querySelector(".title")! as HTMLElement).innerText =
-        translations[data.error];
+        data.error;
       (alertRef.current.querySelector(".desc")! as HTMLElement).innerText =
-        translations[data.message];
+        data.message;
       setIsAlertVisible(true);
       setTimeout(() => {
         setIsAlertVisible(false);
       }, 6000);
     } else {
       setJwt(data);
+      navigate("/uk");
     }
   }
 
@@ -91,10 +99,10 @@ export default function Register_en({ setJwt }: Props) {
       />
       <Card className="w-100">
         <CardHeader>
-          <CardTitle>Зареєструвати аккаунт</CardTitle>
+          <CardTitle>Зареєструваи новий аккаунт</CardTitle>
           <CardDescription>
-            Введіть вашу електронну адресу, ім'я користувача і пароль щоб
-            зареєструвати новий аккаунт
+            Уведіть вашу електронну адрессу, ім'я користувача і пароль щоб
+            зареєструваи новий аккаунт
           </CardDescription>
           <CardAction>
             <Link to="/en/login">Увійти в існуючий аккаунт</Link>
@@ -102,7 +110,7 @@ export default function Register_en({ setJwt }: Props) {
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
-            <label htmlFor="email">Електронна адреса</label>
+            <label htmlFor="email">Електроннна адресса</label>
             <Input
               required={true}
               id="email"
@@ -156,9 +164,12 @@ export default function Register_en({ setJwt }: Props) {
               handleSubmit(e);
             }}
           >
-            Зареєструватись
+            Реєстрація
           </Button>
-          <Button className="w-[100%] cursor-pointer bg-neutral-300 text-black">
+          <Button
+            className="w-[100%] cursor-pointer bg-neutral-300 text-black"
+            onClick={() => googleAuth()}
+          >
             <img src="/google_logo.png" alt="google" className="h-6" />
             Увійти за допомогою Google
           </Button>
@@ -172,6 +183,32 @@ export default function Register_en({ setJwt }: Props) {
         <AlertTitle className="title"></AlertTitle>
         <AlertDescription className="desc"></AlertDescription>
       </Alert>
+      <AlertDialog open={generatedPassword !== ""}>
+        <AlertDialogContent className="gap-0">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Пароль</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            We generated a password for your account. You will need to use this
+            password when logging in to your account in our bot. Ми згеренували
+            пароль для вашого аккаунту. Він буде вам потрібен коли ви будете
+            заходити в аккаунт в боті.
+            <br />
+            Ось ваш пароль
+          </AlertDialogDescription>
+          <span className="password-span mt-3 mb-5">{generatedPassword}</span>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              className="bg-white !text-black"
+              onClick={() => {
+                navigate("/en");
+              }}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

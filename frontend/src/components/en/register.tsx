@@ -10,10 +10,20 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ChangeLanguage from "../changeLanguage";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import type { IJwtToken } from "@/types/JwtToken.interface";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 
 type Props = {
   setJwt: (data: IJwtToken) => void;
@@ -26,6 +36,8 @@ export default function Register_en({ setJwt }: Props) {
   const [repeatPassword, setRepeatPassword] = useState("");
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
+  const { googleAuth, generatedPassword } = useGoogleAuth(setJwt);
 
   async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     if (!alertRef.current) return;
@@ -74,6 +86,7 @@ export default function Register_en({ setJwt }: Props) {
       }, 6000);
     } else {
       setJwt(data);
+      navigate("/en")
     }
   }
 
@@ -152,8 +165,11 @@ export default function Register_en({ setJwt }: Props) {
           >
             Register
           </Button>
-          <Button className="w-[100%] bg-neutral-300 text-black cursor-pointer">
-            <img src="/google_logo.png" alt="google" className="h-6"/>
+          <Button
+            className="w-[100%] cursor-pointer bg-neutral-300 text-black"
+            onClick={() => googleAuth()}
+          >
+            <img src="/google_logo.png" alt="google" className="h-6" />
             Login with Google
           </Button>
         </CardFooter>
@@ -166,6 +182,30 @@ export default function Register_en({ setJwt }: Props) {
         <AlertTitle className="title"></AlertTitle>
         <AlertDescription className="desc"></AlertDescription>
       </Alert>
+      <AlertDialog open={generatedPassword !== ""}>
+        <AlertDialogContent className="gap-0">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Password</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            We generated a password for your account. You will need to use this
+            password when logging in to your account in our bot.
+            <br />
+            Here's your password:
+          </AlertDialogDescription>
+          <span className="password-span mt-3 mb-5">{generatedPassword}</span>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              className="bg-white !text-black"
+              onClick={() => {
+                navigate("/en");
+              }}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
