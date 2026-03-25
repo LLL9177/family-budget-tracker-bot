@@ -14,6 +14,7 @@ import ChangeLanguage from "../changeLanguage";
 import { Link } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import type { IJwtToken } from "@/types/JwtToken.interface";
+import { useGoogleLogin } from "@react-oauth/google";
 
 type Props = {
   setJwt: (data: IJwtToken) => void;
@@ -24,6 +25,49 @@ export default function Login_en({ setJwt }: Props) {
   const [password, setPassword] = useState("");
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      const userInfo = await fetch(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${tokenResponse.access_token}`,
+          },
+        }
+      ).then((res) => res.json());
+
+      console.log({
+        username: userInfo.name,
+        email: userInfo.email,
+        googleId: userInfo.sub,
+      });
+
+      const data = await fetch(
+        import.meta.env.VITE_BACKEND_URL + "/auth/google_auth",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            username: userInfo.name,
+            email: userInfo.email,
+            googleId: userInfo.sub,
+          }),
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      ).then((res) => res.json());
+
+      console.log(data);
+      if (data.password) {
+        alert(data.password);
+      }
+    },
+    onError: () => {
+      console.log("idk");
+    },
+    // flow: "auth-code",
+  });
 
   // TODO FOR THIS ONE: on click of sign up redirect to /register
 
@@ -103,7 +147,7 @@ export default function Login_en({ setJwt }: Props) {
           </CardContent>
           <CardFooter className="flex-col gap-3">
             <Button
-              className="w-[100%]"
+              className="w-[100%] cursor-pointer"
               type="submit"
               onClick={(e) => {
                 handleSubmit(e);
@@ -111,8 +155,12 @@ export default function Login_en({ setJwt }: Props) {
             >
               Login
             </Button>
-            <Button className="w-[100%] bg-neutral-300 text-black">
-              {/* Please add a google logo into the text somehow */}
+            <Button
+              type="button"
+              className="w-[100%] bg-neutral-300 text-black cursor-pointer"
+              onClick={() => login}
+            >
+              <img src="/google_logo.png" alt="google" className="h-6"/>
               Login with Google
             </Button>
           </CardFooter>

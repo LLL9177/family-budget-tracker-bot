@@ -10,6 +10,7 @@ interface IUserService {
   findById(id: string): Promise<UserEntity | null>;
   findByUsername(username: string): Promise<UserEntity | null>;
   findByEmail(email: string): Promise<UserEntity | null>;
+  findByGoogleId(googleId: string): Promise<UserEntity | null>;
   changeUser(newUser: UserEntity): Promise<void>;
 }
 
@@ -37,8 +38,12 @@ export class UserService implements IUserService {
     return this.userRepository.findOneBy({ username });
   }
 
-  findByEmail(email: string): Promise<UserEntity | null> {
-    return this.userRepository.findOneBy({ email });
+  async findByEmail(email: string): Promise<UserEntity | null> {
+    return await this.userRepository.findOneBy({ email });
+  }
+
+  async findByGoogleId(googleId: string): Promise<UserEntity | null> {
+    return await this.userRepository.findOneBy({ googleId });
   }
 
   async changeUser(newUser: UserEntity): Promise<void> {

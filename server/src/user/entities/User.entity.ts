@@ -23,4 +23,7 @@ export class UserEntity {
 
   @Column({ nullable: true })
   family_owned?: string;
+
+  @Column({ nullable: true })
+  googleId?: string;
 }

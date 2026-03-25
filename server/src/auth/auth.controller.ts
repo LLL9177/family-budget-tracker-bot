@@ -17,6 +17,7 @@ import { Roles } from './enums/Roles.enum';
 import { RolesGuard } from 'src/roles/roles.guard';
 import { BotGuard } from 'src/bot/bot.guard';
 import { BotLoginDto } from 'src/dtos/BotLogin.dto';
+import { GoogleAuthDto } from 'src/dtos/GoogleAuth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -37,6 +38,11 @@ export class AuthController {
   @Post('login')
   async login(@Body(new ValidationPipe()) body: LoginDto) {
     return await this.authService.login(body);
+  }
+
+  @Post('google_auth')
+  async googleAuth(@Body(new ValidationPipe()) body: GoogleAuthDto) {
+    return await this.authService.googleAuth(body);
   }
 
   @UseGuards(BotGuard)

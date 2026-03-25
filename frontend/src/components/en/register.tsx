@@ -144,7 +144,7 @@ export default function Register_en({ setJwt }: Props) {
         </CardContent>
         <CardFooter className="flex-col gap-3">
           <Button
-            className="w-[100%]"
+            className="w-[100%] cursor-pointer"
             type="submit"
             onClick={(e) => {
               handleSubmit(e);
@@ -152,9 +152,9 @@ export default function Register_en({ setJwt }: Props) {
           >
             Register
           </Button>
-          <Button className="w-[100%] bg-neutral-300 text-black">
-            {/* Please add a google logo into the text somehow */}
-            Register with Google
+          <Button className="w-[100%] bg-neutral-300 text-black cursor-pointer">
+            <img src="/google_logo.png" alt="google" className="h-6"/>
+            Login with Google
           </Button>
         </CardFooter>
       </Card>

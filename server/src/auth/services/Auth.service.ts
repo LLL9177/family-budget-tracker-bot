@@ -14,6 +14,8 @@ import { HashService } from './Hash.service';
 import { UserEntity } from 'src/user/entities/User.entity';
 import { IAccessToken } from 'src/types/IAccessToken.interface';
 import { BotLoginDto } from 'src/dtos/BotLogin.dto';
+import { GoogleAuthDto } from 'src/dtos/GoogleAuth.dto';
+import { IGoogleAuth } from 'src/types/GoogleAuth.interface';
 
 interface IAuthService {
   register(data: UserDto): Promise<IAccessToken | void>; // although it will 100% return the first option
@@ -21,6 +23,7 @@ interface IAuthService {
   login(data: LoginDto): Promise<IAccessToken | void>;
   botLogin(data: BotLoginDto): Promise<IAccessToken | void>;
   botGetUsername(id: string): Promise<string>;
+  googleAuth(data: GoogleAuthDto): Promise<IAccessToken | void>;
 }
 
 @Injectable()
@@ -91,5 +94,49 @@ export class AuthService implements IAuthService {
     if (!user) throw new NotFoundException('User not found');
 
     return user.username;
+  }
+
+  async googleAuth(data: GoogleAuthDto): Promise<IGoogleAuth | void> {
+    const oldUser = await this.userService.findByGoogleId(data.googleId);
+
+    if (oldUser) {
+      const jwt = this.jwtService.sign({
+        id: oldUser.id,
+        roles: JSON.parse(oldUser.roles) as Roles[],
+      });
+
+      return { access_token: jwt };
+    }
+
+    const charset =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
+
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+
+    const password = Array.from(
+      array,
+      (byte) => charset[byte % charset.length],
+    ).join('');
+
+    const access = await this.register({
+      username: data.username,
+      email: data.email,
+      password,
+      repeat_password: password,
+    });
+
+    if (!access) throw new Error('No access');
+
+    const userId = this.jwtService.validateAccess(
+      access.access_token.access,
+    ).id;
+
+    const user = (await this.userService.findById(userId)) as UserEntity;
+
+    user.googleId = data.googleId;
+
+    await this.userService.changeUser(user);
+    return { ...access, password }; // i know, but this is the only way for them to know their password.
   }
 }
