@@ -93,19 +93,19 @@ export default function Register_en({ setJwt }: Props) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-10 bg-[#1a191f]">
       <ChangeLanguage
-        route="/uk/register"
+        route="/en/register"
         className="relative top-8 left-45 h-10 w-10"
         iconClass="!w-5 !h-5"
       />
       <Card className="w-100">
         <CardHeader>
-          <CardTitle>Зареєструваи новий аккаунт</CardTitle>
+          <CardTitle>Зареєструвати новий аккаунт</CardTitle>
           <CardDescription>
             Уведіть вашу електронну адрессу, ім'я користувача і пароль щоб
             зареєструваи новий аккаунт
           </CardDescription>
           <CardAction>
-            <Link to="/en/login">Увійти в існуючий аккаунт</Link>
+            <Link to="/uk/login">Увійти в існуючий аккаунт</Link>
           </CardAction>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
@@ -164,7 +164,7 @@ export default function Register_en({ setJwt }: Props) {
               handleSubmit(e);
             }}
           >
-            Реєстрація
+            Зареєструватись
           </Button>
           <Button
             className="w-[100%] cursor-pointer bg-neutral-300 text-black"

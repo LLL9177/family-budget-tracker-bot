@@ -75,7 +75,7 @@ export default function Login_en({ setJwt }: Props) {
       <ChangeLanguage
         className="relative top-8 left-45 h-10 w-10"
         iconClass="!w-5 !h-5"
-        route="/uk/login"
+        route="/en/login"
       />
       <form>
         <Card className="w-100">
@@ -85,7 +85,7 @@ export default function Login_en({ setJwt }: Props) {
               Уведіть свою ім'я користувача і пароль щоб ввійти в  аккаунт
             </CardDescription>
             <CardAction className="cursor-pointer">
-              <Link to="/en/register">Зареєструватись</Link>
+              <Link to="/uk/register">Зареєструватись</Link>
             </CardAction>
           </CardHeader>
           <CardContent>
