@@ -35,7 +35,9 @@ export default function Login_en({ setJwt }: Props) {
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-  const { googleAuth, generatedPassword } = useGoogleAuth(setJwt);
+  const { googleAuth, generatedPassword } = useGoogleAuth(setJwt, () => {
+    navigate("/uk/");
+  });
 
   // TODO FOR THIS ONE: on click of sign up redirect to /register
 
@@ -82,7 +84,7 @@ export default function Login_en({ setJwt }: Props) {
           <CardHeader>
             <CardTitle>Увійдіть в аккаунт</CardTitle>
             <CardDescription>
-              Уведіть свою ім'я користувача і пароль щоб ввійти в  аккаунт
+              Уведіть свою ім'я користувача і пароль щоб ввійти в аккаунт
             </CardDescription>
             <CardAction className="cursor-pointer">
               <Link to="/uk/register">Зареєструватись</Link>
@@ -149,7 +151,8 @@ export default function Login_en({ setJwt }: Props) {
             <AlertDialogTitle>Password</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription>
-            Ми згеренували пароль для вашого аккаунту. Він потрібен для того щоб ввійти в аккаунт в боті
+            Ми згеренували пароль для вашого аккаунту. Він потрібен для того щоб
+            ввійти в аккаунт в боті
             <br />
             Ось ваш пароль
           </AlertDialogDescription>

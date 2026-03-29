@@ -37,7 +37,9 @@ export default function Register_en({ setJwt }: Props) {
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-  const { googleAuth, generatedPassword } = useGoogleAuth(setJwt);
+  const { googleAuth, generatedPassword } = useGoogleAuth(setJwt, () => {
+    navigate("/en/");
+  });
 
   async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     if (!alertRef.current) return;
@@ -86,7 +88,7 @@ export default function Register_en({ setJwt }: Props) {
       }, 6000);
     } else {
       setJwt(data);
-      navigate("/en")
+      navigate("/en");
     }
   }
 
@@ -97,83 +99,86 @@ export default function Register_en({ setJwt }: Props) {
         className="relative top-8 left-45 h-10 w-10"
         iconClass="!w-5 !h-5"
       />
-      <Card className="w-100">
-        <CardHeader>
-          <CardTitle>Register new account</CardTitle>
-          <CardDescription>
-            Enter your email, username and password to register new account
-          </CardDescription>
-          <CardAction>
-            <Link to="/en/login">Login instead</Link>
-          </CardAction>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="email">Email</label>
-            <Input
-              required={true}
-              id="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
+      <form>
+        <Card className="w-100">
+          <CardHeader>
+            <CardTitle>Register new account</CardTitle>
+            <CardDescription>
+              Enter your email, username and password to register new account
+            </CardDescription>
+            <CardAction>
+              <Link to="/en/login">Login instead</Link>
+            </CardAction>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="email">Email</label>
+              <Input
+                required={true}
+                id="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="username">Username</label>
+              <Input
+                required={true}
+                id="username"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="password">Password</label>
+              <Input
+                required={true}
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="repeat_password">Repeat password</label>
+              <Input
+                required={true}
+                type="password"
+                id="repeat_password"
+                value={repeatPassword}
+                onChange={(e) => {
+                  setRepeatPassword(e.target.value);
+                }}
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex-col gap-3">
+            <Button
+              className="w-[100%] cursor-pointer"
+              type="submit"
+              onClick={(e) => {
+                handleSubmit(e);
               }}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="username">Username</label>
-            <Input
-              required={true}
-              id="username"
-              value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
-              }}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="password">Password</label>
-            <Input
-              required={true}
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="repeat_password">Repeat password</label>
-            <Input
-              required={true}
-              type="password"
-              id="repeat_password"
-              value={repeatPassword}
-              onChange={(e) => {
-                setRepeatPassword(e.target.value);
-              }}
-            />
-          </div>
-        </CardContent>
-        <CardFooter className="flex-col gap-3">
-          <Button
-            className="w-[100%] cursor-pointer"
-            type="submit"
-            onClick={(e) => {
-              handleSubmit(e);
-            }}
-          >
-            Register
-          </Button>
-          <Button
-            className="w-[100%] cursor-pointer bg-neutral-300 text-black"
-            onClick={() => googleAuth()}
-          >
-            <img src="/google_logo.png" alt="google" className="h-6" />
-            Login with Google
-          </Button>
-        </CardFooter>
-      </Card>
+            >
+              Register
+            </Button>
+            <Button
+              type="button"
+              className="w-[100%] cursor-pointer bg-neutral-300 text-black"
+              onClick={() => googleAuth()}
+            >
+              <img src="/google_logo.png" alt="google" className="h-6" />
+              Login with Google
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
       <Alert
         ref={alertRef}
         className={`ease fixed -bottom-14 w-100 transform transition-all duration-300 ${isAlertVisible ? "opcaity-100 -translate-y-21" : "translate-y-0 opacity-0"}`}

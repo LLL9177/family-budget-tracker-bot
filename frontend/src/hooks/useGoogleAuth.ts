@@ -2,7 +2,11 @@ import type { IJwtToken } from "@/types/JwtToken.interface";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
 
-export function useGoogleAuth(setJwt: (data: IJwtToken) => void) {
+export function useGoogleAuth(
+  setJwt: (data: IJwtToken) => void,
+  onSuccessFunction?: () => void,
+  onErrorFunction?: () => void
+) {
   const [generatedPassword, setGeneratedPassword] = useState("");
   const googleAuth = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -33,11 +37,13 @@ export function useGoogleAuth(setJwt: (data: IJwtToken) => void) {
 
       if (data.password) {
         setGeneratedPassword(data.password);
-        setJwt(data);
       }
+      
+      setJwt(data);
+      if (onSuccessFunction) onSuccessFunction();
     },
     onError: () => {
-      console.log("idk");
+      if (onErrorFunction) onErrorFunction();
     },
   });
 

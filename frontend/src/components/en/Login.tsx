@@ -35,9 +35,9 @@ export default function Login_en({ setJwt }: Props) {
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-  const { googleAuth, generatedPassword } = useGoogleAuth(setJwt);
-
-  // TODO FOR THIS ONE: on click of sign up redirect to /register
+  const { googleAuth, generatedPassword } = useGoogleAuth(setJwt, () => {
+    navigate("/en/");
+  });
 
   async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     if (!alertRef.current) return;
