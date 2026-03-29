@@ -1257,15 +1257,29 @@ def fetch(url, data, telegram_id, method="post"):
     if method == "post":
         res = requests.post(
             BACKEND_URL+url, 
-            json={**data, "refresh": user["refresh"]}, 
+            json=data,
             headers={"Authorization": f"Bearer {user['access']}"},
         )
+
+        if res.status_code == 403:
+            res = requests.post(
+                BACKEND_URL+url,
+                json=data,
+                headers={"Authorization": f"Bearer  {user["refresh"]}"},
+            )
     elif method == "get":
         res = requests.get(
             BACKEND_URL+url,
-            json={**data, "refresh": user["refresh"]}, 
+            json=data,
             headers={"Authorization": f"Bearer {user['access']}"},
         )
+
+        if res.status_code == 403:
+            res = requests.get(
+                BACKEND_URL+url,
+                json=data,
+                headers={"Authorization": f"Bearer  {user["refresh"]}"},
+            )
 
     if "x-access-token" in res.headers:
         try:
