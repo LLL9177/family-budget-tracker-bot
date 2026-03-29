@@ -1260,13 +1260,6 @@ def fetch(url, data, telegram_id, method="post"):
             json=data,
             headers={"Authorization": f"Bearer {user['access']}"},
         )
-
-        if res.status_code == 403:
-            res = requests.post(
-                BACKEND_URL+url,
-                json=data,
-                headers={"Authorization": f"Bearer  {user["refresh"]}"},
-            )
     elif method == "get":
         res = requests.get(
             BACKEND_URL+url,
@@ -1274,29 +1267,11 @@ def fetch(url, data, telegram_id, method="post"):
             headers={"Authorization": f"Bearer {user['access']}"},
         )
 
-        if res.status_code == 403:
-            res = requests.get(
-                BACKEND_URL+url,
-                json=data,
-                headers={"Authorization": f"Bearer  {user["refresh"]}"},
-            )
-
     if "x-access-token" in res.headers:
         try:
             db.execute(
                 "UPDATE user SET access = ? WHERE telegram_id = ?", 
                 (res.headers["x-access-token"], telegram_id)
-            )
-            db.commit()
-        except Exception as e:
-            print(e)
-            db.close()
-            return 1
-    if "x-refresh-token" in res.headers:
-        try:
-            db.execute(
-                "UPDATE user SET refresh = ? WHERE telegram_id = ?", 
-                (res.headers["x-refresh-token"], telegram_id)
             )
             db.commit()
         except Exception as e:
