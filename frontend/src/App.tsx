@@ -1,26 +1,13 @@
 import { Route, Routes } from "react-router-dom";
 import Login_en from "./components/en/Login";
 import Login_uk from "./components/uk/Login";
-import { useEffect, useState } from "react";
 import Register_en from "./components/en/register";
 import Register_uk from "./components/uk/register";
 import Main from "./components/en/Main";
+import { useState } from "react";
 
 export function App() {
-  const cookies = document.cookie.split("; ").find((el) => {
-    const cookie = el.split("=");
-    if (cookie[0] == "jwt") return true;
-  });
-
-  const [jwt, setJwt] = useState(
-    cookies ? JSON.parse(cookies[0].split("=")[1]) : {}
-  );
-
-  console.log(jwt);
-
-  useEffect(() => {
-    document.cookie = `jwt=${jwt}`;
-  }, [jwt]);
+  const [jwt, setJwt] = useState({});
 
   return (
     <Routes>

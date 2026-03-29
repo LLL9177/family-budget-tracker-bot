@@ -7,24 +7,26 @@ import {
 import { Request, Response } from 'express';
 import { JwtTokenService } from 'src/jwt/Jwt.service';
 
+interface RequestWithCookies extends Request {
+  cookies: {
+    refresh?: string;
+  };
+}
+
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtTokenService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req: Request = context.switchToHttp().getRequest();
-    const res: Response = context.switchToHttp().getResponse();
-    const authTokens = this.extractTokenFromHeader(req);
+    const req = context.switchToHttp().getRequest<RequestWithCookies>();
+    const res = context.switchToHttp().getResponse<Response>();
+    const token = this.extractTokenFromHeader(req);
+    const refresh = req.cookies.refresh;
 
-    if (!authTokens) throw new UnauthorizedException();
-
-    const token = typeof authTokens == 'string' ? authTokens : authTokens.token;
-    const refresh =
-      typeof authTokens == 'string' ? undefined : authTokens.refresh;
+    if (!token || !refresh) throw new UnauthorizedException();
 
     if (token) {
       const payload = this.jwtService.validateAccess(token);
-      res.setHeader('x-access-token', token);
       req['user'] = payload;
       return true;
     } else if (refresh) {
@@ -32,25 +34,20 @@ export class AuthGuard implements CanActivate {
       const tokens = await this.jwtService.refresh(refresh);
       const payload = this.jwtService.validateAccess(tokens.access);
       res.setHeader('x-access-token', tokens.access);
-      res.setHeader('x-refresh-token', tokens.refresh);
+      res.cookie('refresh', tokens.refresh, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60 * 24 * 5,
+      });
       req['user'] = payload;
       return true;
     }
-
     return false;
   }
 
-  private extractTokenFromHeader(
-    req: Request,
-  ): { token: string; refresh: string } | string | undefined {
-    const tokens = req.headers.authorization?.split(' ') ?? [];
-    if (tokens.length == 3) {
-      const [type, token, refresh] = tokens;
-      return type === 'Bearer' ? { token, refresh } : undefined;
-    } else if (tokens.length == 2) {
-      const [type, token] = tokens;
-      return type === 'Bearer' ? token : undefined;
-    }
-    return undefined;
+  private extractTokenFromHeader(req: Request): string | undefined {
+    const [type, token] = req.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
   }
 }

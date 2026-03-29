@@ -5,6 +5,7 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
@@ -18,14 +19,29 @@ import { RolesGuard } from 'src/roles/roles.guard';
 import { BotGuard } from 'src/bot/bot.guard';
 import { BotLoginDto } from 'src/dtos/BotLogin.dto';
 import { GoogleAuthDto } from 'src/dtos/GoogleAuth.dto';
+import type { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async register(@Body(new ValidationPipe()) body: UserDto) {
-    return await this.authService.register(body);
+  async register(
+    @Body(new ValidationPipe()) body: UserDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.register(body);
+
+    if (result) {
+      res.cookie('refresh', result.access_token.refresh, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60 * 24 * 5,
+      });
+    }
+
+    return result;
   }
 
   @Role(Roles.USER)
@@ -36,8 +52,22 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body(new ValidationPipe()) body: LoginDto) {
-    return await this.authService.login(body);
+  async login(
+    @Body(new ValidationPipe()) body: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(body);
+
+    if (result) {
+      res.cookie('refresh', result.access_token.refresh, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60 * 24 * 5,
+      });
+    }
+
+    return result;
   }
 
   @Post('google_auth')
