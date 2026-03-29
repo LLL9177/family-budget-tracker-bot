@@ -14,35 +14,43 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: Request = context.switchToHttp().getRequest();
     const res: Response = context.switchToHttp().getResponse();
-    const body = req.body as { refresh: string };
-    const refresh = body.refresh;
-    const token = this.extractTokenFromHeader(req);
+    const authTokens = this.extractTokenFromHeader(req);
 
-    if (!token || !refresh) throw new UnauthorizedException();
+    if (!authTokens) throw new UnauthorizedException();
 
-    try {
+    const token = typeof authTokens == 'string' ? authTokens : authTokens.token;
+    const refresh =
+      typeof authTokens == 'string' ? undefined : authTokens.refresh;
+
+    if (token) {
       const payload = this.jwtService.validateAccess(token);
       res.setHeader('x-access-token', token);
-      res.setHeader('x-refresh-token', refresh);
       req['user'] = payload;
-    } catch {
-      try {
-        this.jwtService.validateRefresh(refresh);
-        const tokens = await this.jwtService.refresh(refresh);
-        const payload = this.jwtService.validateAccess(tokens.access);
-        res.setHeader('x-access-token', tokens.access);
-        res.setHeader('x-refresh-token', tokens.refresh);
-        req['user'] = payload;
-      } catch {
-        throw new UnauthorizedException();
-      }
+      return true;
+    } else if (refresh) {
+      this.jwtService.validateRefresh(refresh);
+      const tokens = await this.jwtService.refresh(refresh);
+      const payload = this.jwtService.validateAccess(tokens.access);
+      res.setHeader('x-access-token', tokens.access);
+      res.setHeader('x-refresh-token', tokens.refresh);
+      req['user'] = payload;
+      return true;
     }
 
-    return true;
+    return false;
   }
 
-  private extractTokenFromHeader(req: Request): string | undefined {
-    const [type, token] = req.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+  private extractTokenFromHeader(
+    req: Request,
+  ): { token: string; refresh: string } | string | undefined {
+    const tokens = req.headers.authorization?.split(' ') ?? [];
+    if (tokens.length == 3) {
+      const [type, token, refresh] = tokens;
+      return type === 'Bearer' ? { token, refresh } : undefined;
+    } else if (tokens.length == 2) {
+      const [type, token] = tokens;
+      return type === 'Bearer' ? token : undefined;
+    }
+    return undefined;
   }
 }

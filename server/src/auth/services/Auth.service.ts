@@ -97,7 +97,24 @@ export class AuthService implements IAuthService {
   }
 
   async googleAuth(data: GoogleAuthDto): Promise<IGoogleAuth | void> {
+    const existingUser = await this.userService.findByUsername(data.username);
+
+    if (existingUser) {
+      existingUser.googleId = data.googleId;
+      await this.userService.changeUser(existingUser);
+
+      const jwt = this.jwtService.sign({
+        id: existingUser.id,
+        roles: JSON.parse(existingUser.roles) as Roles[],
+      });
+
+      return { access_token: jwt };
+    }
+
     const oldUser = await this.userService.findByGoogleId(data.googleId);
+
+    console.log(data);
+    console.log(oldUser);
 
     if (oldUser) {
       const jwt = this.jwtService.sign({
@@ -125,6 +142,8 @@ export class AuthService implements IAuthService {
       password,
       repeat_password: password,
     });
+
+    console.log(access);
 
     if (!access) throw new Error('No access');
 
