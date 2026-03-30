@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import {
   Card,
   CardAction,
@@ -13,7 +13,6 @@ import { Button } from "../ui/button";
 import ChangeLanguage from "../changeLanguage";
 import { Link, useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import type { IJwtToken } from "@/types/JwtToken.interface";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,20 +23,21 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
+import { AuthContext } from "@/contexts/AuthContext";
 
-type Props = {
-  setJwt: (data: IJwtToken) => void;
-};
-
-export default function Login_en({ setJwt }: Props) {
+export default function Login_en() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-  const { googleAuth, generatedPassword } = useGoogleAuth(setJwt, () => {
-    navigate("/en/");
-  });
+  const auth = useContext(AuthContext);
+  const { googleAuth, generatedPassword } = useGoogleAuth(
+    auth.setAccess,
+    () => {
+      navigate("/en/");
+    }
+  );
 
   async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     if (!alertRef.current) return;
@@ -48,10 +48,10 @@ export default function Login_en({ setJwt }: Props) {
     const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/auth/login", {
       method: "POST",
       body: JSON.stringify({ username, password }),
-      mode: "cors",
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
 
     const data = await res.json();
@@ -65,7 +65,7 @@ export default function Login_en({ setJwt }: Props) {
         setIsAlertVisible(false);
       }, 6000);
     } else {
-      setJwt(data);
+      auth.setAccess(data.access_token.access);
       navigate("/en");
     }
   }

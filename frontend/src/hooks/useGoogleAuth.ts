@@ -1,9 +1,8 @@
-import type { IJwtToken } from "@/types/JwtToken.interface";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
 
 export function useGoogleAuth(
-  setJwt: (data: IJwtToken) => void,
+  setAccess: (data: string) => void,
   onSuccessFunction?: () => void,
   onErrorFunction?: () => void
 ) {
@@ -32,14 +31,15 @@ export function useGoogleAuth(
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
         }
       ).then((res) => res.json());
 
       if (data.password) {
         setGeneratedPassword(data.password);
       }
-      
-      setJwt(data);
+
+      setAccess(data.access_token.access);
       if (onSuccessFunction) onSuccessFunction();
     },
     onError: () => {

@@ -23,8 +23,6 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(req);
     const refresh = req.cookies.refresh;
 
-    if (!token || !refresh) throw new UnauthorizedException();
-
     if (token) {
       const payload = this.jwtService.validateAccess(token);
       req['user'] = payload;
@@ -43,7 +41,7 @@ export class AuthGuard implements CanActivate {
       req['user'] = payload;
       return true;
     }
-    return false;
+    throw new UnauthorizedException();
   }
 
   private extractTokenFromHeader(req: Request): string | undefined {

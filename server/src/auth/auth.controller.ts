@@ -35,8 +35,8 @@ export class AuthController {
     if (result) {
       res.cookie('refresh', result.access_token.refresh, {
         httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
+        secure: false,
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 * 5,
       });
     }
@@ -61,8 +61,8 @@ export class AuthController {
     if (result) {
       res.cookie('refresh', result.access_token.refresh, {
         httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
+        secure: false,
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 * 5,
       });
     }
@@ -71,8 +71,22 @@ export class AuthController {
   }
 
   @Post('google_auth')
-  async googleAuth(@Body(new ValidationPipe()) body: GoogleAuthDto) {
-    return await this.authService.googleAuth(body);
+  async googleAuth(
+    @Body(new ValidationPipe()) body: GoogleAuthDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.googleAuth(body);
+
+    if (result) {
+      res.cookie('refresh', result.access_token.refresh, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24 * 5,
+      });
+    }
+
+    return result;
   }
 
   @UseGuards(BotGuard)
