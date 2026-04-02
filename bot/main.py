@@ -1258,13 +1258,19 @@ def fetch(url, data, telegram_id, method="post"):
         res = requests.post(
             BACKEND_URL+url, 
             json=data,
-            headers={"Authorization": f"Bearer {user['access']}"},
+            headers={
+                "Authorization": f"Bearer {user["access"]}", 
+                "x-refresh-token": user["refresh"]
+            },
         )
     elif method == "get":
         res = requests.get(
             BACKEND_URL+url,
             json=data,
-            headers={"Authorization": f"Bearer {user['access']}"},
+            headers={
+                "Authorization": f"Bearer {user["access"]}", 
+                "x-refresh-token": user["refresh"]
+            },
         )
 
     if "x-access-token" in res.headers:

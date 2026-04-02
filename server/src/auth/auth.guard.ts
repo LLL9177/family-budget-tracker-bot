@@ -7,9 +7,12 @@ import {
 import { Request, Response } from 'express';
 import { JwtTokenService } from 'src/jwt/Jwt.service';
 
-interface RequestWithCookies extends Request {
+interface RequestWithRefresh extends Request {
   cookies: {
     refresh?: string;
+  };
+  headers: {
+    'x-refresh-token'?: string;
   };
 }
 
@@ -18,10 +21,10 @@ export class AuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtTokenService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest<RequestWithCookies>();
+    const req = context.switchToHttp().getRequest<RequestWithRefresh>();
     const res = context.switchToHttp().getResponse<Response>();
     const token = this.extractTokenFromHeader(req);
-    const refresh = req.cookies.refresh;
+    const refresh = this.useRefresh(req);
 
     if (token) {
       const payload = this.jwtService.validateAccess(token);
@@ -47,5 +50,9 @@ export class AuthGuard implements CanActivate {
   private extractTokenFromHeader(req: Request): string | undefined {
     const [type, token] = req.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
+  }
+
+  private useRefresh(req: RequestWithRefresh): string | undefined {
+    return req.headers['x-refresh-token'] ?? req.cookies.refresh;
   }
 }
