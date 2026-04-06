@@ -4,15 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/contexts/AuthContext";
 import { Button } from "../ui/button";
 import type { ITransaction } from "@/types/Transaction.interface";
-import MainChart from "./mainChart";
+import MainChart_en from "./mainChart";
 import type { ITransactionWithDate } from "@/types/TransactionWithDate.interface";
 
-export default function Main() {
+export default function Main_en() {
   const auth = useContext(AuthContext);
   const decodedJwt = auth.access ? jwtDecode(auth.access) : "";
   const navigate = useNavigate();
   const [familyId, setFamilyId] = useState("");
-  const [transactions, setTransactions] = useState<ITransaction[] | [] | ITransactionWithDate[]>([]);
+  const [transactions, setTransactions] = useState<
+    ITransaction[] | [] | ITransactionWithDate[]
+  >([]);
 
   const familyData = {
     pnl: 0,
@@ -111,7 +113,7 @@ export default function Main() {
             ).then((res) => res.json());
             const transactions = data.map((t: ITransaction) => {
               t.createdAt = new Date(t.createdAt);
-              return t
+              return t;
             });
             setTransactions(transactions);
           } catch (err) {
@@ -134,7 +136,7 @@ export default function Main() {
         <>
           <h1 className="mb-5 text-2xl font-bold">Whoops!</h1>
           <p className="mb-3 w-150 text-center">
-            Seems like your account doesn't have family ID connected. To access
+            Seems like your account doesn't have Family ID connected. To access
             this page properly, first connect family ID, or create your own
             family.
           </p>
@@ -155,7 +157,7 @@ export default function Main() {
         </>
       ) : (
         <div className="h-[100vh] w-[100vw] items-center justify-center">
-          <MainChart data={transactions} />
+          <MainChart_en data={transactions as ITransactionWithDate[]} />
         </div>
       )}
     </div>

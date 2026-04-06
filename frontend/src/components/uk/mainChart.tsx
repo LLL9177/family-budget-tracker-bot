@@ -21,20 +21,19 @@ import { Button } from "../ui/button";
 import { useState } from "react";
 import { useTheme } from "../theme-provider";
 import { BarChart3, LineChart as LineChartIcon } from "lucide-react";
-import type { ITransaction } from "@/types/Transaction.interface";
 
 const chartConfig = {
   PnL: {
-    label: "PnL",
+    label: "П&З",
     color: "#2cddb7",
   },
 } satisfies ChartConfig;
 
 type Props = {
-  data: ITransactionWithDate[] | ITransaction;
+  data: ITransactionWithDate[];
 };
 
-export default function MainChart_en({ data }: Props) {
+export default function MainChart_uk({ data }: Props) {
   const [displayMode, setDisplayMode] = useState("bars");
   const { theme, resolvedTheme, systemTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
@@ -64,17 +63,17 @@ export default function MainChart_en({ data }: Props) {
             return t;
           }
         });
-        chartData.push({ date: `Day ${day}`, PnL: pnl });
+        chartData.push({ date: `Д ${day}`, PnL: pnl });
       } else if (frame == "transactions") {
-        chartData.push({ transactionIndex: "0", PnL: pnl, date: `Day ${day}` }); // date here is to be able to sort
+        chartData.push({ transactionIndex: "0", PnL: pnl, date: `Д ${day}` }); // date here is to be able to sort
       }
       pnl += transaction.amount;
     }
   }
 
   chartData.sort((a, b) => {
-    const dayA = parseInt(a.date.replace("Day ", ""));
-    const dayB = parseInt(b.date.replace("Day ", ""));
+    const dayA = parseInt(a.date.replace("Д ", ""));
+    const dayB = parseInt(b.date.replace("Д ", ""));
     return dayA - dayB;
   });
 
@@ -97,9 +96,9 @@ export default function MainChart_en({ data }: Props) {
       >
         <div className="flex space-x-[54%] pr-10 pl-10">
           <div>
-            <h2 className="mb-2 text-xl font-bold">PnL Of Current Month</h2>
+            <h2 className="mb-2 text-xl font-bold">П&З цього місяця</h2>
             <span className="text-[rgb(100,100,100)]">
-              This month's difference in balance
+              Зміна балансу поточного місяця
             </span>
           </div>
           <div className="flex pb-10">
@@ -144,7 +143,7 @@ export default function MainChart_en({ data }: Props) {
                     setFrame("days");
                   }}
                 >
-                  days
+                  дні
                 </Button>
                 <Button
                   className={`text-[16px] ${
@@ -160,7 +159,7 @@ export default function MainChart_en({ data }: Props) {
                     setFrame("transactions");
                   }}
                 >
-                  transactions
+                  транзакції
                 </Button>
               </ButtonGroup>
             </div>
