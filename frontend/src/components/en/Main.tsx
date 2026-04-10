@@ -6,6 +6,8 @@ import { Button } from "../ui/button";
 import type { ITransaction } from "@/types/Transaction.interface";
 import MainChart_en from "./mainChart";
 import type { ITransactionWithDate } from "@/types/TransactionWithDate.interface";
+import { SectionCards_en } from "./sectionCards";
+import MainLeaderboard_en from "./mainLeaderboard";
 
 export default function Main_en() {
   const auth = useContext(AuthContext);
@@ -72,9 +74,33 @@ export default function Main_en() {
     ? Object.fromEntries(topSpenders.map(([k, v]) => [k, [v]]))
     : undefined;
 
-  console.log(categoriesLeaderboard);
-  console.log(earnersLeaderboard);
-  console.log(spendersLeaderboard);
+  function fetchPrevMonth() {
+    const fetchData = async function () {
+      try {
+        const data = await fetch(
+          import.meta.env.VITE_BACKEND_URL + "/transaction/monthly_summary",
+          {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify({
+              familyId,
+              month: new Date().getMonth() - 1,
+              year: new Date().getFullYear(),
+            }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: auth.access ? `Bearer ${auth.access}` : "",
+            },
+          }
+        ).then((res) => res.json());
+        console.log(data);
+      } catch {
+        console.log("sss");
+      }
+    };
+
+    return fetchData();
+  }
 
   useEffect(() => {
     const getProfile = async function () {
@@ -156,8 +182,24 @@ export default function Main_en() {
           </div>
         </>
       ) : (
-        <div className="h-[100vh] w-[100vw] items-center justify-center">
-          <MainChart_en data={transactions as ITransactionWithDate[]} />
+        <div className="flex h-[100vh] w-[100vw]">
+          <MainLeaderboard_en
+            data={{
+              current: {
+                prev: fetchPrevMonth(),
+                pnl: familyData.pnl,
+                totalSpent: familyData.totalSpent,
+                totalEarnt: familyData.totalEarned,
+                topEarner: earnersLeaderboard?.[0],
+                topSpender: spendersLeaderboard?.[0],
+                topCategory: categoriesLeaderboard?.[0],
+              },
+            }}
+          />
+          <div className="flex h-[100vh] w-full flex-col items-center justify-center gap-3">
+            <SectionCards_en />
+            <MainChart_en data={transactions as ITransactionWithDate[]} />
+          </div>
         </div>
       )}
     </div>

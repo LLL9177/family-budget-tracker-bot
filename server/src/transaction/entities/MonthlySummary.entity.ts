@@ -8,9 +8,9 @@ export class MonthlySummaryEntity {
   @Column({ type: 'uuid' })
   familyId: string;
 
+  // Did bro forget that Date type is absolutelly writable here? I'll ignore that.
   @Column()
   month: number;
-
   @Column()
   year: number;
 

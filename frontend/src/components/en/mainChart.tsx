@@ -31,7 +31,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 type Props = {
-  data: ITransactionWithDate[] | ITransaction;
+  data: ITransactionWithDate[] | ITransaction[];
 };
 
 export default function MainChart_en({ data }: Props) {
@@ -87,12 +87,12 @@ export default function MainChart_en({ data }: Props) {
   }
 
   return (
-    <div className="flex h-full items-center justify-center">
+    <div className="flex w-[75.5vw] items-center justify-center">
       <div
-        className={`h-200 w-350 rounded-[30px] border-[rgb(100,100,100)] border-1 ${
-          currentTheme == "dark"
-            ? "bg-[rgba(255,255,255,0.05)]"
-            : "bg-[rgba(0,0,0,0.03)]"
+        className={`h-190 w-350 rounded-[30px] border border-[rgb(100,100,100)] ${
+          currentTheme === "dark"
+            ? "bg-gradient-to-t from-primary/5 to-card"
+            : "bg-gradient-to-t from-primary/5 to-white"
         } p-10`}
       >
         <div className="flex space-x-[54%] pr-10 pl-10">

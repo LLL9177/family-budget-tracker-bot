@@ -84,8 +84,8 @@ export class TransactionController {
 
   @Role(Roles.USER)
   @UseGuards(AuthGuard, RolesGuard)
-  @Get('monthly_summary')
-  async monthlySummary(@Body() body: SummaryDto) {
+  @Post('monthly_summary')
+  async monthlySummary(@Body(new ValidationPipe()) body: SummaryDto) {
     return await this.summaryService.sum(body);
   }
 }

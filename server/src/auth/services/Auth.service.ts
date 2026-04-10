@@ -113,9 +113,6 @@ export class AuthService implements IAuthService {
 
     const oldUser = await this.userService.findByGoogleId(data.googleId);
 
-    console.log(data);
-    console.log(oldUser);
-
     if (oldUser) {
       const jwt = this.jwtService.sign({
         id: oldUser.id,
@@ -142,8 +139,6 @@ export class AuthService implements IAuthService {
       password,
       repeat_password: password,
     });
-
-    console.log(access);
 
     if (!access) throw new Error('No access');
 
