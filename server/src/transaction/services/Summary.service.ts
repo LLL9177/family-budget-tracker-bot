@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { SummaryDto } from 'src/dtos/Summary.dto';
 import { IMonthlySummary } from 'src/types/MonthlySummary.interface';
 import { TransactionService } from './Transaction.service';
@@ -42,6 +42,12 @@ export class SummaryService implements ISummaryService {
         ),
       },
     });
+
+    if (transactions.length == 0)
+      throw new NotFoundException(
+        'Monthly summary creation',
+        'There are no transactions in this month. You can add some, or ignore this issue.',
+      );
 
     let totalSpent = 0;
     let totalEarned = 0;
