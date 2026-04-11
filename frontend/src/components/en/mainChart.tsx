@@ -38,45 +38,35 @@ export default function MainChart_en({ data }: Props) {
   const [displayMode, setDisplayMode] = useState("bars");
   const { theme, resolvedTheme, systemTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
-  console.log(currentTheme);
 
   const [frame, setFrame] = useState("days");
 
-  const chartData = [];
-  const loopedDays: number[] = [];
-  let pnl = 0;
-  for (const transaction of data) {
+  // keep raw transactions for the "transactions" frame
+  const monthTransactions = data.filter((t) => {
     const today = new Date();
-    if (
-      transaction.createdAt.getMonth() == today.getMonth() &&
-      transaction.createdAt.getFullYear() == today.getFullYear()
-    ) {
-      const day = transaction.createdAt.getDate();
-      if (frame == "days") {
-        if (loopedDays.includes(day)) continue;
-        data.map((t: ITransactionWithDate) => {
-          if (
-            t.createdAt.getDate() == day &&
-            data.indexOf(t) !== data.indexOf(transaction)
-          ) {
-            pnl += t.amount;
-            loopedDays.push(t.createdAt.getDate());
-            return t;
-          }
-        });
-        chartData.push({ date: `Day ${day}`, PnL: pnl });
-      } else if (frame == "transactions") {
-        chartData.push({ transactionIndex: "0", PnL: pnl, date: `Day ${day}` }); // date here is to be able to sort
-      }
-      pnl += transaction.amount;
-    }
+    return (
+      t.createdAt.getMonth() === today.getMonth() &&
+      t.createdAt.getFullYear() === today.getFullYear()
+    );
+  });
+
+  // group by day for the "days" frame
+  const dayMap = new Map<number, number>();
+  for (const t of monthTransactions) {
+    const day = t.createdAt.getDate();
+    dayMap.set(day, (dayMap.get(day) ?? 0) + t.amount);
   }
 
-  chartData.sort((a, b) => {
-    const dayA = parseInt(a.date.replace("Day ", ""));
-    const dayB = parseInt(b.date.replace("Day ", ""));
-    return dayA - dayB;
-  });
+  const chartData =
+    frame === "days"
+      ? Array.from(dayMap.entries())
+          .sort(([a], [b]) => a - b)
+          .map(([day, total]) => ({ date: `Day ${day}`, PnL: total }))
+      : monthTransactions.map((t, i) => ({
+          transactionIndex: String(i + 1),
+          PnL: t.amount,
+          date: `Day ${t.createdAt.getDate()}`,
+        }));
 
   if (frame == "transactions") {
     let transactionIndex = 0;
@@ -87,7 +77,7 @@ export default function MainChart_en({ data }: Props) {
   }
 
   return (
-    <div className="flex w-[75.5vw] items-center justify-center">
+    <div className="flex w-full items-center justify-center">
       <div
         className={`h-190 w-350 rounded-[30px] border border-[rgb(100,100,100)] ${
           currentTheme === "dark"
@@ -168,7 +158,7 @@ export default function MainChart_en({ data }: Props) {
         </div>
         <ChartContainer
           config={chartConfig}
-          className="max-h-160 w-full rounded-xl border-1 p-10 pt-15"
+          className="max-h-150 w-full rounded-xl border-1 bg-[rgba(150,150,150,0.1)] p-10 pt-15"
         >
           {displayMode == "bars" ? (
             <BarChart accessibilityLayer data={chartData}>

@@ -23,8 +23,11 @@ export class MonthlySummaryEntity {
   @Column()
   pnl: number;
 
-  @Column()
-  topCategory: string;
+  @Column({ nullable: true })
+  mostSpentOn: string;
+
+  @Column({ nullable: true })
+  mostEarnedFrom: string;
 
   @Column({ type: 'uuid', nullable: true })
   topSpenderId: string;

@@ -29,7 +29,8 @@ export class SummaryService implements ISummaryService {
         totalEarned: sum.totalEarned,
         totalSpent: sum.totalSpent,
         pnl: sum.pnl,
-        topCategory: sum.topCategory,
+        mostSpentOn: sum.mostSpentOn,
+        mostEarnedFrom: sum.mostEarnedFrom,
         topSpenderId: sum.topSpenderId,
         topEarnerId: sum.topEarnerId,
       };
@@ -45,7 +46,6 @@ export class SummaryService implements ISummaryService {
 
     if (transactions.length == 0)
       throw new NotFoundException(
-        'Monthly summary creation',
         'There are no transactions in this month. You can add some, or ignore this issue.',
       );
 
@@ -53,9 +53,10 @@ export class SummaryService implements ISummaryService {
     let totalEarned = 0;
     let pnl = 0;
 
-    const categoryMap = new Map<string, number>();
     const spenderMap = new Map<string, number>();
     const earnerMap = new Map<string, number>();
+    const categorySpentMap = new Map<string, number>();
+    const categoryEarnedMap = new Map<string, number>();
 
     for (const t of transactions) {
       pnl += t.amount;
@@ -63,18 +64,25 @@ export class SummaryService implements ISummaryService {
       if (t.amount < 0) {
         totalSpent += t.amount;
         spenderMap.set(t.userId, (spenderMap.get(t.userId) || 0) + t.amount);
+        categorySpentMap.set(
+          t.category,
+          (categorySpentMap.get(t.category) || 0) + t.amount,
+        );
       } else {
         totalEarned += t.amount;
         earnerMap.set(t.userId, (earnerMap.get(t.userId) || 0) + t.amount);
+        categoryEarnedMap.set(
+          t.category,
+          (categoryEarnedMap.get(t.category) || 0) + t.amount,
+        );
       }
-
-      categoryMap.set(
-        t.category,
-        (categoryMap.get(t.category) || 0) + t.amount,
-      );
     }
 
-    const topCategory = [...categoryMap.entries()].sort(
+    const mostSpentOn = [...categorySpentMap.entries()].sort(
+      (a, b) => Math.abs(b[1]) - Math.abs(a[1]),
+    )[0]?.[0];
+
+    const mostEarnedFrom = [...categoryEarnedMap.entries()].sort(
       (a, b) => Math.abs(b[1]) - Math.abs(a[1]),
     )[0]?.[0];
 
@@ -93,7 +101,8 @@ export class SummaryService implements ISummaryService {
     const ret = {
       totalSpent: -totalSpent,
       totalEarned,
-      topCategory,
+      mostSpentOn,
+      mostEarnedFrom,
       topSpenderId,
       topEarnerId,
       pnl,

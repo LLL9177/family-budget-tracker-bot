@@ -7,93 +7,93 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { TrendingDown, TrendingUp } from "lucide-react";
 
-export function SectionCards_en() {
+type Props = {
+  data: {
+    biggestSpender: string;
+    smallestSpender: string;
+    biggestEarner: string;
+    smallestEarner: string;
+    mostSpentOn: string;
+    leastSpentOn: string;
+    mostEarnedFrom: string;
+    leastEarnedFrom: string;
+    pnl: number;
+  };
+};
+
+export function SectionCards_en({ data }: Props) {
+  console.log(data);
+  function shortenIfNeeded(data: string, characters=16) {
+    if (data.length > characters) return data.slice(0, characters) + "...";
+    return data;
+  }
+
   return (
-    <div className="flex w-[75.5vw] flex-row gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:flex-row @5xl/main:flex-row dark:*:data-[slot=card]:bg-card">
-      <Card className="@container/card w-full">
+    <div className="flex w-full flex-row gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs @xl/main:flex-row @5xl/main:flex-row dark:*:data-[slot=card]:bg-card">
+      <Card className="@container/card h-full w-full">
         <CardHeader>
-          <CardDescription>Total Revenue</CardDescription>
+          <CardDescription>PnL</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $1,250.00
+            {data.pnl}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              {/* <IconTrendingUp /> */}
-              +12.5%
-            </Badge>
-          </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month {/* <IconTrendingUp className="size-4" /> */}
+            Profit and Loss
           </div>
           <div className="text-muted-foreground">
-            Visitors for the last 6 months
+            Comparing the month's start and now
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card w-full">
+      <Card className="@container/card h-full w-full">
         <CardHeader>
-          <CardDescription>New Customers</CardDescription>
+          <CardDescription>Biggest Spender</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            1,234
+            {shortenIfNeeded(data.biggestSpender)}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              {/* <IconTrendingDown /> */}
-              -20%
-            </Badge>
-          </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Down 20% this period {/* <IconTrendingDown className="size-4" /> */}
+            Smallest Spender
           </div>
           <div className="text-muted-foreground">
-            Acquisition needs attention
+            {shortenIfNeeded(data.smallestSpender)}
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card w-full">
+      <Card className="@container/card h-full w-full">
         <CardHeader>
-          <CardDescription>Active Accounts</CardDescription>
+          <CardDescription>Biggest Earner</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            45,678
+            {shortenIfNeeded(data.biggestEarner)}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              {/* <IconTrendingUp /> */}
-              +12.5%
-            </Badge>
-          </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention {/* <IconTrendingUp className="size-4" /> */}
+            Smallest Earner
           </div>
-          <div className="text-muted-foreground">Engagement exceed targets</div>
+          <div className="text-muted-foreground">
+            {shortenIfNeeded(data.smallestEarner)}
+          </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card w-full">
+      <Card className="@container/card h-full w-full">
         <CardHeader>
-          <CardDescription>Growth Rate</CardDescription>
+          <CardDescription>Most Spent On</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            4.5%
+            {shortenIfNeeded(data.mostSpentOn)}
           </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              {/* <IconTrendingUp /> */}
-              +4.5%
-            </Badge>
-          </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance increase{" "}
-            {/* <IconTrendingUp className="size-4" /> */}
+            Least Spent On
           </div>
-          <div className="text-muted-foreground">Meets growth projections</div>
+          <div className="text-muted-foreground">
+            {shortenIfNeeded(data.leastSpentOn, 35)}
+            </div>
         </CardFooter>
       </Card>
     </div>

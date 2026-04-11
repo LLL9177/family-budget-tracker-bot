@@ -27,8 +27,14 @@ export class AuthGuard implements CanActivate {
     const refresh = this.useRefresh(req);
 
     if (token) {
-      const payload = this.jwtService.validateAccess(token);
-      req['user'] = payload;
+      try {
+        const payload = this.jwtService.validateAccess(token);
+        req['user'] = payload;
+      } catch {
+        if (!refresh) throw new UnauthorizedException('Log in again');
+        const pair = await this.jwtService.refresh(refresh);
+        res.setHeader('x-access-token', pair.access);
+      }
       return true;
     } else if (refresh) {
       this.jwtService.validateRefresh(refresh);

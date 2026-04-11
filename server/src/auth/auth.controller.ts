@@ -46,7 +46,7 @@ export class AuthController {
 
   @Role(Roles.USER)
   @UseGuards(AuthGuard, RolesGuard)
-  @Post('profile')
+  @Get('profile')
   getProfile(@Req() req: { user: { id: string } }) {
     return this.authService.getProfile(req.user.id);
   }

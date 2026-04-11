@@ -7,7 +7,10 @@ import type { ITransaction } from "@/types/Transaction.interface";
 import MainChart_en from "./mainChart";
 import type { ITransactionWithDate } from "@/types/TransactionWithDate.interface";
 import { SectionCards_en } from "./sectionCards";
-import MainLeaderboard_en from "./mainLeaderboard";
+import type { IFetchError } from "@/types/FetchError.interface";
+import type { IFamilyData } from "@/types/FamilyData.interface";
+import type { IMonthlySummary } from "@/types/MonthlySummary.interface";
+import LastMonthComparison_en from "./lastMonthComparison";
 
 export default function Main_en() {
   const auth = useContext(AuthContext);
@@ -17,40 +20,81 @@ export default function Main_en() {
   const [transactions, setTransactions] = useState<
     ITransaction[] | [] | ITransactionWithDate[]
   >([]);
+  const [prevMonth, setPrevMonth] = useState<IFetchError | IMonthlySummary>();
 
-  const familyData = {
+  const familyData: IFamilyData = {
     pnl: 0,
     totalSpent: 0,
     totalEarned: 0,
+    mostSpentOn: {
+      key: "None",
+      value: 0,
+    },
+    leastSpentOn: {
+      key: "None",
+      value: 0,
+    },
+    mostEarnedFrom: {
+      key: "None",
+      value: 0,
+    },
+    leastEarnedFrom: {
+      key: "None",
+      value: 0,
+    },
+    topEarner: {
+      earner: "None",
+      value: 0,
+    },
+    smallestEarner: {
+      earner: "None",
+      value: 0,
+    },
+    topSpender: {
+      spender: "None",
+      value: 0,
+    },
+    smallestSpender: {
+      spender: "None",
+      value: 0,
+    },
   };
 
-  const categoryMap = new Map<string, number>();
   const spenderMap = new Map<string, number>();
   const earnerMap = new Map<string, number>();
+  const categorySpentMap = new Map<string, number>();
+  const categoryEarnedMap = new Map<string, number>();
 
   for (const transaction of transactions) {
     familyData.pnl += transaction.amount;
     if (transaction.amount > 0) {
       familyData.totalEarned += transaction.amount;
+      earnerMap.set(
+        transaction.userId,
+        (earnerMap.get(transaction.userId) || 0) + transaction.amount
+      );
+      categoryEarnedMap.set(
+        transaction.category,
+        (categoryEarnedMap.get(transaction.category) || 0) + transaction.amount
+      );
+    } else {
+      familyData.totalSpent += transaction.amount;
       spenderMap.set(
         transaction.userId,
         (spenderMap.get(transaction.userId) || 0) + transaction.amount
       );
-    } else {
-      familyData.totalSpent += transaction.amount;
-      earnerMap.set(
+      categorySpentMap.set(
         transaction.category,
-        (earnerMap.get(transaction.userId) || 0) + transaction.amount
+        (categorySpentMap.get(transaction.category) || 0) + transaction.amount
       );
     }
-
-    categoryMap.set(
-      transaction.category,
-      (categoryMap.get(transaction.category) || 0) + transaction.amount
-    );
   }
 
-  const topCategories = [...categoryMap.entries()].sort(
+  const topSpentOn = [...categorySpentMap.entries()].sort(
+    (a, b) => Math.abs(b[1]) - Math.abs(a[1])
+  );
+
+  const topEarnedFrom = [...categoryEarnedMap.entries()].sort(
     (a, b) => Math.abs(b[1]) - Math.abs(a[1])
   );
 
@@ -62,8 +106,12 @@ export default function Main_en() {
     ? [...earnerMap.entries()].sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
     : undefined;
 
-  const categoriesLeaderboard = Object.fromEntries(
-    topCategories.map(([k, v]) => [k, [v]])
+  const spentOnLeaderboard = Object.fromEntries(
+    topSpentOn.map(([k, v]) => [k, [v]])
+  );
+
+  const earnedFromLeaderboard = Object.fromEntries(
+    topEarnedFrom.map(([k, v]) => [k, [v]])
   );
 
   const earnersLeaderboard = topEarners
@@ -74,7 +122,59 @@ export default function Main_en() {
     ? Object.fromEntries(topSpenders.map(([k, v]) => [k, [v]]))
     : undefined;
 
-  function fetchPrevMonth() {
+  if (topSpentOn.length > 0) {
+    familyData.mostSpentOn = { key: topSpentOn[0][0], value: topSpentOn[0][1] };
+    if (topSpentOn.length > 1) {
+      const i = topSpentOn.length - 1;
+      familyData.leastSpentOn = {
+        key: topSpentOn[i][0],
+        value: topSpentOn[i][1],
+      };
+    }
+  }
+
+  if (topEarnedFrom.length > 0) {
+    familyData.mostEarnedFrom = {
+      key: topEarnedFrom[0][0],
+      value: topEarnedFrom[0][1],
+    };
+    if (topEarnedFrom.length > 1) {
+      const i = topEarnedFrom.length - 1;
+      familyData.mostEarnedFrom = {
+        key: topEarnedFrom[i][0],
+        value: topEarnedFrom[i][1],
+      };
+    }
+  }
+  if (topEarners) {
+    familyData.topEarner = {
+      earner: topEarners[0][0],
+      value: topEarners[0][1],
+    };
+    if (topEarners.length > 1) {
+      const i = topEarners.length - 1;
+      familyData.smallestEarner = {
+        earner: topEarners[i][0],
+        value: topEarners[i][1],
+      };
+    }
+  }
+  if (topSpenders) {
+    familyData.topSpender = {
+      spender: topSpenders[0][0],
+      value: topSpenders[0][1],
+    };
+    if (topSpenders.length > 1) {
+      const i = topSpenders.length - 1;
+      familyData.smallestSpender = {
+        spender: topSpenders[i][0],
+        value: topSpenders[i][1],
+      };
+    }
+  }
+
+  useEffect(() => {
+    if (!familyId) return;
     const fetchData = async function () {
       try {
         const data = await fetch(
@@ -84,7 +184,7 @@ export default function Main_en() {
             credentials: "include",
             body: JSON.stringify({
               familyId,
-              month: new Date().getMonth() - 1,
+              month: new Date().getMonth(), // not subtracting 1 because of Date being brilliant
               year: new Date().getFullYear(),
             }),
             headers: {
@@ -93,14 +193,15 @@ export default function Main_en() {
             },
           }
         ).then((res) => res.json());
-        console.log(data);
+        setPrevMonth(data);
+        return data;
       } catch {
-        console.log("sss");
+        console.log("");
       }
     };
 
-    return fetchData();
-  }
+    fetchData();
+  }, [familyId, auth.access]);
 
   useEffect(() => {
     const getProfile = async function () {
@@ -108,7 +209,7 @@ export default function Main_en() {
         const data = await fetch(
           import.meta.env.VITE_BACKEND_URL + "/auth/profile",
           {
-            method: "POST",
+            method: "GET",
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
@@ -182,22 +283,35 @@ export default function Main_en() {
           </div>
         </>
       ) : (
-        <div className="flex h-[100vh] w-[100vw]">
-          <MainLeaderboard_en
-            data={{
-              current: {
-                prev: fetchPrevMonth(),
-                pnl: familyData.pnl,
-                totalSpent: familyData.totalSpent,
-                totalEarnt: familyData.totalEarned,
-                topEarner: earnersLeaderboard?.[0],
-                topSpender: spendersLeaderboard?.[0],
-                topCategory: categoriesLeaderboard?.[0],
-              },
-            }}
-          />
-          <div className="flex h-[100vh] w-full flex-col items-center justify-center gap-3">
-            <SectionCards_en />
+        <div className="flex h-[100vh] w-[100vw] items-center justify-center gap-3">
+          <div className="h-[100vh] w-125">
+            <LastMonthComparison_en
+              data={{
+                prev: prevMonth,
+                current: {
+                  ...familyData,
+                  mostSpentOn: familyData.mostSpentOn.key ?? "-",
+                  mostEarnedFrom: familyData.mostEarnedFrom.key ?? "-",
+                  topSpender: familyData.topSpender.spender,
+                  topEarner: familyData.topEarner.earner,
+                },
+              }}
+            />
+          </div>
+          <div className="flex h-[100vh] w-[72vw] flex-col items-center justify-center gap-3">
+            <SectionCards_en
+              data={{
+                ...familyData,
+                mostSpentOn: familyData.mostSpentOn.key ?? "-",
+                leastSpentOn: familyData.leastSpentOn.key ?? "-",
+                mostEarnedFrom: familyData.mostEarnedFrom.key ?? "-",
+                leastEarnedFrom: familyData.leastEarnedFrom.key ?? "-",
+                smallestSpender: familyData.smallestSpender.spender,
+                smallestEarner: familyData.smallestEarner.earner,
+                biggestEarner: familyData.topEarner.earner,
+                biggestSpender: familyData.topSpender.spender,
+              }}
+            />
             <MainChart_en data={transactions as ITransactionWithDate[]} />
           </div>
         </div>

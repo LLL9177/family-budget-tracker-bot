@@ -40,9 +40,13 @@ export class JwtTokenService implements IJwtTokenService {
   }
 
   validateRefresh(refresh: string): IJwtPayload {
-    return this.jwtService.verify(refresh, {
-      secret: process.env.JWT_REFRESH_SECRET,
-    });
+    try {
+      return this.jwtService.verify(refresh, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+    } catch {
+      throw new UnauthorizedException('Log in again');
+    }
   }
 
   async refresh(refresh: string): Promise<IJwtPair> {
