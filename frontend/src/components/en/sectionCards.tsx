@@ -1,13 +1,10 @@
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
-  CardAction,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TrendingDown, TrendingUp } from "lucide-react";
 
 type Props = {
   data: {
@@ -25,7 +22,7 @@ type Props = {
 
 export function SectionCards_en({ data }: Props) {
   console.log(data);
-  function shortenIfNeeded(data: string, characters=16) {
+  function shortenIfNeeded(data: string, characters = 16) {
     if (data.length > characters) return data.slice(0, characters) + "...";
     return data;
   }
@@ -93,7 +90,7 @@ export function SectionCards_en({ data }: Props) {
           </div>
           <div className="text-muted-foreground">
             {shortenIfNeeded(data.leastSpentOn, 35)}
-            </div>
+          </div>
         </CardFooter>
       </Card>
     </div>

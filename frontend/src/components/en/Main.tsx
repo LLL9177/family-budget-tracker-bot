@@ -238,10 +238,20 @@ export default function Main_en() {
                 },
               }
             ).then((res) => res.json());
-            const transactions = data.map((t: ITransaction) => {
-              t.createdAt = new Date(t.createdAt);
-              return t;
-            });
+            const transactions = data
+              .map((t: ITransaction) => {
+                t.createdAt = new Date(t.createdAt);
+                return t;
+              })
+              .filter((t) => {
+                const today = new Date();
+                if (
+                  t.createdAt.getMonth() == today.getMonth() &&
+                  t.createdAt.getFullYear() == today.getFullYear()
+                )
+                  return true;
+                return false;
+              });
             setTransactions(transactions);
           } catch (err) {
             console.log(err);
