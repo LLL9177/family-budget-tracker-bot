@@ -1,6 +1,6 @@
 import telebot as tb
 from dotenv import load_dotenv
-import os, sqlite3, threading, datetime, re, uuid, requests, json
+import os, sqlite3, threading, datetime, re, uuid, requests, json, functools
 
 load_dotenv()
 API_TOKEN = os.getenv("API_TOKEN")
@@ -60,6 +60,23 @@ def get_db():
 
 context = threading.local()
 
+def use_cancel(func):
+    @functools.wraps(func)
+    def wrapper(msg, *args, **kwargs):
+        if (msg.text in ("cancel", "Cancel")) and "_en" in func.__name__:
+            m = bot.send_message(msg.chat.id, "Canceling...")
+            main_menu_en(m)
+            return
+        elif (msg.text in ("відміна", "Відміна")) and "_uk" in func.__name__:
+            m = bot.send_message(msg.chat.id, "Відміна...")
+            main_menu_uk(m)
+            return
+        return func(msg, *args, **kwargs)
+    return wrapper
+
+
+
+
 @bot.message_handler(commands=["start"])
 def send_welcome(msg):
     text_en = 'Hi! This is a bot that can literally make you better at finance. The point of this bot is to help you understand: where is all your money going?\nAlthough this bot is called "Family Budget Tracker", you can also track your own budget only. About that later, now just choose the language:'
@@ -94,7 +111,7 @@ def validate_date_en(text):
             d[i] = int(d[i])
 
 
-        date = datetime.datetime.now(d[2], d[1], d[0])
+        date = datetime.datetime(d[2], d[1], d[0])
         return date.isoformat()
     else:
         return False
@@ -111,7 +128,7 @@ def validate_date_uk(text):
         for i in range(len(d)):
             d[i] = int(d[i])
 
-        date = datetime.datetime.now(d[2], d[1], d[0])
+        date = datetime.datetime(d[2], d[1], d[0])
         return date.isoformat()
     else:
         return False
@@ -190,7 +207,7 @@ def callback(call):
         new_payment_uk(call.message)
 
     elif call.data == "en pay user_option":
-        payment_process_en(call.message)
+        payment_user_option_en(call.message)
 
     elif call.data == "uk pay user_option":
         payment_user_option_uk(call.message)
@@ -256,8 +273,14 @@ def callback(call):
 
 # ======================== BOT INERACTIONS ========================
 def user_data_en(msg, user_msg):
-    transactions = get_user_data(user_msg.id)
+    transactions = get_user_transactions(user_msg.id)
     
+    if transactions == 404:
+        bot.send_message(msg.chat.id, "Seems like you are not logged in.")
+        m = bot.send_message(msg.chat.id, "Loading...")
+        local_reauth_en(m)
+        return None
+
     if transactions == 1:
         bot.send_message(msg.chat.id, "Something went wrong")
         m = bot.send_message(msg.chat.id, "Loading...")
@@ -267,6 +290,8 @@ def user_data_en(msg, user_msg):
     if transactions == []:
         bot.send_message(msg.chat.id, "📭 No transactions yet. Go spend or earn something.")
         return None
+    
+    transactions = transactions.json()
 
     total_pnl = 0
     categories = {}
@@ -327,8 +352,14 @@ def user_data_en(msg, user_msg):
     )
 
 def user_data_uk(msg, user_msg):
-    transactions = get_user_data(user_msg.id)
+    transactions = get_user_transactions(user_msg.id)
     
+    if transactions == 404:
+        bot.send_message(msg.chat.id, "Схоже що ви не авторизовані")
+        m = bot.send_message(msg.chat.id, "Завантаження")
+        local_reauth_uk(m)
+        return None
+
     if transactions == 1:
         bot.send_message(msg.chat.id, "Щось пішло не так")
         m = bot.send_message(msg.chat.id, "Завантаження...")
@@ -338,6 +369,8 @@ def user_data_uk(msg, user_msg):
     if transactions == []:
         bot.send_message(msg.chat.id, "📭 Ще не немає транзакцій. Йдіть витратьте або заробіть щось.")
         return None
+
+    transactions = transactions.json()
 
     total_pnl = 0
     categories = {}
@@ -357,7 +390,7 @@ def user_data_uk(msg, user_msg):
     tx_lines = ""
     for t in transactions[:10]:  # show last 10 (assuming already sorted by date)
         amount = t["amount"]
-        category = t["category"]
+        category = translations[t["category"]] if t["category"] in translations else t["category"]
         created = t["createdAt"]
 
         # Format date nicely
@@ -370,26 +403,27 @@ def user_data_uk(msg, user_msg):
             date_str = created[:16]
 
         sign = "💸" if amount < 0 else "💰"
-        tx_lines += f"{sign} {amount:+} | {translations[category]} | {date_str}\n"
+        tx_lines += f"{sign} {amount:+} | {category} | {date_str}\n"
 
     # --- Category summary ---
     cat_lines = ""
     for i, (cat, amount) in enumerate(top_categories[:5]):
+        cat = translations[cat] if cat in translations else cat
         if i == 0:
-            cat_lines += f"🥇 <b>{translations[cat]}: {amount:+}</b>\n"
+            cat_lines += f"🥇 <b>{cat}: {amount:+}</b>\n"
         elif i == 1:
-            cat_lines += f"🥈 <b>{translations[cat]}: {amount:+}</b>\n"
+            cat_lines += f"🥈 <b>{cat}: {amount:+}</b>\n"
         elif i == 2:
-            cat_lines += f"🥉 <b>{translations[cat]}: {amount:+}</b>\n"
+            cat_lines += f"🥉 <b>{cat}: {amount:+}</b>\n"
         else:
-            cat_lines += f"{translations[cat]}: {amount:+}\n"
+            cat_lines += f"{cat}: {amount:+}\n"
 
     # --- Final message ---
     text = (
-        f"📊 <b>Your Stats</b>\n\n"
+        f"📊 <b>Ваша статистика</b>\n\n"
         f"💰 PnL: {total_pnl:+}\n\n"
-        f"🏷 <b>Top Categories:</b>\n{cat_lines or 'Немає категорій'}\n"
-        f"🧾 <b>Recent Transactions:</b>\n{tx_lines or 'Немає транзакцій'}"
+        f"🏷 <b>Топ категорій:</b>\n{cat_lines or 'Немає категорій'}\n"
+        f"🧾 <b>Останні транзакції:</b>\n{tx_lines or 'Немає транзакцій'}"
     )
 
     kb = tb.types.InlineKeyboardMarkup()
@@ -411,7 +445,13 @@ def family_en(msg, user_msg):
         return usernames
 
     family_data = get_family_data(user_msg.id)
-    transactions = json.loads(family_data.content)
+
+    if family_data == 404:
+        bot.send_message(msg.chat.id, "Seems like you are not logged in.")
+        m = bot.send_message(msg.chat.id, "Loading...")
+        sync_family_en(m)
+
+    transactions = family_data.json()
 
     current_pnl = 0
     categories = {}
@@ -435,28 +475,28 @@ def family_en(msg, user_msg):
         return usernames.get(uid, uid[:6])  # fallback if missing
 
     # --- Split earners / spenders ---
-    spenders = [(u, a) for u, a in members.items() if a < 0]
-    earners = [(u, a) for u, a in members.items() if a > 0]
+    spenders = [[u, a] for u, a in members.items() if a < 0]
+    earners = [[u, a] for u, a in members.items() if a > 0]
 
     top_spenders = sorted(spenders, key=lambda x: x[1])
     top_earners = sorted(earners, key=lambda x: x[1], reverse=True)
 
     top_categories_spend = sorted(
-        [(c, a) for c, a in categories.items() if a < 0],
+        [[c, a] for c, a in categories.items() if a < 0],
         key=lambda x: x[1]
     )
     top_categories_earn = sorted(
-        [(c, a) for c, a in categories.items() if a > 0],
+        [[c, a] for c, a in categories.items() if a > 0],
         key=lambda x: x[1],
         reverse=True
     )
 
     # --- Safe tops ---
-    top_spender = top_spenders[0] if top_spenders else ("None", 0)
-    top_earner = top_earners[0] if top_earners else ("None", 0)
+    top_spender = top_spenders[0] if top_spenders else ["None", 0]
+    top_earner = top_earners[0] if top_earners else ["None", 0]
 
-    top_category_spender = top_categories_spend[0] if top_categories_spend else ("None", 0)
-    top_category_earner = top_categories_earn[0] if top_categories_earn else ("None", 0)
+    top_category_spender = top_categories_spend[0] if top_categories_spend else ["None", 0]
+    top_category_earner = top_categories_earn[0] if top_categories_earn else ["None", 0]
 
     # --- Leaderboards ---
     spender_leaderboard = ''
@@ -503,7 +543,13 @@ def family_uk(msg, user_msg):
         return usernames
 
     family_data = get_family_data(user_msg.id)
-    transactions = json.loads(family_data.content)
+
+    if family_data == 404:
+        bot.send_message(msg.chat.id, "Схоже що ви не авторизовані")
+        m = bot.send_message(msg.chat.id, "Завантаження...")
+        sync_account_uk(m)
+
+    transactions = family_data.json()
 
     current_pnl = 0
     categories = {}
@@ -527,28 +573,28 @@ def family_uk(msg, user_msg):
         return usernames.get(uid, uid[:6])  # fallback if missing
 
     # --- Split earners / spenders ---
-    spenders = [(u, a) for u, a in members.items() if a < 0]
-    earners = [(u, a) for u, a in members.items() if a > 0]
+    spenders = [[u, a] for u, a in members.items() if a < 0]
+    earners = [[u, a] for u, a in members.items() if a > 0]
 
     top_spenders = sorted(spenders, key=lambda x: x[1])
     top_earners = sorted(earners, key=lambda x: x[1], reverse=True)
 
     top_categories_spend = sorted(
-        [(c, a) for c, a in categories.items() if a < 0],
+        [[c, a] for c, a in categories.items() if a < 0],
         key=lambda x: x[1]
     )
     top_categories_earn = sorted(
-        [(c, a) for c, a in categories.items() if a > 0],
+        [[c, a] for c, a in categories.items() if a > 0],
         key=lambda x: x[1],
         reverse=True
     )
 
     # --- Safe tops ---
-    top_spender = top_spenders[0] if top_spenders else ("Немає", 0)
-    top_earner = top_earners[0] if top_earners else ("Немає", 0)
+    top_spender = top_spenders[0] if top_spenders else ["Немає", 0]
+    top_earner = top_earners[0] if top_earners else ["Немає", 0]
 
-    top_category_spender = top_categories_spend[0] if top_categories_spend else ("None", 0)
-    top_category_earner = top_categories_earn[0] if top_categories_earn else ("None", 0)
+    top_category_spender = top_categories_spend[0] if top_categories_spend else ["Немає", 0]
+    top_category_earner = top_categories_earn[0] if top_categories_earn else ["Немає", ]
 
     # --- Leaderboards ---
     spender_leaderboard = ''
@@ -568,13 +614,26 @@ def family_uk(msg, user_msg):
             earner_leaderboard += f"\t{name}: {amount}\n"
 
     # --- Final text ---
+    if top_category_earner[0] in translations:
+        top_category_earner[0] = translations[top_category_earner[0]]
+    
+    if top_category_earner[1] in translations:
+        top_category_earner[1] = translations[top_category_earner[1]]
+
+    if top_category_spender[0] in translations:
+        top_category_spender[0] = translations[top_category_spender[0]]
+    
+
+    if top_category_spender[1] in translations:
+        top_category_spender[1] = translations[top_category_spender[1]]
+
     text = (
         f"📊 <b>Місячна Статистика Сім'ї</b>\n\n"
         f"💰 Зміна Балансу: {current_pnl}\n\n"
         f"🏆 Топ Витратників: {uname(top_spender[0])} ({top_spender[1]})\n"
         f"🏆 Топ Заробітник: {uname(top_earner[0])} (+{top_earner[1]})\n\n"
-        f"🛒 Найбільш Витрачено На: {translations[top_category_spender[0]]} ({top_category_spender[1]})\n"
-        f"💸 Найбільш Зароблено З: {translations[top_category_earner[0]]} (+{top_category_earner[1]})\n\n"
+        f"🛒 Найбільш Витрачено На: {top_category_spender[0]} ({top_category_spender[1]})\n"
+        f"💸 Найбільш Зароблено З: {top_category_earner[0]} (+{top_category_earner[1]})\n\n"
         f"📉 <b>Таблиця Витратників:</b>\n{spender_leaderboard or 'Немає витратників'}\n"
         f"📈 <b>Таблиця Заробітників:</b>\n{earner_leaderboard or 'Немає заробітників'}"
     )
@@ -670,7 +729,6 @@ def payment_process_uk(msg, category):
             return None
         
         result = payment_process(amount, date, msg.from_user.id, category)
-        print(type(amount), amount)
         if amount != 0:
             bot.send_message(msg.chat.id, "Успіх!")
 
@@ -844,6 +902,24 @@ def lang_uk(msg):
     m = bot.send_message(msg.chat.id, "Давайте підключемося через ваш family id. Просто надішліть мені його як повідомлення.")
     bot.register_next_step_handler(m, sync_family_uk)
 
+def local_reauth_en(msg):
+    bot.edit_messsage_text(
+        "Seems like you are not logged in",
+        msg.chat.id,
+        msg.message_id,
+    )
+    m = bot.send_message(msg.chat.id, "Let's set up your family id. Just send me it as a message")
+    bot.register_next_step_handler(m, sync_family_en)
+
+def local_reauth_uk(msg):
+    bot.edit_message_text(
+        "Схоже що ви не авторизовні",
+        msg.chat.id,
+        msg.message_id,
+    )
+    m = bot.send_message(msg.chat.id, "Давайте підключемося через ваш family id. Просто надішліть мені його як повідомлення.")
+    bot.register_next_step_handler(m, sync_family_uk)
+
 def en_new_rec(msg):
     kb = tb.types.InlineKeyboardMarkup()
 
@@ -989,13 +1065,19 @@ def sync_account_uk(msg, family_id):
 def show_user_data_en(msg, from_user):
     data = get_user_data(from_user.id)
 
-    if data == False or data == None:
+    if data == 1:
         bot.send_message(msg.chat.id, "Something went wrong")
+        m = bot.send_message(msg.chat.id, "Loading...")
+        main_menu_en(m)
+        return None
+
+    elif data == 404:
+        local_reauth_en(msg)
         return None
 
     kb = tb.types.InlineKeyboardMarkup()
     kb.row(go_back_btn("en", "menu"))
-    profile = f"Here's your profile:\nfamily id: {data["family_id"]}"
+    profile = f"Here's your profile:\nfamily id: {data["family"]}"
     m = bot.edit_message_text(
         profile, 
         msg.chat.id, 
@@ -1006,46 +1088,54 @@ def show_user_data_en(msg, from_user):
 def show_user_data_uk(msg, from_user):
     data = get_user_data(from_user.id)
 
-    if data == False or data == None:
+    if data == 1:
         bot.send_message(msg.chat.id, "Щось пішло не так")
+        m = bot.send_message(msg.chat.id, "Loading...")
+        main_menu_uk(m)
+        return None
+    
+    elif data == 404:
+        local_reauth_uk(msg)
         return None
 
     kb = tb.types.InlineKeyboardMarkup()
     kb.row(go_back_btn("uk", "menu"))
-    profile = f"Ось ваш профіль:\nfamily id: {data["family_id"]}"
+    profile = f"Ось ваш профіль:\nfamily id: {data["family"]}"
     m = bot.edit_message_text(
         profile, 
         msg.chat.id, 
         msg.message_id,
         reply_markup=kb
     )
-    
+
 def recievement_process_en(msg, category):
     amount = 0
     date = ''
     user_id = 0
 
-    def recieved_amount(msg):
+    @use_cancel
+    def recieved_amount_en(msg):
         nonlocal user_id
         nonlocal amount
         try:
             amount = int(msg.text)
         except Exception:
             m = bot.send_message(msg.chat.id, "Please write a valid amount of money (number)")
-            bot.register_next_step_handler(m, recieved_amount)
+            bot.register_next_step_handler(m, recieved_amount_en)
             return None
         
         m = bot.send_message(msg.chat.id, 'Type in the date of recievement following the pattern: dd.mm.yyyy (or just type "today")')
         user_id = msg.from_user.id
-        bot.register_next_step_handler(m, recieved_date)
+        bot.register_next_step_handler(m, recieved_date_en)
 
-    def recieved_date(msg):
+    @use_cancel
+    def recieved_date_en(msg):
         nonlocal date
         date = validate_date_en(msg.text)
 
         if date == False:
             m = bot.send_message(msg.chat.id, "Please send a valid date")
-            bot.register_next_step_handler(m, recieved_date)
+            bot.register_next_step_handler(m, recieved_date_en)
             return None
 
         result = recievement_process(amount, date, user_id, category)
@@ -1057,34 +1147,36 @@ def recievement_process_en(msg, category):
         main_menu_en(m)
 
     m = bot.send_message(msg.chat.id, "How much did you recieve?")
-    bot.register_next_step_handler(m, recieved_amount)
+    bot.register_next_step_handler(m, recieved_amount_en)
 
 def recievement_process_uk(msg, category):
     amount = 0
     date = ''
     user_id = 0
 
-    def recieved_amount(msg):
+    @use_cancel
+    def recieved_amount_uk(msg):
         nonlocal user_id
         nonlocal amount
         try:
             amount = int(msg.text)
         except Exception:
             m = bot.send_message(msg.chat.id, "Будь-ласка напишіть дійсну суму грошей (число)")
-            bot.register_next_step_handler(m, recieved_amount)
+            bot.register_next_step_handler(m, recieved_amount_uk)
             return None
         
         m = bot.send_message(msg.chat.id, 'Напишіть дату нарахування за цим шаблоном: дд.мм.рррр (або просто напишіть "сьогодні")')
         user_id = msg.from_user.id
-        bot.register_next_step_handler(m, recieved_date)
+        bot.register_next_step_handler(m, recieved_date_uk)
 
-    def recieved_date(msg):
+    @use_cancel
+    def recieved_date_uk(msg):
         nonlocal date
         date = validate_date_uk(msg.text)
 
         if date == False:
             m = bot.send_message(msg.chat.id, "Будь-ласка напишіть дісну дату")
-            bot.register_next_step_handler(m, recieved_date)
+            bot.register_next_step_handler(m, recieved_date_uk)
             return None
 
         result = recievement_process(amount, date, user_id, category)
@@ -1096,7 +1188,7 @@ def recievement_process_uk(msg, category):
         main_menu_uk(m)
 
     m = bot.send_message(msg.chat.id, "Скільки ви отримали?")
-    bot.register_next_step_handler(m, recieved_amount)    
+    bot.register_next_step_handler(m, recieved_amount_uk)
 
 
 
@@ -1107,7 +1199,7 @@ def register_local(family_id, telegram_id, server_uid, password):
     db = get_db()
 
     try:
-        user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
+        user = db.execute("SELECT * FROM user WHERE server_uid = ?", (str(server_uid),)).fetchone()
         
         if not user:
             db.execute(
@@ -1162,12 +1254,14 @@ def get_family_data(telegram_id):
 
     try:
         user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
+        if user is None:
+            return 404
     except Exception as e:
         print(e)
         db.close()
         return 1
 
-    now = datetime.datetime.now()
+
     res = fetch(
         f"/transaction/get_family_transactions?family_uuid={user["family_id"]}", 
         {}, 
@@ -1179,8 +1273,6 @@ def get_family_data(telegram_id):
 
 def payment_process(amount, date, telegram_id, category):
     db = get_db()
-
-    print(f"PAYMENT:\n\tamount: {amount}\n\tdate: {date}\n\tcategory: {category}")
 
     try:
         user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
@@ -1195,8 +1287,6 @@ def payment_process(amount, date, telegram_id, category):
         "createdAt": date,
         "category": category,
     }, telegram_id)
-
-    print(res.content)
 
 def recievement_process(recieved_amount, recieved_date, telegram_id, category):
     db = get_db()
@@ -1217,32 +1307,55 @@ def recievement_process(recieved_amount, recieved_date, telegram_id, category):
         "createdAt": recieved_date
     }, telegram_id)
 
-    content = json.loads(res.content)
-    if content["statusCode"] >= 300: return False
+    try:
+        if res.decode() != '': return False
+    except Exception:
+        pass
 
-    return content
+    return "success"
 
 def get_user_data(telegram_id):
     db = get_db()
 
     try:
         user_id = db.execute("SELECT server_uid FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()["server_uid"]
+        if user_id is None:
+            return 404
     except Exception as e:
         print(e)
         db.close()
         return 1
 
     res = fetch(
-        f"/transaction/get_user_transactions", 
+        f"/auth/profile", 
         {}, telegram_id, "get"
     )
 
     content = json.loads(res.content)
     db.close()
     if type(content) == "object": 
-        print(content)
         return 1
     return content
+
+def get_user_transactions(telegram_id):
+    db = get_db()
+    server_uid = None
+
+    try:
+        server_uid = db.execute(
+            "SELECT server_uid FROM user WHERE telegram_id = ?", 
+            (telegram_id,)).fetchone()["server_uid"]
+    except Exception as e:
+        print(e)
+        return 1
+    
+    if server_uid is None: return 404
+
+    res = fetch(
+        "/transaction/get_user_transactions",
+        {}, telegram_id, "get"
+    )
+    return res
 
 def fetch(url, data, telegram_id, method="post"):
     db = get_db()
@@ -1257,20 +1370,14 @@ def fetch(url, data, telegram_id, method="post"):
     if method == "post":
         res = requests.post(
             BACKEND_URL+url, 
-            json=data,
-            headers={
-                "Authorization": f"Bearer {user["access"]}", 
-                "x-refresh-token": user["refresh"]
-            },
+            json={**data, "refresh": user["refresh"]}, 
+            headers={"Authorization": f"Bearer {user['access']}"},
         )
     elif method == "get":
         res = requests.get(
             BACKEND_URL+url,
-            json=data,
-            headers={
-                "Authorization": f"Bearer {user["access"]}", 
-                "x-refresh-token": user["refresh"]
-            },
+            json={**data, "refresh": user["refresh"]}, 
+            headers={"Authorization": f"Bearer {user['access']}"},
         )
 
     if "x-access-token" in res.headers:
@@ -1284,9 +1391,23 @@ def fetch(url, data, telegram_id, method="post"):
             print(e)
             db.close()
             return 1
-    
+
+    if (res.status_code == 401):
+        login(telegram_id)
+        fetch(url, data, telegram_id, method)
+        return None
+
     db.close()
     return res
+
+
+
+
+
+@bot.message_handler(commands=["id"])
+def get_id(msg):
+    bot.send_message(msg.chat.id, msg.from_user.id)
+
 
 
 bot.infinity_polling()
