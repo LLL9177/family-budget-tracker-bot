@@ -2,9 +2,8 @@ export interface IMonthlySummary {
   totalSpent: number;
   totalEarned: number;
   pnl: number;
-  topCategory: string;
   mostSpentOn: string;
-  monstEarnedFrom: string;
+  mostEarnedFrom: string;
   topSpenderId: string | undefined;
   topEarnerId: string | undefined;
 }

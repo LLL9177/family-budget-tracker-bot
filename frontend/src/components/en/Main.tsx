@@ -10,7 +10,8 @@ import { SectionCards_en } from "./sectionCards";
 import type { IFetchError } from "@/types/FetchError.interface";
 import type { IFamilyData } from "@/types/FamilyData.interface";
 import type { IMonthlySummary } from "@/types/MonthlySummary.interface";
-import LastMonthComparison_en from "./lastMonthComparison";
+import MonthComparison_en from "./monthComparison";
+import DifferentMonthsComparison from "./differentMonthsComparison";
 
 export default function Main_en() {
   const auth = useContext(AuthContext);
@@ -295,18 +296,19 @@ export default function Main_en() {
       ) : (
         <div className="flex h-[100vh] w-[100vw] items-center justify-center gap-3">
           <div className="h-[100vh] w-125">
-            <LastMonthComparison_en
+            <MonthComparison_en
               data={{
                 prev: prevMonth,
                 current: {
                   ...familyData,
                   mostSpentOn: familyData.mostSpentOn.key ?? "-",
                   mostEarnedFrom: familyData.mostEarnedFrom.key ?? "-",
-                  topSpender: familyData.topSpender.spender,
-                  topEarner: familyData.topEarner.earner,
+                  topSpenderId: familyData.topSpender.spender,
+                  topEarnerId: familyData.topEarner.earner,
                 },
               }}
             />
+            <DifferentMonthsComparison familyId={familyId} />
           </div>
           <div className="flex h-[100vh] w-[72vw] flex-col items-center justify-center gap-3">
             <SectionCards_en
@@ -321,6 +323,9 @@ export default function Main_en() {
                 biggestEarner: familyData.topEarner.earner,
                 biggestSpender: familyData.topSpender.spender,
               }}
+              caption="Last Month Comparison"
+              monthOneName="This Month"
+              monthTwoName="LastMonth"
             />
             <MainChart_en data={transactions as ITransactionWithDate[]} />
           </div>

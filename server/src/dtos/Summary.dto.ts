@@ -1,7 +1,7 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsUUID } from 'class-validator';
 
 export class SummaryDto {
-  @IsString()
+  @IsUUID()
   familyId: string;
 
   @IsNumber()

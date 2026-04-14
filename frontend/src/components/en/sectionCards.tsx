@@ -21,7 +21,6 @@ type Props = {
 };
 
 export function SectionCards_en({ data }: Props) {
-  console.log(data);
   function shortenIfNeeded(data: string, characters = 16) {
     if (data.length > characters) return data.slice(0, characters) + "...";
     return data;

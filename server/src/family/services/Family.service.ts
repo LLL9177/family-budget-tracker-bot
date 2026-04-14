@@ -34,7 +34,7 @@ export class FamilyService implements IFamilyService {
       await this.familyRepository.insert({
         name: data.name,
         owner: owner,
-        members: `[${user.id}]`,
+        members: `["${user.id}"]`,
       });
 
       const family = await this.getByOwner(owner.id);
@@ -48,7 +48,7 @@ export class FamilyService implements IFamilyService {
       owner.family_owned = family.id;
 
       const roles = JSON.parse(owner.roles) as Roles[];
-      roles.push(Roles.FAMILY_OWNER);
+      if (!roles.includes(Roles.FAMILY_OWNER)) roles.push(Roles.FAMILY_OWNER);
       owner.roles = JSON.stringify(roles);
 
       await this.userService.changeUser(owner);

@@ -10,32 +10,29 @@ import {
 } from "../ui/table";
 
 type Props = {
-  data: {
-    prev?: IMonthlySummary;
-    current?: {
-      pnl: number;
-      totalSpent: number;
-      totalEarned: number;
-      mostSpentOn?: string;
-      mostEarnedFrom?: string;
-      topSpender?: string;
-      topEarner?: string;
-    };
-  } | undefined;
+  data:
+    | {
+        prev?: IMonthlySummary;
+        current?: IMonthlySummary;
+      }
+    | undefined;
+  caption: string;
+  monthOneName: string;
+  monthTwoName: string;
 };
 
-export default function LastMonthComparison_en({ data }: Props) {
+export default function MonthComparison_en({ data, caption, monthOneName, monthTwoName }: Props) {
   if (!data) return null;
   if (!data.current || !data.prev) return null;
 
   return (
-    <div className="w-full h-87 mt-2 bg-gradient-to-t from-primary/5 to-card rounded-xl">
+    <div className="mt-2 h-87 w-full rounded-xl bg-gradient-to-t from-primary/5 to-card">
       <Table className="h-full overflow-x-scroll bg-[rgba(0,0,0,0)]">
-        <TableCaption>Last Month Comparison</TableCaption>
+        <TableCaption>{caption}</TableCaption>
         <TableHeader>
           <TableHead>Property</TableHead>
-          <TableHead>This month</TableHead>
-          <TableHead>Last month</TableHead>
+          <TableHead>{monthOneName}</TableHead>
+          <TableHead>{monthTwoName}</TableHead>
           <TableHead>Difference</TableHead>
         </TableHeader>
         <TableBody>
@@ -70,18 +67,18 @@ export default function LastMonthComparison_en({ data }: Props) {
           <TableRow>
             <TableCell>Most earned from</TableCell>
             <TableCell>{data.current.mostEarnedFrom ?? "-"}</TableCell>
-            <TableCell>{data.prev.monstEarnedFrom ?? "-"}</TableCell>
+            <TableCell>{data.prev.mostEarnedFrom ?? "-"}</TableCell>
             <TableCell>Uncomparable</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>Top spender</TableCell>
-            <TableCell>{data.current.topSpender ?? "-"}</TableCell>
+            <TableCell>{data.current.topSpenderId ?? "-"}</TableCell>
             <TableCell> {data.prev.topSpenderId ?? "-"}</TableCell>
             <TableCell>Uncomparable</TableCell>
           </TableRow>
           <TableRow>
             <TableCell>Top earner</TableCell>
-            <TableCell>{data.current.topEarner ?? "-"}</TableCell>
+            <TableCell>{data.current.topEarnerId ?? "-"}</TableCell>
             <TableCell>{data.prev.topEarnerId ?? "-"}</TableCell>
             <TableCell>Uncomparable</TableCell>
           </TableRow>
