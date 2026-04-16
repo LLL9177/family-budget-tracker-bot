@@ -136,8 +136,6 @@ export class AuthService implements IAuthService {
       (byte) => charset[byte % charset.length],
     ).join('');
 
-    console.log(password);
-
     const access = await this.register({
       username: data.username,
       email: data.email,

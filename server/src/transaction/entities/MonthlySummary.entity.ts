@@ -1,16 +1,26 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { FamilyEntity } from 'src/family/entities/Family.entity';
+import { UserEntity } from 'src/user/entities/User.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class MonthlySummaryEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'uuid' })
-  familyId: string;
+  @OneToOne(() => FamilyEntity)
+  @JoinColumn()
+  family: FamilyEntity;
 
   // Did bro forget that Date type is absolutelly writable here? I'll ignore that.
   @Column()
   month: number;
+
   @Column()
   year: number;
 
@@ -29,9 +39,11 @@ export class MonthlySummaryEntity {
   @Column({ nullable: true })
   mostEarnedFrom: string;
 
-  @Column({ type: 'uuid', nullable: true })
-  topSpenderId: string;
+  @OneToOne(() => UserEntity)
+  @JoinColumn()
+  topSpender: UserEntity;
 
-  @Column({ type: 'uuid', nullable: true })
-  topEarnerId: string;
+  @OneToOne(() => UserEntity)
+  @JoinColumn()
+  topEarner: UserEntity;
 }

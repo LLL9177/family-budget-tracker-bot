@@ -9,6 +9,7 @@ import { FamilyEntity } from './family/entities/Family.entity';
 import { TransactionModule } from './transaction/transaction.module';
 import { TransactionEntity } from './transaction/entities/Transaction.entity';
 import { MonthlySummaryEntity } from './transaction/entities/MonthlySummary.entity';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { MonthlySummaryEntity } from './transaction/entities/MonthlySummary.enti
     }),
     FamilyModule,
     TransactionModule,
+    UserModule,
   ],
   controllers: [AuthController],
 })

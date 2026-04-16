@@ -71,8 +71,8 @@ export default function Main_en() {
     if (transaction.amount > 0) {
       familyData.totalEarned += transaction.amount;
       earnerMap.set(
-        transaction.userId,
-        (earnerMap.get(transaction.userId) || 0) + transaction.amount
+        transaction.user.username,
+        (earnerMap.get(transaction.user.username) || 0) + transaction.amount
       );
       categoryEarnedMap.set(
         transaction.category,
@@ -81,8 +81,8 @@ export default function Main_en() {
     } else {
       familyData.totalSpent += transaction.amount;
       spenderMap.set(
-        transaction.userId,
-        (spenderMap.get(transaction.userId) || 0) + transaction.amount
+        transaction.user.username,
+        (spenderMap.get(transaction.user.username) || 0) + transaction.amount
       );
       categorySpentMap.set(
         transaction.category,
@@ -222,9 +222,8 @@ export default function Main_en() {
           if (data.statusCode == 401) navigate("/en/login");
         }
 
-        setFamilyId(data.family);
-        const _familyId = data.family;
-
+        setFamilyId(data.family.id);
+        const _familyId = data.family.id;
         if (_familyId == null) return;
 
         const getData = async function () {
@@ -246,7 +245,7 @@ export default function Main_en() {
                 t.createdAt = new Date(t.createdAt);
                 return t;
               })
-              .filter((t) => {
+              .filter((t: ITransactionWithDate) => {
                 const today = new Date();
                 if (
                   t.createdAt.getMonth() == today.getMonth() &&
@@ -255,6 +254,7 @@ export default function Main_en() {
                   return true;
                 return false;
               });
+              console.log(transactions)
             setTransactions(transactions);
           } catch (err) {
             console.log(err);
@@ -277,7 +277,7 @@ export default function Main_en() {
           <h1 className="mb-5 text-2xl font-bold">Whoops!</h1>
           <p className="mb-3 w-150 text-center">
             Seems like your account doesn't have Family ID connected. To access
-            this page properly, first connect family ID, or create your own
+            this page properly, first connect Family ID, or create your own
             family.
           </p>
           <div>
@@ -309,6 +309,9 @@ export default function Main_en() {
                   topEarnerId: familyData.topEarner.earner,
                 },
               }}
+              caption="Last Month Comparison"
+              monthOneName="This Month"
+              monthTwoName="Last Month"
             />
             <DifferentMonthsComparison familyId={familyId} />
           </div>
@@ -325,9 +328,6 @@ export default function Main_en() {
                 biggestEarner: familyData.topEarner.earner,
                 biggestSpender: familyData.topSpender.spender,
               }}
-              caption="Last Month Comparison"
-              monthOneName="This Month"
-              monthTwoName="LastMonth"
             />
             <MainChart_en data={transactions as ITransactionWithDate[]} />
           </div>

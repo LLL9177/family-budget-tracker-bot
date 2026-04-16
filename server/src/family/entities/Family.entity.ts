@@ -1,5 +1,12 @@
 import { UserEntity } from 'src/user/entities/User.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class FamilyEntity {
@@ -9,9 +16,10 @@ export class FamilyEntity {
   @Column()
   name: string;
 
-  @Column({ default: '[]' })
-  members: string;
+  @OneToMany(() => UserEntity, (user: UserEntity) => user.family)
+  members: UserEntity[];
 
-  @ManyToOne(() => UserEntity, (user: { id: string }) => user.id)
+  @OneToOne(() => UserEntity)
+  @JoinColumn()
   owner: UserEntity;
 }

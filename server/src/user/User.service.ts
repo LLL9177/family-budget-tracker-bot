@@ -7,10 +7,16 @@ import { UserEntity } from './entities/User.entity';
 
 interface IUserService {
   create(user: UserDto): Promise<void>;
-  findById(id: string): Promise<UserEntity | null>;
-  findByUsername(username: string): Promise<UserEntity | null>;
-  findByEmail(email: string): Promise<UserEntity | null>;
-  findByGoogleId(googleId: string): Promise<UserEntity | null>;
+  findById(id: string, getOwned: boolean): Promise<UserEntity | null>;
+  findByUsername(
+    username: string,
+    getOwned: boolean,
+  ): Promise<UserEntity | null>;
+  findByEmail(email: string, getOwned: boolean): Promise<UserEntity | null>;
+  findByGoogleId(
+    googleId: string,
+    getOwned: boolean,
+  ): Promise<UserEntity | null>;
   changeUser(newUser: UserEntity): Promise<void>;
 }
 
@@ -30,20 +36,44 @@ export class UserService implements IUserService {
     });
   }
 
-  async findById(id: string): Promise<UserEntity | null> {
-    return this.userRepository.findOneBy({ id });
+  async findById(
+    id: string,
+    getOwned: boolean = false,
+  ): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { id },
+      relations: { family: true, familyOwned: getOwned },
+    });
   }
 
-  async findByUsername(username: string): Promise<UserEntity | null> {
-    return this.userRepository.findOneBy({ username });
+  async findByUsername(
+    username: string,
+    getOwned: boolean = false,
+  ): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { username },
+      relations: { family: true, familyOwned: getOwned },
+    });
   }
 
-  async findByEmail(email: string): Promise<UserEntity | null> {
-    return await this.userRepository.findOneBy({ email });
+  async findByEmail(
+    email: string,
+    getOwned: boolean = false,
+  ): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { email },
+      relations: { family: true, familyOwned: getOwned },
+    });
   }
 
-  async findByGoogleId(googleId: string): Promise<UserEntity | null> {
-    return await this.userRepository.findOneBy({ googleId });
+  async findByGoogleId(
+    googleId: string,
+    getOwned: boolean = false,
+  ): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { googleId },
+      relations: { family: true, familyOwned: getOwned },
+    });
   }
 
   async changeUser(newUser: UserEntity): Promise<void> {

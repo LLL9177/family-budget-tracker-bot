@@ -1,7 +1,9 @@
+import { UserEntity } from 'src/user/entities/User.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -10,8 +12,8 @@ export class TransactionEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  userId: string;
+  @ManyToOne(() => UserEntity)
+  user: UserEntity;
 
   @Column({ type: 'uuid' })
   familyId: string;

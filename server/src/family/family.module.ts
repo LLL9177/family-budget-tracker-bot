@@ -4,13 +4,13 @@ import { AuthModule } from 'src/auth/auth.module';
 import { FamilyService } from './services/Family.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FamilyEntity } from './entities/Family.entity';
-import { UserService } from 'src/user/User.service';
-import { UserEntity } from 'src/user/entities/User.entity';
 import { HashService } from 'src/auth/services/Hash.service';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
-  imports: [AuthModule, TypeOrmModule.forFeature([FamilyEntity, UserEntity])],
+  imports: [AuthModule, TypeOrmModule.forFeature([FamilyEntity]), UserModule],
   controllers: [FamilyController],
-  providers: [FamilyService, UserService, HashService],
+  providers: [FamilyService, HashService],
+  exports: [FamilyService],
 })
 export class FamilyModule {}

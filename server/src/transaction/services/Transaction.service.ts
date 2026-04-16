@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TransactionEntity } from '../entities/Transaction.entity';
 import { Repository } from 'typeorm';
 import { ITransaction } from 'src/types/ITransaction.interface';
+import { UserService } from 'src/user/User.service';
 
 interface ITransactionService {
   create(data: ITransaction): Promise<void>;
@@ -24,6 +25,7 @@ export class TransactionService implements ITransactionService {
   constructor(
     @InjectRepository(TransactionEntity)
     private readonly transactionRepository: Repository<TransactionEntity>,
+    private readonly userService: UserService,
   ) {}
 
   async create(data: ITransaction): Promise<void> {
@@ -31,7 +33,11 @@ export class TransactionService implements ITransactionService {
   }
 
   async findByUserId(id: string): Promise<TransactionEntity[]> {
-    return await this.transactionRepository.findBy({ userId: id });
+    const user = await this.userService.findById(id);
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return await this.transactionRepository.findBy({ user });
   }
 
   async findByFamilyId(familyUuid: string): Promise<TransactionEntity[]> {

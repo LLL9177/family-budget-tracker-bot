@@ -1,5 +1,13 @@
 import { Roles } from 'src/auth/enums/Roles.enum';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { FamilyEntity } from 'src/family/entities/Family.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class UserEntity {
@@ -18,11 +26,12 @@ export class UserEntity {
   @Column({ default: JSON.stringify([Roles.USER]) })
   roles: string; // json list
 
-  @Column({ nullable: true })
-  family?: string;
+  @ManyToOne(() => FamilyEntity, (family) => family.members)
+  family: FamilyEntity;
 
-  @Column({ nullable: true })
-  family_owned?: string;
+  @OneToOne(() => FamilyEntity, (family) => family.owner)
+  @JoinColumn()
+  familyOwned: FamilyEntity;
 
   @Column({ nullable: true })
   googleId?: string;

@@ -34,7 +34,7 @@ export class FamilyService implements IFamilyService {
       await this.familyRepository.insert({
         name: data.name,
         owner: owner,
-        members: `["${user.id}"]`,
+        members: [owner],
       });
 
       const family = await this.getByOwner(owner.id);
@@ -44,8 +44,8 @@ export class FamilyService implements IFamilyService {
           "This user is either not a family owner, or a family doesn't exist at all",
         );
 
-      owner.family = family.id;
-      owner.family_owned = family.id;
+      owner.family = family;
+      owner.familyOwned = family;
 
       const roles = JSON.parse(owner.roles) as Roles[];
       if (!roles.includes(Roles.FAMILY_OWNER)) roles.push(Roles.FAMILY_OWNER);
@@ -66,11 +66,9 @@ export class FamilyService implements IFamilyService {
     });
     if (!family) throw new NotFoundException('family not found');
 
-    const members = JSON.parse(family.members) as unknown[];
-    if (!members.includes(data.user_id)) members.push(data.user_id);
+    if (!family.members.includes(user)) family.members.push(user);
 
-    family.members = JSON.stringify(members);
-    user.family = family.id;
+    user.family = family;
     await this.userService.changeUser(user);
     await this.familyRepository.save(family);
   }
@@ -89,11 +87,13 @@ export class FamilyService implements IFamilyService {
 
   async removeMember(member_id: string, family_uuid: string): Promise<void> {
     const family = await this.getByUuid(family_uuid);
+    const member = await this.userService.findById(member_id);
 
+    if (!member)
+      throw new NotFoundException('This user is not your family member');
     if (!family) throw new NotFoundException('Family not found');
 
-    const members = JSON.parse(family.members) as string[];
-    family.members = JSON.stringify(members.splice(members.indexOf(member_id)));
+    family.members = family.members.splice(family.members.indexOf(member));
 
     await this.familyRepository.save(family);
   }

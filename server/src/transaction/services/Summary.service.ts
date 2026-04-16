@@ -6,6 +6,9 @@ import { Between, Repository } from 'typeorm';
 import { MonthlySummaryEntity } from '../entities/MonthlySummary.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { endOfMonth, startOfMonth } from 'date-fns';
+import { FamilyService } from 'src/family/services/Family.service';
+import { UserService } from 'src/user/User.service';
+import { UserEntity } from 'src/user/entities/User.entity';
 
 interface ISummaryService {
   sum(data: SummaryDto): Promise<IMonthlySummary>;
@@ -17,11 +20,14 @@ export class SummaryService implements ISummaryService {
     @InjectRepository(MonthlySummaryEntity)
     private readonly summaryRepository: Repository<MonthlySummaryEntity>,
     private readonly transactionService: TransactionService,
+    private readonly familyService: FamilyService,
   ) {}
 
   async sum(data: SummaryDto): Promise<IMonthlySummary> {
+    const family = await this.familyService.getByUuid(data.familyId);
+    if (!family) throw new NotFoundException('Family not found');
     const sum = await this.summaryRepository.findOne({
-      where: { familyId: data.familyId, year: data.year, month: data.month },
+      where: { family, year: data.year, month: data.month },
     });
 
     if (sum)
@@ -31,8 +37,8 @@ export class SummaryService implements ISummaryService {
         pnl: sum.pnl,
         mostSpentOn: sum.mostSpentOn,
         mostEarnedFrom: sum.mostEarnedFrom,
-        topSpenderId: sum.topSpenderId,
-        topEarnerId: sum.topEarnerId,
+        topSpender: sum.topSpender,
+        topEarner: sum.topEarner,
       };
     const transactions = await this.transactionService.find({
       where: {
@@ -53,8 +59,8 @@ export class SummaryService implements ISummaryService {
     let totalEarned = 0;
     let pnl = 0;
 
-    const spenderMap = new Map<string, number>();
-    const earnerMap = new Map<string, number>();
+    const spenderMap = new Map<UserEntity, number>();
+    const earnerMap = new Map<UserEntity, number>();
     const categorySpentMap = new Map<string, number>();
     const categoryEarnedMap = new Map<string, number>();
 
@@ -63,14 +69,14 @@ export class SummaryService implements ISummaryService {
 
       if (t.amount < 0) {
         totalSpent += t.amount;
-        spenderMap.set(t.userId, (spenderMap.get(t.userId) || 0) + t.amount);
+        spenderMap.set(t.user, (spenderMap.get(t.user) || 0) + t.amount);
         categorySpentMap.set(
           t.category,
           (categorySpentMap.get(t.category) || 0) + t.amount,
         );
       } else {
         totalEarned += t.amount;
-        earnerMap.set(t.userId, (earnerMap.get(t.userId) || 0) + t.amount);
+        earnerMap.set(t.user, (earnerMap.get(t.user) || 0) + t.amount);
         categoryEarnedMap.set(
           t.category,
           (categoryEarnedMap.get(t.category) || 0) + t.amount,
@@ -86,13 +92,13 @@ export class SummaryService implements ISummaryService {
       (a, b) => Math.abs(b[1]) - Math.abs(a[1]),
     )[0]?.[0];
 
-    const topSpenderId = spenderMap.size
+    const topSpender = spenderMap.size
       ? [...spenderMap.entries()].sort(
           (a, b) => Math.abs(b[1]) - Math.abs(a[1]),
         )[0][0]
       : undefined;
 
-    const topEarnerId = earnerMap.size
+    const topEarner = earnerMap.size
       ? [...earnerMap.entries()].sort(
           (a, b) => Math.abs(b[1]) - Math.abs(a[1]),
         )[0][0]
@@ -103,14 +109,14 @@ export class SummaryService implements ISummaryService {
       totalEarned,
       mostSpentOn,
       mostEarnedFrom,
-      topSpenderId,
-      topEarnerId,
+      topSpender,
+      topEarner,
       pnl,
     };
 
     await this.summaryRepository.insert({
       ...ret,
-      familyId: data.familyId,
+      family,
       month: data.month,
       year: data.year,
     });
