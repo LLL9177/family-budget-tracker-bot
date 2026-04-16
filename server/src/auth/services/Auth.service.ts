@@ -67,7 +67,10 @@ export class AuthService implements IAuthService {
       ? ((await this.userService.findByUsername(data.username)) as UserEntity)
       : ((await this.userService.findByEmail(data.email!)) as UserEntity);
 
+    console.log(data);
     if (user) {
+      console.log(user);
+      console.log(this.hashService.compare(data.password, user.password));
       if (this.hashService.compare(data.password, user.password)) {
         return {
           access_token: this.jwtService.sign({
@@ -132,6 +135,8 @@ export class AuthService implements IAuthService {
       array,
       (byte) => charset[byte % charset.length],
     ).join('');
+
+    console.log(password);
 
     const access = await this.register({
       username: data.username,

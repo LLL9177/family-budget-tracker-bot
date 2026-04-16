@@ -6,7 +6,7 @@ export function useGoogleAuth(
   onSuccessFunction?: () => void,
   onErrorFunction?: () => void
 ) {
-  const [generatedPassword, setGeneratedPassword] = useState("");
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>("");
   const googleAuth = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       const userInfo = await fetch(
@@ -35,9 +35,8 @@ export function useGoogleAuth(
         }
       ).then((res) => res.json());
 
-      if (data.password) {
-        setGeneratedPassword(data.password);
-      }
+      if (data.password) setGeneratedPassword(data.password);
+      else setGeneratedPassword(null);
 
       setAccess(data.access_token.access);
       if (onSuccessFunction) onSuccessFunction();

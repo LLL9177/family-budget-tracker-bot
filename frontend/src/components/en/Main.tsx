@@ -225,6 +225,8 @@ export default function Main_en() {
         setFamilyId(data.family);
         const _familyId = data.family;
 
+        if (_familyId == null) return;
+
         const getData = async function () {
           try {
             const data = await fetch(

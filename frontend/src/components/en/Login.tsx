@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   Card,
   CardAction,
@@ -26,7 +26,7 @@ import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { AuthContext } from "@/contexts/AuthContext";
 
 export default function Login_en() {
-  const [username, setUsername] = useState("");
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
@@ -34,10 +34,12 @@ export default function Login_en() {
   const auth = useContext(AuthContext);
   const { googleAuth, generatedPassword } = useGoogleAuth(
     auth.setAccess,
-    () => {
-      navigate("/en/");
-    }
+    () => {}
   );
+
+  useEffect(() => {
+    if (generatedPassword == null) navigate("/en");
+  }, [generatedPassword, navigate]);
 
   async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     if (!alertRef.current) return;
@@ -45,9 +47,14 @@ export default function Login_en() {
     e.preventDefault();
     e.stopPropagation();
 
+    const isEmail = /\S+@\S+\.\S+/.test(usernameOrEmail);
+
     const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/auth/login", {
       method: "POST",
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({
+        [isEmail ? "email" : "username"]: usernameOrEmail,
+        password,
+      }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -82,21 +89,22 @@ export default function Login_en() {
           <CardHeader>
             <CardTitle>Login to your account</CardTitle>
             <CardDescription>
-              Enter username and password below to login to your account
+              Enter username or email and password below to login to your
+              account
             </CardDescription>
             <CardAction className="cursor-pointer">
               <Link to="/en/register">Register instead</Link>
             </CardAction>
           </CardHeader>
           <CardContent>
-            <label htmlFor="username">Username</label>
+            <label htmlFor="username-or-email">Username or email</label>
             <Input
               required={true}
-              id="username"
+              id="username-or-email"
               className="mt-2 mb-5"
-              value={username}
+              value={usernameOrEmail}
               onChange={(e) => {
-                setUsername(e.target.value);
+                setUsernameOrEmail(e.target.value);
               }}
             />
             <div className="flex w-full justify-between">
@@ -143,7 +151,9 @@ export default function Login_en() {
         <AlertTitle className="title"></AlertTitle>
         <AlertDescription className="desc"></AlertDescription>
       </Alert>
-      <AlertDialog open={generatedPassword !== ""}>
+      <AlertDialog
+        open={generatedPassword !== "" && generatedPassword !== null}
+      >
         <AlertDialogContent className="gap-0">
           <AlertDialogHeader>
             <AlertDialogTitle>Password</AlertDialogTitle>

@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   Card,
   CardAction,
@@ -36,10 +36,12 @@ export default function Register_en() {
   const auth = useContext(AuthContext);
   const { googleAuth, generatedPassword } = useGoogleAuth(
     auth.setAccess,
-    () => {
-      navigate("/uk/");
-    }
+    () => {}
   );
+
+  useEffect(() => {
+    if (generatedPassword == null) navigate("/uk");
+  }, [generatedPassword, navigate]);
 
   async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     if (!alertRef.current) return;
@@ -189,16 +191,16 @@ export default function Register_en() {
         <AlertTitle className="title"></AlertTitle>
         <AlertDescription className="desc"></AlertDescription>
       </Alert>
-      <AlertDialog open={generatedPassword !== ""}>
+      <AlertDialog
+        open={generatedPassword !== "" && generatedPassword !== null}
+      >
         <AlertDialogContent className="gap-0">
           <AlertDialogHeader>
             <AlertDialogTitle>Пароль</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription>
-            We generated a password for your account. You will need to use this
-            password when logging in to your account in our bot. Ми згеренували
-            пароль для вашого аккаунту. Він буде вам потрібен коли ви будете
-            заходити в аккаунт в боті.
+            Ми згенерували пароль для вашого аккаунту. Він буде вам потрібен
+            коли ви будете заходити в аккаунт в боті.
             <br />
             Ось ваш пароль
           </AlertDialogDescription>
@@ -207,7 +209,7 @@ export default function Register_en() {
             <AlertDialogAction
               className="bg-white !text-black"
               onClick={() => {
-                navigate("/en");
+                navigate("/uk");
               }}
             >
               OK

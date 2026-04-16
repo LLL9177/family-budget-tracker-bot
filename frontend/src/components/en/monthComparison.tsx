@@ -21,7 +21,12 @@ type Props = {
   monthTwoName: string;
 };
 
-export default function MonthComparison_en({ data, caption, monthOneName, monthTwoName }: Props) {
+export default function MonthComparison_en({
+  data,
+  caption,
+  monthOneName,
+  monthTwoName,
+}: Props) {
   if (!data) return null;
   if (!data.current || !data.prev) return null;
 
@@ -47,7 +52,7 @@ export default function MonthComparison_en({ data, caption, monthOneName, monthT
             <TableCell>{-data.current.totalSpent}</TableCell>
             <TableCell>{-data.prev.totalSpent}</TableCell>
             <TableCell>
-              {-data.current.totalSpent - data.prev.totalSpent}
+              {data.current.totalSpent - data.prev.totalSpent}
             </TableCell>
           </TableRow>
           <TableRow>

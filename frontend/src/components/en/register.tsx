@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   Card,
   CardAction,
@@ -36,10 +36,12 @@ export default function Register_en() {
   const auth = useContext(AuthContext);
   const { googleAuth, generatedPassword } = useGoogleAuth(
     auth.setAccess,
-    () => {
-      navigate("/en/");
-    }
+    () => {}
   );
+
+  useEffect(() => {
+    if (generatedPassword == null) navigate("/en");
+  }, [generatedPassword, navigate]);
 
   async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     if (!alertRef.current) return;

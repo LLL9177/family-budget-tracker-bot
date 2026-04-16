@@ -1,7 +1,7 @@
 import { IsNumber, IsString } from 'class-validator';
 
 export class AddRemoveMemberDto {
-  @IsNumber()
+  @IsString()
   user_id: string;
 
   @IsString()

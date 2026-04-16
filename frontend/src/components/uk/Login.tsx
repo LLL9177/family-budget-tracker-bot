@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   Card,
   CardAction,
@@ -26,7 +26,7 @@ import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { AuthContext } from "@/contexts/AuthContext";
 
 export default function Login_en() {
-  const [username, setUsername] = useState("");
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const alertRef = useRef<HTMLDivElement | null>(null);
@@ -34,12 +34,12 @@ export default function Login_en() {
   const auth = useContext(AuthContext);
   const { googleAuth, generatedPassword } = useGoogleAuth(
     auth.setAccess,
-    () => {
-      navigate("/uk/");
-    }
+    () => {}
   );
 
-  // TODO FOR THIS ONE: on click of sign up redirect to /register
+  useEffect(() => {
+    if (generatedPassword == null) navigate("/uk");
+  }, [generatedPassword, navigate]);
 
   async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
     if (!alertRef.current) return;
@@ -47,9 +47,14 @@ export default function Login_en() {
     e.preventDefault();
     e.stopPropagation();
 
+    const isEmail = /\S+@\S+\.\S+/.test(usernameOrEmail);
+
     const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/auth/login", {
       method: "POST",
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({
+        [isEmail ? "email" : "username"]: usernameOrEmail,
+        password,
+      }),
       mode: "cors",
       headers: {
         "Content-Type": "application/json",
@@ -97,9 +102,9 @@ export default function Login_en() {
               required={true}
               id="username"
               className="mt-2 mb-5"
-              value={username}
+              value={usernameOrEmail}
               onChange={(e) => {
-                setUsername(e.target.value);
+                setUsernameOrEmail(e.target.value);
               }}
             />
             <div className="flex w-full justify-between">
@@ -146,7 +151,9 @@ export default function Login_en() {
         <AlertTitle className="title"></AlertTitle>
         <AlertDescription className="desc"></AlertDescription>
       </Alert>
-      <AlertDialog open={generatedPassword !== ""}>
+      <AlertDialog
+        open={generatedPassword !== "" && generatedPassword !== null}
+      >
         <AlertDialogContent className="gap-0">
           <AlertDialogHeader>
             <AlertDialogTitle>Password</AlertDialogTitle>

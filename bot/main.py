@@ -743,11 +743,21 @@ def sync_account(msg, family_id, *, lang):
 def register_local(family_id, telegram_id, server_uid, password):
     db = get_db()
     try:
-        user = db.execute("SELECT * FROM user WHERE server_uid = ?", (str(server_uid),)).fetchone()
-        if not user:
+        telegram_user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
+        if not telegram_user:
+            # Check if the user with this server_uid already exists so that we don't attempt to
+            # create new ones
+            user = db.execute("SELECT * FROM user WHERE server_uid = ?", (str(server_uid),)).fetchone()
+            if not user:
+                db.execute(
+                    "INSERT INTO user (family_id, telegram_id, server_uid, password) VALUES (?, ?, ?, ?)",
+                    (str(family_id), telegram_id, str(server_uid), password)
+                )
+                db.commit()
+        else:
             db.execute(
-                "INSERT INTO user (family_id, telegram_id, server_uid, password) VALUES (?, ?, ?, ?)",
-                (str(family_id), telegram_id, str(server_uid), password)
+                "UPDATE user SET server_uid = ?, password = ?, family_id = ? WHERE telegram_id = ?",
+                (str(server_uid), password, str(family_id), str(telegram_id))
             )
             db.commit()
     except Exception as e:

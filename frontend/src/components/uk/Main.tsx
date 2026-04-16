@@ -72,17 +72,13 @@ export default function Main_uk() {
     ? Object.fromEntries(topSpenders.map(([k, v]) => [k, [v]]))
     : undefined;
 
-  console.log(categoriesLeaderboard);
-  console.log(earnersLeaderboard);
-  console.log(spendersLeaderboard);
-
   useEffect(() => {
     const getProfile = async function () {
       try {
         const data = await fetch(
           import.meta.env.VITE_BACKEND_URL + "/auth/profile",
           {
-            method: "POST",
+            method: "GET",
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
@@ -96,6 +92,8 @@ export default function Main_uk() {
 
         setFamilyId(data.family);
         const _familyId = data.family;
+
+        if (_familyId == null) return;
 
         const getData = async function () {
           try {
