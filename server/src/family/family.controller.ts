@@ -1,4 +1,11 @@
-import { Body, Controller, Post, Req, UseGuards, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  UseGuards,
+  ValidationPipe,
+} from '@nestjs/common';
 import { CreateFamilyDto } from 'src/dtos/createFamily.dto';
 import { FamilyService } from './services/Family.service';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -21,13 +28,19 @@ export class FamilyController {
 
   @UseGuards(AuthGuard, FamilyGuard)
   @Post('add_member')
-  async addMember(@Body(new ValidationPipe()) body: AddRemoveMemberDto) {
-    await this.familyService.addMember(body);
+  async addMember(
+    @Body(new ValidationPipe()) body: AddRemoveMemberDto,
+    @Req() req: { user: { id: string } },
+  ) {
+    await this.familyService.addMember(body, req.user.id);
   }
 
   @UseGuards(AuthGuard, FamilyGuard)
   @Post('remove_member')
-  async removeMember(@Body(new ValidationPipe()) body: AddRemoveMemberDto) {
-    await this.familyService.removeMember(body.user_id, body.family_uuid);
+  async removeMember(
+    @Body(new ValidationPipe()) body: AddRemoveMemberDto,
+    @Req() req: { user: { id: string } },
+  ) {
+    await this.familyService.removeMember(body.user_id, req.user.id);
   }
 }

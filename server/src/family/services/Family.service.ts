@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -14,10 +15,10 @@ import { AddRemoveMemberDto } from 'src/dtos/addMember.dto';
 
 interface IFamilyService {
   create(data: CreateFamilyDto, user: IJwtPayload): Promise<void>;
-  addMember(data: AddRemoveMemberDto): Promise<void>;
+  addMember(data: AddRemoveMemberDto, ownerId: string): Promise<void>;
   getByUuid(uuid: string): Promise<FamilyEntity | null>;
   getByOwner(owner_id: string): Promise<FamilyEntity | null>;
-  removeMember(member_id: string, family_id: string): Promise<void>;
+  removeMember(member_id: string, ownerId: string): Promise<void>;
 }
 
 @Injectable()
@@ -57,13 +58,15 @@ export class FamilyService implements IFamilyService {
     }
   }
 
-  async addMember(data: AddRemoveMemberDto): Promise<void> {
+  async addMember(data: AddRemoveMemberDto, ownerId: string): Promise<void> {
     const user = await this.userService.findById(data.user_id);
     if (!user) throw new NotFoundException('user not found');
 
-    const family = await this.familyRepository.findOneBy({
-      id: data.family_uuid,
-    });
+    const owner = await this.userService.findById(ownerId, true);
+    if (!owner) throw new UnauthorizedException();
+
+    const family = await this.getByUuid(owner.familyOwned.id);
+
     if (!family) throw new NotFoundException('family not found');
 
     if (!family.members.includes(user)) family.members.push(user);
@@ -85,13 +88,20 @@ export class FamilyService implements IFamilyService {
     return await this.familyRepository.findOneBy({ owner });
   }
 
-  async removeMember(member_id: string, family_uuid: string): Promise<void> {
-    const family = await this.getByUuid(family_uuid);
-    const member = await this.userService.findById(member_id);
+  async removeMember(memberId: string, ownerId: string): Promise<void> {
+    const owner = await this.userService.findById(ownerId, true);
+    if (!owner) throw new NotFoundException('User was not found');
+    if (!owner.familyOwned)
+      throw new ForbiddenException('User does not own any family');
+
+    const family = owner.familyOwned;
+    const member = await this.userService.findById(memberId);
 
     if (!member)
-      throw new NotFoundException('This user is not your family member');
+      throw new NotFoundException("The user is not this family's member.");
     if (!family) throw new NotFoundException('Family not found');
+    if (!family.members.includes(member))
+      throw new NotFoundException('This user is not your family member');
 
     family.members = family.members.splice(family.members.indexOf(member));
 
