@@ -32,6 +32,7 @@ i18n = {
         "invalid_user_id": "Please send a valid user id",
         "ask_password": "Send me your account's password",
         "downloading": "Downloading...",
+        "incorrect_credentials": "ID or password is incorrect. Let's try again",
 
         # Main menu
         "choose_action": "Choose an action:",
@@ -119,6 +120,7 @@ i18n = {
         "invalid_user_id": "Будь-ласка надішліть дійсний id",
         "ask_password": "Напишіть мені пароль твого аккаунта",
         "downloading": "Завантаження...",
+        "incorrect_credentials": "ID або пароль неправильні. Давайте спробуемо ще раз",
 
         # Main menu
         "choose_action": "Виберіть дію:",
@@ -359,10 +361,13 @@ def set_lang(msg, *, lang):
     m = bot.send_message(msg.chat.id, t("ask_family_id"))
     bot.register_next_step_handler(m, sync_family, lang=lang)
 
-def local_reauth(msg, *, lang):
+def local_reauth(msg, send_first_m=True, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**fmt) if fmt else i18n[lang][key]
     bot.edit_message_text(t("not_logged_in"), msg.chat.id, msg.message_id)
-    m = bot.send_message(msg.chat.id, t("ask_family_id"))
+    if send_first_m:
+        m = bot.send_message(msg.chat.id, t("ask_family_id"))
+    else:
+        m = bot.send_message(msg.chat.id, t("loading"))
     bot.register_next_step_handler(m, sync_family, lang=lang)
 
 def main_menu(msg, *, lang):
@@ -721,7 +726,15 @@ def sync_account(msg, family_id, *, lang):
         result = register_local(family_id, msg.from_user.id, id, password)
         if result == 1:
             bot.send_message(msg.chat.id, t("something_wrong"))
-        login(msg.from_user.id)
+
+        login_result = login(msg.from_user.id)
+
+        if login_result == 400 or login_result == 404:
+            bot.send_message(msg.chat.id, "Some of your data is incorrect. Let's try again")
+            m = bot.send_message(msg.chat.id, "Loading...")
+            local_reauth(m, False, lang=lang)
+            return
+
         m = bot.send_message(msg.chat.id, t("downloading"))
         main_menu(m, lang=lang)
 
@@ -776,13 +789,20 @@ def login(telegram_id):
         db.close()
         return 1
 
-    res = requests.post(BACKEND_URL + "/auth/bot/login", {
+    res = fetch("/auth/bot/login", {
         "userId": local_user["server_uid"],
         "password": local_user["password"],
         "botToken": os.getenv("BOT_TOKEN")
-    })
+    }, telegram_id)
+
+
     db.close()
-    jwt = json.loads(res.content)["access_token"]
+    res = res.json()
+
+    if res["statusCode"]:
+        return res["statusCode"]
+    
+    jwt = res["access_token"]
     return save_jwt(jwt["access"], jwt["refresh"], telegram_id)
 
 def save_jwt(access, refresh, telegram_id):
