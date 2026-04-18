@@ -4,8 +4,9 @@ A comprehensive family budget management system with a NestJS backend server and
 
 ## Overview
 
-This project consists of two main components:
+This project consists of three main components:
 
+- **Frontend**: A React + TypeScript web application for budget management and visualization
 - **Server**: A NestJS REST API for managing families, users, transactions, and authentication
 - **Bot**: A Telegram bot (Python) for user-friendly budget tracking and family management
 
@@ -21,18 +22,33 @@ This project consists of two main components:
 - 🌍 **Multi-language Support** - English and Ukrainian interface
 - 📱 **Telegram Integration** - User-friendly bot for on-the-go tracking
 - 👥 **Role-Based Access** - Different permissions for family admins and members
+- 🌐 **Web Dashboard** - Modern React-based web interface for budget visualization
+- 📈 **Charts & Analytics** - Visual representation of spending trends and patterns
 
 ## Project Structure
 
 ```
 family-budget-tracker-bot/
+├── frontend/               # React + TypeScript web application
+│   ├── src/
+│   │   ├── components/    # React components (UI, language-specific)
+│   │   ├── contexts/      # React context (Auth, etc.)
+│   │   ├── hooks/         # Custom React hooks
+│   │   ├── lib/           # Utilities and helpers
+│   │   ├── types/         # TypeScript interfaces
+│   │   ├── App.tsx        # Main App component
+│   │   └── main.tsx       # Application entry point
+│   ├── package.json
+│   └── vite.config.ts
+│
 ├── server/                 # NestJS backend application
 │   ├── src/
 │   │   ├── auth/          # Authentication & JWT
 │   │   ├── family/        # Family management
 │   │   ├── transaction/   # Transaction handling
 │   │   ├── user/          # User service
-│   │   └── dtos/          # Data transfer objects
+│   │   ├── dtos/          # Data transfer objects
+│   │   └── types/         # TypeScript interfaces
 │   └── package.json
 │
 ├── bot/                   # Python Telegram bot
@@ -96,6 +112,30 @@ family-budget-tracker-bot/
    npm run start:dev
    ```
 
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. Create a `.env` file in the frontend directory (copy from `.env.example` if available):
+
+   ```
+   VITE_API_URL=http://localhost:3000
+   VITE_GOOGLE_CLIENT_ID=your_google_client_id
+   ```
+
+3. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+   The frontend will be available at `http://localhost:5173`
+
 ### Bot Setup
 
 1. Navigate to the bot directory:
@@ -138,6 +178,14 @@ family-budget-tracker-bot/
    ```
 
 ## Available Scripts
+
+### Frontend
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint and fix issues
+- `npm run format` - Format code with Prettier
 
 ### Server
 
@@ -234,6 +282,15 @@ The application uses sqlite3 on the bot side for local data persistence. The sch
 
 ## Technologies Used
 
+### Frontend
+
+- **React** - JavaScript library for building user interfaces
+- **TypeScript** - Type-safe JavaScript
+- **Vite** - Next generation frontend tooling
+- **Tailwind CSS** - Utility-first CSS framework
+- **React Context** - State management
+- **Google OAuth** - Authentication integration
+
 ### Server
 
 - **NestJS** - Progressive Node.js framework
@@ -283,6 +340,40 @@ The application uses sqlite3 on the bot side for local data persistence. The sch
 - Monthly budget views
 
 ## Development
+
+### Getting Started with All Components
+
+To run the entire project locally:
+
+1. **Start the server** (Terminal 1):
+
+   ```bash
+   cd server
+   npm install
+   npm run start:dev
+   ```
+
+2. **Start the frontend** (Terminal 2):
+
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+3. **Start the bot** (Terminal 3):
+   ```bash
+   cd bot
+   source .venv/bin/activate  # Create if not exists: python3 -m venv .venv
+   pip install -r requirements.txt
+   python main.py
+   ```
+
+The application will be available at:
+
+- Frontend: `http://localhost:5173`
+- Server API: `http://localhost:3000`
+- Telegram Bot: Interact via Telegram
 
 ### Code Quality
 
@@ -344,13 +435,16 @@ For support, please open an issue in the repository or contact the development t
 
 ## Roadmap
 
-- [ ] Web dashboard UI
+- [x] Web dashboard UI
 - [ ] Push notifications for transactions
 - [ ] Recurring transaction templates
 - [ ] Budget goals and alerts
 - [ ] Data export (CSV, PDF)
 - [ ] Advanced analytics and reports
 - [ ] Mobile app integration
+- [ ] Dark mode toggle in web UI
+- [ ] Transaction search and filtering
+- [ ] Family activity log
 
 ---
 
