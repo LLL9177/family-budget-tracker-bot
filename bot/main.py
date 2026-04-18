@@ -363,11 +363,9 @@ def set_lang(msg, *, lang):
 
 def local_reauth(msg, send_first_m=True, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**fmt) if fmt else i18n[lang][key]
-    bot.edit_message_text(t("not_logged_in"), msg.chat.id, msg.message_id)
     if send_first_m:
-        m = bot.send_message(msg.chat.id, t("ask_family_id"))
-    else:
-        m = bot.send_message(msg.chat.id, t("loading"))
+        bot.edit_message_text(t("not_logged_in"), msg.chat.id, msg.message_id)
+    m = bot.send_message(msg.chat.id, t("ask_family_id"))
     bot.register_next_step_handler(m, sync_family, lang=lang)
 
 def main_menu(msg, *, lang):
@@ -627,15 +625,6 @@ def user_data(msg, from_user, *, lang):
 def family(msg, from_user, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**fmt) if fmt else i18n[lang][key]
 
-    def get_usernames(user_ids):
-        usernames = {}
-        for uid in user_ids:
-            res = requests.get(BACKEND_URL + f"/auth/bot/get_username?username={uid}", json={
-                "botToken": os.getenv("BOT_TOKEN")
-            })
-            usernames[uid] = res.content.decode("utf-8")
-        return usernames
-
     family_data = get_family_data(from_user.id)
 
     if family_data == 404:
@@ -648,20 +637,17 @@ def family(msg, from_user, *, lang):
     current_pnl = 0
     categories = {}
     members = {}
+    usernames = {}
 
     for tx in transactions:
         amount = tx["amount"]
         category = tx["category"]
-        user = tx["userId"]
+        user_id = tx["user"]["id"]
+        username = tx["user"]["username"]
         current_pnl += amount
         categories[category] = categories.get(category, 0) + amount
-        members[user] = members.get(user, 0) + amount
-
-    user_ids = list(members.keys())
-    usernames = get_usernames(user_ids)
-
-    def uname(uid):
-        return usernames.get(uid, uid[:6])
+        members[user_id] = members.get(user_id, 0) + amount
+        usernames[user_id] = username[:20] + "..." if len(username) > 20 else username
 
     spenders = [[u, a] for u, a in members.items() if a < 0]
     earners  = [[u, a] for u, a in members.items() if a > 0]
@@ -678,13 +664,12 @@ def family(msg, from_user, *, lang):
     top_category_spender = top_categories_spend[0] if top_categories_spend else [none_label, 0]
     top_category_earner  = top_categories_earn[0]  if top_categories_earn  else [none_label, 0]
 
-    # Translate category names
     top_category_spender[0] = translate_category(top_category_spender[0], lang)
     top_category_earner[0]  = translate_category(top_category_earner[0],  lang)
 
     spender_leaderboard = ""
     for i, (user, amount) in enumerate(top_spenders[:10]):
-        name = uname(user)
+        name = usernames.get(user, user[:6])
         if i < 3:
             spender_leaderboard += f"\t<i>{name}</i>: {amount}\n"
         else:
@@ -692,7 +677,7 @@ def family(msg, from_user, *, lang):
 
     earner_leaderboard = ""
     for i, (user, amount) in enumerate(top_earners[:10]):
-        name = uname(user)
+        name = usernames.get(user, user[:6])
         if i < 3:
             earner_leaderboard += f"\t<i>{name}</i>: {amount}\n"
         else:
@@ -701,8 +686,8 @@ def family(msg, from_user, *, lang):
     text = (
         f"{t('family_stats_title')}\n\n"
         f"{t('balance_change', pnl=current_pnl)}\n\n"
-        f"{t('top_spender', name=uname(top_spender[0]), amount=top_spender[1])}\n"
-        f"{t('top_earner',  name=uname(top_earner[0]),  amount=top_earner[1])}\n\n"
+        f"{t('top_spender', name=usernames.get(top_spender[0], top_spender[0][:6]), amount=top_spender[1])}\n"
+        f"{t('top_earner',  name=usernames.get(top_earner[0],  top_earner[0][:6]),  amount=top_earner[1])}\n\n"
         f"{t('most_spent_on',   cat=top_category_spender[0], amount=top_category_spender[1])}\n"
         f"{t('most_earned_from', cat=top_category_earner[0],  amount=top_category_earner[1])}\n\n"
         f"{t('spender_leaderboard')}\n{spender_leaderboard or t('no_spenders')}\n"
@@ -729,7 +714,7 @@ def sync_account(msg, family_id, *, lang):
 
         login_result = login(msg.from_user.id)
 
-        if login_result == 400 or login_result == 404:
+        if login_result == 401 or login_result == 404:
             bot.send_message(msg.chat.id, "Some of your data is incorrect. Let's try again")
             m = bot.send_message(msg.chat.id, "Loading...")
             local_reauth(m, False, lang=lang)
@@ -752,7 +737,7 @@ def sync_account(msg, family_id, *, lang):
     bot.register_next_step_handler(m, get_id, family_id)
 
 
-# ======================== DB PROCESSES ========================
+# ======================== DB AND REQUESTS ========================
 def register_local(family_id, telegram_id, server_uid, password):
     db = get_db()
     try:
@@ -789,17 +774,16 @@ def login(telegram_id):
         db.close()
         return 1
 
-    res = fetch("/auth/bot/login", {
+    res = requests.post(BACKEND_URL+"/auth/bot/login", {
         "userId": local_user["server_uid"],
         "password": local_user["password"],
         "botToken": os.getenv("BOT_TOKEN")
-    }, telegram_id)
-
+    })
 
     db.close()
     res = res.json()
 
-    if res["statusCode"]:
+    if "statusCode" in res.keys():
         return res["statusCode"]
     
     jwt = res["access_token"]
@@ -935,11 +919,6 @@ def fetch(url, data, telegram_id, method="post"):
 
     db.close()
     return res
-
-
-@bot.message_handler(commands=["id"])
-def get_id_cmd(msg):
-    bot.send_message(msg.chat.id, msg.from_user.id)
 
 
 bot.infinity_polling()

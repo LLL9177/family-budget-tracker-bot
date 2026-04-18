@@ -66,8 +66,8 @@ export class FamilyService implements IFamilyService {
     if (!owner) throw new UnauthorizedException();
 
     const family = await this.getByUuid(owner.familyOwned.id);
-
     if (!family) throw new NotFoundException('family not found');
+
 
     if (!family.members.includes(user)) family.members.push(user);
 
@@ -77,7 +77,10 @@ export class FamilyService implements IFamilyService {
   }
 
   async getByUuid(uuid: string): Promise<FamilyEntity | null> {
-    return await this.familyRepository.findOneBy({ id: uuid });
+    return await this.familyRepository.findOne({
+      where: { id: uuid },
+      relations: ['members'],
+    });
   }
 
   async getByOwner(owner_id: string): Promise<FamilyEntity | null> {

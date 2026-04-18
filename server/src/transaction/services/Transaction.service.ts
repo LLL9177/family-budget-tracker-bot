@@ -12,7 +12,7 @@ import { UserService } from 'src/user/User.service';
 interface ITransactionService {
   create(data: ITransaction): Promise<void>;
   findByUserId(id: string): Promise<TransactionEntity[]>;
-  findByFamilyId(familyUuid: string): Promise<TransactionEntity[]>;
+  findByFamilyId(familyUuid: string): Promise<TransactionEntity[] | null>;
   findById(id: number): Promise<TransactionEntity>;
   editAmount(id: number, newAmount: number): Promise<TransactionEntity>;
   editCategory(id: number, newCategory: string): Promise<TransactionEntity>;
@@ -28,7 +28,18 @@ export class TransactionService implements ITransactionService {
     private readonly userService: UserService,
   ) {}
 
-  async create(data: ITransaction): Promise<void> {
+  async create(transaction: ITransaction): Promise<void> {
+    const user = await this.userService.findById(transaction.userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    const data = {
+      amount: transaction.amount,
+      category: transaction.category,
+      cretedAt: transaction.createdAt,
+      familyId: transaction.familyId,
+      user,
+    };
+
     await this.transactionRepository.insert(data);
   }
 
@@ -40,8 +51,13 @@ export class TransactionService implements ITransactionService {
     return await this.transactionRepository.findBy({ user });
   }
 
-  async findByFamilyId(familyUuid: string): Promise<TransactionEntity[]> {
-    return await this.transactionRepository.findBy({ familyId: familyUuid });
+  async findByFamilyId(
+    familyUuid: string,
+  ): Promise<TransactionEntity[] | null> {
+    return await this.transactionRepository.find({
+      where: { familyId: familyUuid },
+      relations: { user: true },
+    });
   }
 
   async findById(id: number): Promise<TransactionEntity> {
