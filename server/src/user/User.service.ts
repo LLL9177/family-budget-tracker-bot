@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserDto } from 'src/dtos/user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,6 +18,7 @@ interface IUserService {
     getOwned: boolean,
   ): Promise<UserEntity | null>;
   changeUser(newUser: UserEntity): Promise<void>;
+  userType(id: string): Promise<'google' | 'local'>;
 }
 
 @Injectable()
@@ -78,5 +79,12 @@ export class UserService implements IUserService {
 
   async changeUser(newUser: UserEntity): Promise<void> {
     await this.userRepository.save(newUser);
+  }
+
+  async userType(id: string): Promise<'google' | 'local'> {
+    const user = await this.findById(id);
+    if (!user) throw new NotFoundException('User not found');
+    if (user?.googleId) return 'google';
+    return 'local';
   }
 }

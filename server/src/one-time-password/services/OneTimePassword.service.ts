@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   OnApplicationBootstrap,
@@ -6,8 +7,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { OneTimePasswordEntity } from '../entities/OneTimePassword.entity';
 import { Repository } from 'typeorm';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserService } from 'src/user/User.service';
 
 interface IOneTimePasswordService {
   create(): Promise<{ password: string; otpId: string }>;
@@ -15,6 +17,7 @@ interface IOneTimePasswordService {
   delete(password: string): Promise<void>;
   syncUser(userId: string, id: string): Promise<void>;
   checkAllPasswords(): Promise<void>;
+  renew(userId: string): Promise<string>;
 }
 
 @Injectable()
@@ -25,6 +28,7 @@ export class OneTimePasswordService
     @InjectRepository(OneTimePasswordEntity)
     private readonly otpRepository: Repository<OneTimePasswordEntity>,
     private readonly eventEmitter: EventEmitter2,
+    private readonly userService: UserService,
   ) {}
 
   async create(): Promise<{ password: string; otpId: string }> {
@@ -64,8 +68,7 @@ export class OneTimePasswordService
     await this.otpRepository.save(otp);
   }
 
-  // @Cron('0 */15 * * * *') // 15 min
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron('0 */15 * * * *') // 15 min
   handleCron() {
     this.eventEmitter.emit('otp-expirations.check-expirations', {});
   }
@@ -86,5 +89,17 @@ export class OneTimePasswordService
     for (const pass of expiredPasswords) {
       await this.delete(pass.password);
     }
+  }
+
+  async renew(userId: string): Promise<string> {
+    if ((await this.userService.userType(userId)) == 'local')
+      throw new BadRequestException('User was not authenticated using google');
+    const password = await this.otpRepository.findOneBy({ userId });
+
+    if (password) await this.delete(password.password);
+
+    const newPassword = await this.create();
+    await this.syncUser(userId, newPassword.otpId);
+    return newPassword.password;
   }
 }
