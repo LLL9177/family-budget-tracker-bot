@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<RequestWithRefresh>();
     const res = context.switchToHttp().getResponse<Response>();
     const token = this.extractTokenFromHeader(req);
-    const refresh = this.useRefresh(req);
+    const { refresh, isBot } = this.useRefresh(req);
 
     if (token) {
       try {
@@ -38,15 +38,21 @@ export class AuthGuard implements CanActivate {
       return true;
     } else if (refresh) {
       this.jwtService.validateRefresh(refresh);
+
       const tokens = await this.jwtService.refresh(refresh);
       const payload = this.jwtService.validateAccess(tokens.access);
+
       res.setHeader('x-access-token', tokens.access);
-      res.cookie('refresh', tokens.refresh, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        maxAge: 1000 * 60 * 60 * 24 * 5,
-      });
+
+      if (isBot) res.setHeader('x-refresh-token', tokens.refresh);
+      else
+        res.cookie('refresh', tokens.refresh, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'strict',
+          maxAge: 1000 * 60 * 60 * 24 * 5,
+        });
+
       req['user'] = payload;
       return true;
     }
@@ -58,7 +64,12 @@ export class AuthGuard implements CanActivate {
     return type === 'Bearer' ? token : undefined;
   }
 
-  private useRefresh(req: RequestWithRefresh): string | undefined {
-    return req.headers['x-refresh-token'] ?? req.cookies.refresh;
+  private useRefresh(req: RequestWithRefresh): {
+    refresh: string | undefined;
+    isBot: boolean;
+  } {
+    const refresh = req.headers['x-refresh-token'] ?? req.cookies.refresh;
+    const isBot = req.headers['x-refresh-token'] ? true : false;
+    return { refresh, isBot };
   }
 }

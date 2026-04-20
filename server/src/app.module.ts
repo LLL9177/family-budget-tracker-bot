@@ -10,6 +10,8 @@ import { TransactionModule } from './transaction/transaction.module';
 import { TransactionEntity } from './transaction/entities/Transaction.entity';
 import { MonthlySummaryEntity } from './transaction/entities/MonthlySummary.entity';
 import { UserModule } from './user/user.module';
+import { OneTimePasswordModule } from './one-time-password/one-time-password.module';
+import { OneTimePasswordEntity } from './one-time-password/entities/OneTimePassword.entity';
 
 @Module({
   imports: [
@@ -27,12 +29,14 @@ import { UserModule } from './user/user.module';
         FamilyEntity,
         TransactionEntity,
         MonthlySummaryEntity,
+        OneTimePasswordEntity,
       ],
       synchronize: true,
     }),
     FamilyModule,
     TransactionModule,
     UserModule,
+    OneTimePasswordModule,
   ],
   controllers: [AuthController],
 })

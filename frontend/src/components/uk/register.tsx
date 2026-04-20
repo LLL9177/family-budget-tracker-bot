@@ -199,7 +199,7 @@ export default function Register_en() {
             <AlertDialogTitle>Пароль</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription>
-            Ми згенерували пароль для вашого аккаунту. Він буде вам потрібен
+            Ми згенерували одноразовий пароль для вашого аккаунту. Він буде вам потрібен
             коли ви будете заходити в аккаунт в боті.
             <br />
             Ось ваш пароль

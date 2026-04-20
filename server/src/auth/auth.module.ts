@@ -7,9 +7,10 @@ import { AuthService } from './services/Auth.service';
 import { UserService } from 'src/user/User.service';
 import { JwtTokenService } from 'src/jwt/Jwt.service';
 import { JwtService } from '@nestjs/jwt';
+import { OneTimePasswordModule } from 'src/one-time-password/one-time-password.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity]), OneTimePasswordModule],
   controllers: [AuthController],
   providers: [
     AuthService,

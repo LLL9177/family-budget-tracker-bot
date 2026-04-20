@@ -16,13 +16,13 @@ import { IAccessToken } from 'src/types/IAccessToken.interface';
 import { BotLoginDto } from 'src/dtos/BotLogin.dto';
 import { GoogleAuthDto } from 'src/dtos/GoogleAuth.dto';
 import { IGoogleAuth } from 'src/types/GoogleAuth.interface';
+import { OneTimePasswordService } from 'src/one-time-password/services/OneTimePassword.service';
 
 interface IAuthService {
   register(data: UserDto): Promise<IAccessToken | void>; // although it will 100% return the first option
   getProfile(user_id: string);
   login(data: LoginDto): Promise<IAccessToken | void>;
   botLogin(data: BotLoginDto): Promise<IAccessToken | void>;
-  botGetUsername(id: string): Promise<string>;
   googleAuth(data: GoogleAuthDto): Promise<IAccessToken | void>;
 }
 
@@ -32,6 +32,7 @@ export class AuthService implements IAuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtTokenService,
     private readonly hashService: HashService,
+    private readonly otpService: OneTimePasswordService,
   ) {}
 
   async register(data: UserDto): Promise<IAccessToken | void> {
@@ -67,10 +68,7 @@ export class AuthService implements IAuthService {
       ? ((await this.userService.findByUsername(data.username)) as UserEntity)
       : ((await this.userService.findByEmail(data.email!)) as UserEntity);
 
-    console.log(data);
     if (user) {
-      console.log(user);
-      console.log(this.hashService.compare(data.password, user.password));
       if (this.hashService.compare(data.password, user.password)) {
         return {
           access_token: this.jwtService.sign({
@@ -90,13 +88,6 @@ export class AuthService implements IAuthService {
       username: user.username,
       password: data.password,
     });
-  }
-
-  async botGetUsername(id: string): Promise<string> {
-    const user = (await this.getProfile(id)) as UserEntity;
-    if (!user) throw new NotFoundException('User not found');
-
-    return user.username;
   }
 
   async googleAuth(data: GoogleAuthDto): Promise<IGoogleAuth | void> {
@@ -125,16 +116,7 @@ export class AuthService implements IAuthService {
       return { access_token: jwt };
     }
 
-    const charset =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
-
-    const array = new Uint8Array(16);
-    crypto.getRandomValues(array);
-
-    const password = Array.from(
-      array,
-      (byte) => charset[byte % charset.length],
-    ).join('');
+    const { password, otpId } = await this.otpService.create();
 
     const access = await this.register({
       username: data.username,
@@ -150,10 +132,11 @@ export class AuthService implements IAuthService {
     ).id;
 
     const user = (await this.userService.findById(userId)) as UserEntity;
-
     user.googleId = data.googleId;
-
     await this.userService.changeUser(user);
+
+    await this.otpService.syncUser(userId, otpId);
+
     return { ...access, password }; // i know, but this is the only way for them to know their password.
   }
 }

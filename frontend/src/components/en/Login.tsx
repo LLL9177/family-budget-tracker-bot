@@ -159,7 +159,7 @@ export default function Login_en() {
             <AlertDialogTitle>Password</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription>
-            We generated a password for your account. You will need to use this
+            We generated a one-time password for your account. You will need to use this
             password when logging in to your account in our bot.
             <br />
             Here's your password:

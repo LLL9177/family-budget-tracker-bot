@@ -94,10 +94,4 @@ export class AuthController {
   async botLogin(@Body(new ValidationPipe()) body: BotLoginDto) {
     return await this.authService.botLogin(body);
   }
-
-  @UseGuards(BotGuard)
-  @Get('bot/get_username')
-  async botGetUsername(@Query('id') id: string) {
-    return await this.authService.botGetUsername(id);
-  }
 }

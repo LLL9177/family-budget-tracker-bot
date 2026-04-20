@@ -68,7 +68,6 @@ export class FamilyService implements IFamilyService {
     const family = await this.getByUuid(owner.familyOwned.id);
     if (!family) throw new NotFoundException('family not found');
 
-
     if (!family.members.includes(user)) family.members.push(user);
 
     user.family = family;

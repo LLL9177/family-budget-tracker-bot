@@ -159,7 +159,7 @@ export default function Login_en() {
             <AlertDialogTitle>Password</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription>
-            Ми згеренували пароль для вашого аккаунту. Він потрібен для того щоб
+            Ми згеренували одноразовий пароль для вашого аккаунту. Він потрібен для того щоб
             ввійти в аккаунт в боті
             <br />
             Ось ваш пароль
