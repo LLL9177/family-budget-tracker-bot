@@ -7,11 +7,11 @@ import Main_en from "./components/en/Main";
 import { useState } from "react";
 import { AuthContext } from "./contexts/AuthContext";
 import Main_uk from "./components/uk/Main";
+import Renew_en from "./components/en/renew";
 
 export function App() {
   const [access, setAccess] = useState("");
 
-  // LAST THING DID IS PROVIDED THE CONTEXT. NOW USE IT
   return (
     <AuthContext value={{ access, setAccess }}>
       <Routes>
@@ -21,6 +21,7 @@ export function App() {
         <Route path="/uk/login" element={<Login_uk />} />
         <Route path="/en/register" element={<Register_en />} />
         <Route path="/uk/register" element={<Register_uk />} />
+        <Route path="/en/renew" element={<Renew_en />} />
       </Routes>
     </AuthContext>
   );
