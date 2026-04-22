@@ -30,9 +30,12 @@ i18n = {
         # Auth / sync
         "ask_user_id": "Send me your user id",
         "invalid_user_id": "Please send a valid user id",
-        "ask_password": "Send me your account's password",
+        "ask_password": "Send me your account\'s password (or write \"Google\" if you authenticated using google)",
         "downloading": "Downloading...",
         "incorrect_credentials": "ID or password is incorrect. Let's try again",
+        "google_word": ("Google", "google"),
+        "ask_otp": "Send me the one-time password",
+        "incorrect_otp": f"Seems like the one-time password is not correct. Maybe it's expired. You can renew it on <code>{os.getenv("FRONTEND_URL")+'/one-time-password/renew'}</code>",
 
         # Main menu
         "choose_action": "Choose an action:",
@@ -118,9 +121,12 @@ i18n = {
         # Auth / sync
         "ask_user_id": "Напишіть мені id свого аккаунта",
         "invalid_user_id": "Будь-ласка надішліть дійсний id",
-        "ask_password": "Напишіть мені пароль твого аккаунта",
+        "ask_password": "Напишіть мені пароль твого аккаунта (або напишіть \"Google\" якщо ви авторизувались через Google)",
         "downloading": "Завантаження...",
         "incorrect_credentials": "ID або пароль неправильні. Давайте спробуемо ще раз",
+        "google_word": ("Google", "google"),
+        "ask_otp": "Надішліть мені свій одноразовий пароль",
+        "incorrect_otp": f"Схоже, що одноразовий пароль невірний. Можливо термін дії закінчився. Ви можете оновити його на <code>{os.getenv("FRONTEND_URL")+"/one-time-assword/renew"}</code>",
 
         # Main menu
         "choose_action": "Виберіть дію:",
@@ -707,6 +713,10 @@ def sync_account(msg, family_id, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**fmt) if fmt else i18n[lang][key]
 
     def get_password(msg, id, family_id):
+        if msg.text in t("google_word"): 
+            google_auth(msg, family_id, id, lang=lang)
+            return
+
         password = msg.text
         result = register_local(family_id, msg.from_user.id, id, password)
         if result == 1:
@@ -715,8 +725,8 @@ def sync_account(msg, family_id, *, lang):
         login_result = login(msg.from_user.id)
 
         if login_result == 401 or login_result == 404:
-            bot.send_message(msg.chat.id, "Some of your data is incorrect. Let's try again")
-            m = bot.send_message(msg.chat.id, "Loading...")
+            bot.send_message(msg.chat.id, t("incorrect_credentials"))
+            m = bot.send_message(msg.chat.id, t("loading"))
             local_reauth(m, False, lang=lang)
             return
 
@@ -736,9 +746,40 @@ def sync_account(msg, family_id, *, lang):
     m = bot.send_message(msg.chat.id, t("ask_user_id"))
     bot.register_next_step_handler(m, get_id, family_id)
 
+def google_auth(msg, family_id, user_id, *, lang):
+    def t(key, **fmt): return i18n[lang][key].format(**fmt) if fmt else i18n[lang][key] 
+
+    def get_otp(msg, family_id, user_id, *, lang):
+        otp = msg.text
+        telegram_id = msg.from_user.id
+
+        register_local(family_id, telegram_id, user_id, one_time_password=otp)
+
+        if register_local == 1:
+            bot.send_message(msg.chat.id, t("something_wrong"))
+            m = bot.send_message(msg.chat.id, t("loading"))
+
+        res = login_google(telegram_id)
+
+        if res == 404:
+            bot.send_message(msg.chat.id, t("something_wrong"))
+            local_reauth(msg, lang=lang, send_first_m=False)
+            return
+
+        if res == 400:
+            bot.send_message(msg.chat.id, t("incorrect_otp"), parse_mode="HTML")
+            local_reauth(msg, lang=lang, send_first_m=False)
+            return
+
+        m = bot.send_message(msg.chat.id, t("loading"))
+        main_menu(m, lang=lang)
+
+    m = bot.send_message(msg.chat.id, t("ask_otp"))
+    bot.register_next_step_handler(m, get_otp, family_id, user_id, lang=lang)
+
 
 # ======================== DB AND REQUESTS ========================
-def register_local(family_id, telegram_id, server_uid, password):
+def register_local(family_id, telegram_id, server_uid, password=None, one_time_password=None):
     db = get_db()
     try:
         telegram_user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
@@ -747,16 +788,34 @@ def register_local(family_id, telegram_id, server_uid, password):
             # create new ones
             user = db.execute("SELECT * FROM user WHERE server_uid = ?", (str(server_uid),)).fetchone()
             if not user:
-                db.execute(
-                    "INSERT INTO user (family_id, telegram_id, server_uid, password) VALUES (?, ?, ?, ?)",
-                    (str(family_id), telegram_id, str(server_uid), password)
-                )
+                if password:
+                    db.execute(
+                        "INSERT INTO user (family_id, telegram_id, server_uid, password) VALUES (?, ?, ?, ?)",
+                        (str(family_id), telegram_id, str(server_uid), password)
+                    )
+                elif one_time_password:
+                    db.execute(
+                        "INSERT INTO user (family_id, telegram_id, server_uid, one_time_password) VALUES (?, ?, ?, ?)",
+                        (str(family_id), telegram_id, str(server_uid), one_time_password)
+                    )
+                else:
+                    raise Exception("No password nor one_time_password provided")
+
                 db.commit()
         else:
-            db.execute(
-                "UPDATE user SET server_uid = ?, password = ?, family_id = ? WHERE telegram_id = ?",
-                (str(server_uid), password, str(family_id), str(telegram_id))
-            )
+            if password:
+                db.execute(
+                    "UPDATE user SET server_uid = ?, password = ?, family_id = ? WHERE telegram_id = ?",
+                    (str(server_uid), password, str(family_id), str(telegram_id))
+                )
+            elif one_time_password:
+                db.execute(
+                "UPDATE user SET server_uid = ?, one_time_password = ?, family_id = ? WHERE telegram_id = ?",
+                    (str(server_uid), one_time_password, str(family_id), str(telegram_id))
+                )
+            else:
+                raise Exception("No password nor one_time_password provided")
+
             db.commit()
     except Exception as e:
         print(e)
@@ -787,7 +846,40 @@ def login(telegram_id):
         return res["statusCode"]
     
     jwt = res["access_token"]
+    db.close()
     return save_jwt(jwt["access"], jwt["refresh"], telegram_id)
+
+def login_google(telegram_id):
+    db = get_db()
+
+    user = None
+    try:
+        user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
+    except Exception as e:
+        print(e)
+        db.close()
+        return 1 
+
+    if user is None:
+        return 404
+
+    res = fetch("/auth/bot/google", {
+        "oneTimePassword": user["one_time_password"],
+        "userId": user["server_uid"],
+        "botToken": os.getenv("BOT_TOKEN")
+    }, telegram_id).json()
+
+    if "statusCode" in res.keys(): return res["statusCode"]
+
+    if "access_token" in res.keys():
+        set_jwt(
+            res["access_token"]["access"], 
+            res["access_token"]["refresh"], 
+            telegram_id
+        )
+
+    db.close()
+    return res
 
 def save_jwt(access, refresh, telegram_id):
     db = get_db()

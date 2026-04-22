@@ -20,6 +20,7 @@ import { BotGuard } from 'src/bot/bot.guard';
 import { BotLoginDto } from 'src/dtos/BotLogin.dto';
 import { GoogleAuthDto } from 'src/dtos/GoogleAuth.dto';
 import type { Response } from 'express';
+import { BotGoogleLoginDto } from 'src/dtos/BotGoogleLogin.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -93,5 +94,11 @@ export class AuthController {
   @Post('bot/login')
   async botLogin(@Body(new ValidationPipe()) body: BotLoginDto) {
     return await this.authService.botLogin(body);
+  }
+
+  @UseGuards(BotGuard)
+  @Post('bot/google')
+  async botGoogleAuth(@Body(new ValidationPipe()) body: BotGoogleLoginDto) {
+    return await this.authService.botGoogleAuth(body);
   }
 }

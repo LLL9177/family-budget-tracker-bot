@@ -20,8 +20,8 @@ export class UserEntity {
   @Column()
   username: string;
 
-  @Column()
-  password: string;
+  @Column({ nullable: true })
+  password?: string;
 
   @Column({ default: JSON.stringify([Roles.USER]) })
   roles: string; // json list

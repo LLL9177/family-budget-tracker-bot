@@ -17,13 +17,16 @@ import { BotLoginDto } from 'src/dtos/BotLogin.dto';
 import { GoogleAuthDto } from 'src/dtos/GoogleAuth.dto';
 import { IGoogleAuth } from 'src/types/GoogleAuth.interface';
 import { OneTimePasswordService } from 'src/one-time-password/services/OneTimePassword.service';
+import { IUser } from 'src/types/User.interface';
+import { BotGoogleLoginDto } from 'src/dtos/BotGoogleLogin.dto';
 
 interface IAuthService {
   register(data: UserDto): Promise<IAccessToken | void>; // although it will 100% return the first option
-  getProfile(user_id: string);
+  getProfile(user_id: string): Promise<IUser>;
   login(data: LoginDto): Promise<IAccessToken | void>;
   botLogin(data: BotLoginDto): Promise<IAccessToken | void>;
   googleAuth(data: GoogleAuthDto): Promise<IAccessToken | void>;
+  botGoogleAuth(data: BotGoogleLoginDto): Promise<IAccessToken | void>;
 }
 
 @Injectable()
@@ -50,7 +53,7 @@ export class AuthService implements IAuthService {
       throw new ConflictException('User with this username already exists');
   }
 
-  async getProfile(userId: string) {
+  async getProfile(userId: string): Promise<IUser> {
     const user = (await this.userService.findById(userId)) as UserEntity;
 
     if (!user) throw new NotFoundException('User not found');
@@ -69,6 +72,8 @@ export class AuthService implements IAuthService {
       : ((await this.userService.findByEmail(data.email!)) as UserEntity);
 
     if (user) {
+      if (!user.password)
+        throw new BadRequestException('The user is logged in using google');
       if (this.hashService.compare(data.password, user.password)) {
         return {
           access_token: this.jwtService.sign({
@@ -137,6 +142,23 @@ export class AuthService implements IAuthService {
 
     await this.otpService.syncUser(userId, otpId);
 
-    return { ...access, password }; // i know, but this is the only way for them to know their password.
+    return { ...access, password };
+  }
+
+  async botGoogleAuth(data: BotGoogleLoginDto): Promise<IAccessToken | void> {
+    const user = await this.userService.findById(data.userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    if (!(await this.otpService.validate(data.oneTimePassword)))
+      throw new BadRequestException('Not a valid one-time password');
+
+    const jwtPair = this.jwtService.sign({
+      id: user.id,
+      roles: JSON.parse(user.roles),
+    });
+
+    return {
+      access_token: { access: jwtPair.access, refresh: jwtPair.refresh },
+    };
   }
 }
