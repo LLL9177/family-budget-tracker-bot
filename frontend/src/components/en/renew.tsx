@@ -1,35 +1,49 @@
 import { useContext, useEffect, useState } from "react";
-import { AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
-import { AlertDialog } from "../ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/contexts/AuthContext";
 
 export default function Renew_en() {
   const [otp, setOtp] = useState('');
-  const navigate = useNavigate()
-  const auth = useContext(AuthContext)
+  const navigate = useNavigate();
+  const auth = useContext(AuthContext);
 
   useEffect(() => {
-    const fetchData = async function() {
+    if (!auth?.access) return;
+
+    const fetchData = async () => {
       try {
-        const data = await fetch(import.meta.env.VITE_BACKEND_URL + "/one-time-password/renew",
+        const res = await fetch(
+          import.meta.env.VITE_BACKEND_URL + "/one-time-password/renew",
           {
             method: "GET",
             credentials: "include",
             headers: {
-              "Contnt-Type": "application/json",
-              Authorization: auth.access ? `Bearer ${auth.access}` : '',
-            }
-          }).then((res) => res.json())
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${auth.access}`,
+            },
+          }
+        );
 
-        if (data.otp) setOtp(data.otp)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        if (data.otp) setOtp(data.otp);
       } catch (err) {
-        console.log(err)
+        console.error(err);
       }
-    }
+    };
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, [auth]);
 
   return (
     <div>
@@ -37,10 +51,10 @@ export default function Renew_en() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>One-time password</AlertDialogTitle>
+            <AlertDialogDescription>
+              Here's your freshly new generated one-time password:
+            </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogDescription>
-            Here's your freshly new generated one-time password:
-          </AlertDialogDescription>
           <span className="password-span mt-3 mb-5">{otp}</span>
           <AlertDialogFooter>
             <AlertDialogAction
@@ -53,5 +67,5 @@ export default function Renew_en() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }
