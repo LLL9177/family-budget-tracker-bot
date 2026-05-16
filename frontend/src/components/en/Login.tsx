@@ -34,7 +34,7 @@ export default function Login_en() {
   const auth = useContext(AuthContext);
   const { googleAuth, generatedPassword } = useGoogleAuth(
     auth.setAccess,
-    () => {}
+    () => { }
   );
 
   useEffect(() => {

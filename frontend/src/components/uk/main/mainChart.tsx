@@ -9,73 +9,59 @@ import {
   YAxis,
   Line,
 } from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "../ui/chart";
 import type { ITransactionWithDate } from "@/types/TransactionWithDate.interface";
-import { ButtonGroup } from "../ui/button-group";
-import { Button } from "../ui/button";
-import { useState } from "react";
-import { useTheme } from "../theme-provider";
 import { BarChart3, LineChart as LineChartIcon } from "lucide-react";
+import type { ITransaction } from "@/types/Transaction.interface";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { useState } from "react";
+import { useTheme } from "@/components/theme-provider";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { Button } from "@/components/ui/button";
 
 const chartConfig = {
   PnL: {
-    label: "П&З",
+    label: "PnL",
     color: "#2cddb7",
   },
 } satisfies ChartConfig;
 
 type Props = {
-  data: ITransactionWithDate[];
+  data: ITransactionWithDate[] | ITransaction[];
 };
 
 export default function MainChart_uk({ data }: Props) {
   const [displayMode, setDisplayMode] = useState("bars");
   const { theme, resolvedTheme, systemTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
-  console.log(currentTheme);
 
   const [frame, setFrame] = useState("days");
 
-  const chartData = [];
-  const loopedDays: number[] = [];
-  let pnl = 0;
-  for (const transaction of data) {
+  // keep raw transactions for the "transactions" frame
+  const monthTransactions = data.filter((t) => {
     const today = new Date();
-    if (
-      transaction.createdAt.getMonth() == today.getMonth() &&
-      transaction.createdAt.getFullYear() == today.getFullYear()
-    ) {
-      const day = transaction.createdAt.getDate();
-      if (frame == "days") {
-        if (loopedDays.includes(day)) continue;
-        data.map((t: ITransactionWithDate) => {
-          if (
-            t.createdAt.getDate() == day &&
-            data.indexOf(t) !== data.indexOf(transaction)
-          ) {
-            pnl += t.amount;
-            loopedDays.push(t.createdAt.getDate());
-            return t;
-          }
-        });
-        chartData.push({ date: `Д ${day}`, PnL: pnl });
-      } else if (frame == "transactions") {
-        chartData.push({ transactionIndex: "0", PnL: pnl, date: `Д ${day}` }); // date here is to be able to sort
-      }
-      pnl += transaction.amount;
-    }
+    return (
+      t.createdAt.getMonth() === today.getMonth() &&
+      t.createdAt.getFullYear() === today.getFullYear()
+    );
+  });
+
+  // group by day for the "days" frame
+  const dayMap = new Map<number, number>();
+  for (const t of monthTransactions) {
+    const day = t.createdAt.getDate();
+    dayMap.set(day, (dayMap.get(day) ?? 0) + t.amount);
   }
 
-  chartData.sort((a, b) => {
-    const dayA = parseInt(a.date.replace("Д ", ""));
-    const dayB = parseInt(b.date.replace("Д ", ""));
-    return dayA - dayB;
-  });
+  const chartData =
+    frame === "days"
+      ? Array.from(dayMap.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([day, total]) => ({ date: `День ${day}`, PnL: total }))
+      : monthTransactions.map((t, i) => ({
+        transactionIndex: String(i + 1),
+        PnL: t.amount,
+        date: `День ${t.createdAt.getDate()}`,
+      }));
 
   if (frame == "transactions") {
     let transactionIndex = 0;
@@ -86,27 +72,25 @@ export default function MainChart_uk({ data }: Props) {
   }
 
   return (
-    <div className="flex h-full items-center justify-center">
+    <div className="flex w-full items-center justify-center">
       <div
-        className={`h-200 w-350 rounded-[30px] border-[rgb(100,100,100)] border-1 ${
-          currentTheme == "dark"
-            ? "bg-[rgba(255,255,255,0.05)]"
-            : "bg-[rgba(0,0,0,0.03)]"
-        } p-10`}
+        className={`h-190 w-350 rounded-[30px] border border-[rgb(100,100,100)] ${currentTheme === "dark"
+            ? "bg-gradient-to-t from-primary/5 to-card"
+            : "bg-gradient-to-t from-primary/5 to-white"
+          } p-10`}
       >
         <div className="flex space-x-[54%] pr-10 pl-10">
           <div>
-            <h2 className="mb-2 text-xl font-bold">П&З цього місяця</h2>
+            <h2 className="mb-2 text-xl font-bold">ПіЗ цього місяця</h2>
             <span className="text-[rgb(100,100,100)]">
-              Зміна балансу поточного місяця
+              Різниця в балансі цього місяця
             </span>
           </div>
           <div className="flex pb-10">
             <div className="mr-10 flex space-x-[10%]">
               <button
-                className={`cursor-pointer rounded border-[2px] pr-1 pl-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${
-                  displayMode == "line" ? "border-[rgb(100,100,100)]" : ""
-                } `}
+                className={`cursor-pointer rounded border-[2px] pr-1 pl-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${displayMode == "line" ? "border-[rgb(100,100,100)]" : ""
+                  } `}
                 onClick={() => {
                   setDisplayMode("line");
                 }}
@@ -114,9 +98,8 @@ export default function MainChart_uk({ data }: Props) {
                 <LineChartIcon />
               </button>
               <button
-                className={`cursor-pointer rounded border-[2px] pr-1 pl-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${
-                  displayMode == "bars" ? "border-[rgb(100,100,100)]" : ""
-                } `}
+                className={`cursor-pointer rounded border-[2px] pr-1 pl-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${displayMode == "bars" ? "border-[rgb(100,100,100)]" : ""
+                  } `}
                 onClick={() => {
                   setDisplayMode("bars");
                 }}
@@ -130,15 +113,14 @@ export default function MainChart_uk({ data }: Props) {
                 className="rounded-lg border-1 border-[rgb(50,50,50)]"
               >
                 <Button
-                  className={`text-[16px] ${
-                    frame == "days"
+                  className={`text-[16px] ${frame == "days"
                       ? currentTheme == "dark"
                         ? "bg-[rgb(30,30,30)]"
                         : "bg-[rgb(255,255,255)]"
                       : currentTheme == "dark"
                         ? "bg-[rgb(15,15,15)]"
                         : "bg-[rgb(240,240,240)]"
-                  } p-4 ${currentTheme == "dark" ? "text-white" : "text-black"}`}
+                    } p-4 ${currentTheme == "dark" ? "text-white" : "text-black"}`}
                   onClick={() => {
                     setFrame("days");
                   }}
@@ -146,15 +128,14 @@ export default function MainChart_uk({ data }: Props) {
                   дні
                 </Button>
                 <Button
-                  className={`text-[16px] ${
-                    frame == "transactions"
+                  className={`text-[16px] ${frame == "transactions"
                       ? currentTheme == "dark"
                         ? "bg-[rgb(30,30,30)]"
                         : "bg-[rgb(255,255,255)]"
                       : currentTheme == "dark"
                         ? "bg-[rgb(15,15,15)]"
                         : "bg-[rgb(240,240,240)]"
-                  } p-4 ${currentTheme == "dark" ? "text-white" : "text-black"}`}
+                    } p-4 ${currentTheme == "dark" ? "text-white" : "text-black"}`}
                   onClick={() => {
                     setFrame("transactions");
                   }}
@@ -167,7 +148,7 @@ export default function MainChart_uk({ data }: Props) {
         </div>
         <ChartContainer
           config={chartConfig}
-          className="max-h-160 w-full rounded-xl border-1 p-10 pt-15"
+          className="max-h-150 w-full rounded-xl border-1 bg-[rgba(150,150,150,0.1)] p-10 pt-15"
         >
           {displayMode == "bars" ? (
             <BarChart accessibilityLayer data={chartData}>

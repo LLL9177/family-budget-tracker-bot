@@ -1,9 +1,9 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { Input } from "../ui/input";
 import { AuthContext } from "@/contexts/AuthContext";
-import { Button } from "../ui/button";
 import type { IMonthlySummary } from "@/types/MonthlySummary.interface";
 import MonthComparison_en from "./monthComparison";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   familyId: string;
@@ -15,7 +15,7 @@ interface IMonthDate {
 }
 
 // This one is for choosing between different months
-export default function DifferentMonthsComparison({ familyId }: Props) {
+export default function DifferentMonthsComparison_en({ familyId }: Props) {
   const [monthOne, setMonthOne] = useState<IMonthDate | null>(null);
   const [monthTwo, setMonthTwo] = useState<IMonthDate | null>(null);
   const monthOneRef = useRef<HTMLInputElement>(null);
@@ -45,7 +45,7 @@ export default function DifferentMonthsComparison({ familyId }: Props) {
   useEffect(() => {
     if (!monthOne) return;
     console.log(familyId, "family_id");
-    const getMonthOne = async function () {
+    const getMonthOne = async function() {
       try {
         const data = await fetch(
           import.meta.env.VITE_BACKEND_URL + "/transaction/monthly_summary",
@@ -73,12 +73,11 @@ export default function DifferentMonthsComparison({ familyId }: Props) {
 
     getMonthOne();
   }, [monthOne, auth.access, familyId]);
-  console.log(monthOne);
 
   useEffect(() => {
     if (!monthTwo) return;
     console.log(familyId, "family_id");
-    const getMonthOne = async function () {
+    const getMonthOne = async function() {
       try {
         const data = await fetch(
           import.meta.env.VITE_BACKEND_URL + "/transaction/monthly_summary",
@@ -106,7 +105,6 @@ export default function DifferentMonthsComparison({ familyId }: Props) {
 
     getMonthOne();
   }, [monthTwo, auth.access, familyId]);
-  console.log(monthTwo);
 
   let caption = "";
   let month1Str = '';

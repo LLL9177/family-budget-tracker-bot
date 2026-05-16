@@ -19,6 +19,6 @@ import { OneTimePasswordModule } from 'src/one-time-password/one-time-password.m
     JwtTokenService,
     JwtService,
   ],
-  exports: [AuthService, JwtTokenService],
+  exports: [AuthService, JwtTokenService, HashService],
 })
 export class AuthModule {}

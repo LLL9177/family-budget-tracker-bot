@@ -17,8 +17,6 @@ export default function Renew_en() {
   const auth = useContext(AuthContext);
 
   useEffect(() => {
-    if (!auth?.access) return;
-
     const fetchData = async () => {
       try {
         const res = await fetch(
@@ -36,6 +34,7 @@ export default function Renew_en() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
+        console.log(data);
         if (data.otp) setOtp(data.otp);
       } catch (err) {
         console.error(err);
@@ -44,7 +43,6 @@ export default function Renew_en() {
 
     fetchData();
   }, [auth]);
-
   return (
     <div>
       <AlertDialog open={otp !== ''}>

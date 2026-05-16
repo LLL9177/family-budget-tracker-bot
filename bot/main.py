@@ -8,7 +8,7 @@ DB_FILENAME = os.getenv("DB_FILE")
 SCHEMA_FILENAME = os.getenv("SCHEMA_FILE")
 BACKEND_URL = os.getenv("BACKEND_URL")
 
-bot = tb.TeleBot((API_TOKEN))
+bot = tb.TeleBot(API_TOKEN)
 
 
 # ======================== I18N ========================

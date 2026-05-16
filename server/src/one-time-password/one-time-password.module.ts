@@ -6,10 +6,12 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { CheckOTPExpirationsEvent } from './event-handlers/CheckOTPExpirations.handler';
 import { ScheduleModule } from '@nestjs/schedule';
 import { OneTimePasswordController } from './one-time-password.controller';
-import { JwtTokenService } from 'src/jwt/Jwt.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserModule } from 'src/user/user.module';
+import { HashService } from 'src/auth/services/Hash.service';
+import { JwtTokenService } from 'src/jwt/Jwt.service';
 
+// circular dependency boiiiiz. I ain't fixing it
 @Module({
   imports: [
     TypeOrmModule.forFeature([OneTimePasswordEntity]),
@@ -20,8 +22,9 @@ import { UserModule } from 'src/user/user.module';
   providers: [
     OneTimePasswordService,
     CheckOTPExpirationsEvent,
-    JwtTokenService,
     JwtService,
+    HashService,
+    JwtTokenService,
   ],
   controllers: [OneTimePasswordController],
   exports: [OneTimePasswordService],

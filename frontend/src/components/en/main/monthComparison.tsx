@@ -1,21 +1,13 @@
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { IMonthlySummary } from "@/types/MonthlySummary.interface";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table";
 
 type Props = {
   data:
-    | {
-        prev?: IMonthlySummary;
-        current?: IMonthlySummary;
-      }
-    | undefined;
+  | {
+    prev?: IMonthlySummary;
+    current?: IMonthlySummary;
+  }
+  | undefined;
   caption: string;
   monthOneName: string;
   monthTwoName: string;

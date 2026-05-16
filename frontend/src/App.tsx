@@ -3,10 +3,10 @@ import Login_en from "./components/en/Login";
 import Login_uk from "./components/uk/Login";
 import Register_en from "./components/en/register";
 import Register_uk from "./components/uk/register";
-import Main_en from "./components/en/Main";
+import Main_en from "./components/en/main/Main";
 import { useState } from "react";
 import { AuthContext } from "./contexts/AuthContext";
-import Main_uk from "./components/uk/Main";
+import Main_uk from "./components/uk/main/Main";
 import Renew_en from "./components/en/renew";
 
 export function App() {

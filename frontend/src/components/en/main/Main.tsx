@@ -2,16 +2,21 @@ import { useContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/contexts/AuthContext";
-import { Button } from "../ui/button";
 import type { ITransaction } from "@/types/Transaction.interface";
-import MainChart_en from "./mainChart";
 import type { ITransactionWithDate } from "@/types/TransactionWithDate.interface";
-import { SectionCards_en } from "./sectionCards";
 import type { IFetchError } from "@/types/FetchError.interface";
 import type { IFamilyData } from "@/types/FamilyData.interface";
 import type { IMonthlySummary } from "@/types/MonthlySummary.interface";
+import { Button } from "@/components/ui/button";
 import MonthComparison_en from "./monthComparison";
-import DifferentMonthsComparison from "./differentMonthsComparison";
+import { SectionCards_en } from "./sectionCards";
+import MainChart_en from "./mainChart";
+import SpenderLeaderboard_en from "./spenderLeaderboard";
+import EarnerLeaderboard_en from "./earnerLeaderboard";
+import EarnerCategoryLeaderboard_en from "./earnerCategoryLeaderboard";
+import SpenderCategoryLeaderboard_en from "./spenderCategoryLeaderboard";
+import DifferentMonthsComparison_en from "./differentMonthsComparison";
+import FamilyId_en from "./familyId";
 
 export default function Main_en() {
   const auth = useContext(AuthContext);
@@ -107,22 +112,6 @@ export default function Main_en() {
     ? [...earnerMap.entries()].sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
     : undefined;
 
-  const spentOnLeaderboard = Object.fromEntries(
-    topSpentOn.map(([k, v]) => [k, [v]])
-  );
-
-  const earnedFromLeaderboard = Object.fromEntries(
-    topEarnedFrom.map(([k, v]) => [k, [v]])
-  );
-
-  const earnersLeaderboard = topEarners
-    ? Object.fromEntries(topEarners.map(([k, v]) => [k, [v]]))
-    : undefined;
-
-  const spendersLeaderboard = topSpenders
-    ? Object.fromEntries(topSpenders.map(([k, v]) => [k, [v]]))
-    : undefined;
-
   if (topSpentOn.length > 0) {
     familyData.mostSpentOn = { key: topSpentOn[0][0], value: topSpentOn[0][1] };
     if (topSpentOn.length > 1) {
@@ -197,7 +186,7 @@ export default function Main_en() {
         setPrevMonth(data);
         return data;
       } catch {
-        console.log("");
+        console.error("");
       }
     };
 
@@ -254,19 +243,17 @@ export default function Main_en() {
                   return true;
                 return false;
               });
-              console.log(transactions)
             setTransactions(transactions);
           } catch (err) {
-            console.log(err);
+            console.error(err);
           }
         };
 
         getData();
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     };
-
     getProfile();
   }, [decodedJwt, auth.access, navigate]);
 
@@ -296,40 +283,49 @@ export default function Main_en() {
           </div>
         </>
       ) : (
-        <div className="flex h-[100vh] w-[100vw] items-center justify-center gap-3">
-          <div className="h-[100vh] w-125">
-            <MonthComparison_en
-              data={{
-                prev: prevMonth,
-                current: {
+        <div className="flex-col h-full w-[100vw] items-center justify-center gap-3">
+          <div className="flex h-full w-[100vw] items-center justify-center gap-3">
+            <div className="h-[100vh] w-125">
+              <MonthComparison_en
+                data={{
+                  prev: prevMonth as IMonthlySummary | undefined,
+                  current: {
+                    ...familyData,
+                    mostSpentOn: familyData.mostSpentOn.key ?? "-",
+                    mostEarnedFrom: familyData.mostEarnedFrom.key ?? "-",
+                    topSpenderId: familyData.topSpender.spender,
+                    topEarnerId: familyData.topEarner.earner,
+                  },
+                }}
+                caption="Last Month Comparison"
+                monthOneName="This Month"
+                monthTwoName="Last Month"
+              />
+              <DifferentMonthsComparison_en familyId={familyId} />
+              <FamilyId_en familyId={familyId} />
+            </div>
+            <div className="flex h-[100vh] w-[72vw] flex-col items-center justify-center gap-3">
+              <SectionCards_en
+                data={{
                   ...familyData,
                   mostSpentOn: familyData.mostSpentOn.key ?? "-",
+                  leastSpentOn: familyData.leastSpentOn.key ?? "-",
                   mostEarnedFrom: familyData.mostEarnedFrom.key ?? "-",
-                  topSpenderId: familyData.topSpender.spender,
-                  topEarnerId: familyData.topEarner.earner,
-                },
-              }}
-              caption="Last Month Comparison"
-              monthOneName="This Month"
-              monthTwoName="Last Month"
-            />
-            <DifferentMonthsComparison familyId={familyId} />
+                  leastEarnedFrom: familyData.leastEarnedFrom.key ?? "-",
+                  smallestSpender: familyData.smallestSpender.spender,
+                  smallestEarner: familyData.smallestEarner.earner,
+                  biggestEarner: familyData.topEarner.earner,
+                  biggestSpender: familyData.topSpender.spender,
+                }}
+              />
+              <MainChart_en data={transactions as ITransactionWithDate[]} />
+            </div>
           </div>
-          <div className="flex h-[100vh] w-[72vw] flex-col items-center justify-center gap-3">
-            <SectionCards_en
-              data={{
-                ...familyData,
-                mostSpentOn: familyData.mostSpentOn.key ?? "-",
-                leastSpentOn: familyData.leastSpentOn.key ?? "-",
-                mostEarnedFrom: familyData.mostEarnedFrom.key ?? "-",
-                leastEarnedFrom: familyData.leastEarnedFrom.key ?? "-",
-                smallestSpender: familyData.smallestSpender.spender,
-                smallestEarner: familyData.smallestEarner.earner,
-                biggestEarner: familyData.topEarner.earner,
-                biggestSpender: familyData.topSpender.spender,
-              }}
-            />
-            <MainChart_en data={transactions as ITransactionWithDate[]} />
+          <div className="flex gap-5 justify-center items-center">
+            <SpenderLeaderboard_en topSpenders={topSpenders} />
+            <EarnerLeaderboard_en topEarners={topEarners} />
+            <EarnerCategoryLeaderboard_en topEarnerCategories={topEarnedFrom} />
+            <SpenderCategoryLeaderboard_en topSpenderCategories={topSpentOn} />
           </div>
         </div>
       )}
