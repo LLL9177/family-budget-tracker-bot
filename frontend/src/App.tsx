@@ -8,6 +8,7 @@ import { useState } from "react";
 import { AuthContext } from "./contexts/AuthContext";
 import Main_uk from "./components/uk/main/Main";
 import Renew_en from "./components/en/renew";
+import ConnectFamily_en from "./components/en/connect-family/connect-family";
 
 export function App() {
   const [access, setAccess] = useState("");
@@ -22,6 +23,7 @@ export function App() {
         <Route path="/en/register" element={<Register_en />} />
         <Route path="/uk/register" element={<Register_uk />} />
         <Route path="/en/renew" element={<Renew_en />} />
+        <Route path="/en/connect_family" element={<ConnectFamily_en />} />
       </Routes>
     </AuthContext>
   );
