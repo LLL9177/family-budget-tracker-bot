@@ -1,4 +1,4 @@
-import { UserEntity } from 'src/user/entities/User.entity';
+import { UserEntity } from '../../user/entities/User.entity';
 import {
   Column,
   Entity,
@@ -22,4 +22,7 @@ export class FamilyEntity {
   @OneToOne(() => UserEntity)
   @JoinColumn()
   owner: UserEntity;
+
+  @OneToMany(() => UserEntity, (user) => user.requestingToJoinFamily)
+  joinRequests: UserEntity[];
 }

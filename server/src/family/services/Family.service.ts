@@ -8,10 +8,10 @@ import { CreateFamilyDto } from 'src/dtos/createFamily.dto';
 import { Repository } from 'typeorm';
 import { FamilyEntity } from '../entities/Family.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserService } from 'src/user/User.service';
 import { IJwtPayload } from 'src/types/IJwtPayload.interface';
 import { Roles } from 'src/auth/enums/Roles.enum';
 import { AddRemoveMemberDto } from 'src/dtos/addMember.dto';
+import { UserService } from '../../user/User.service';
 
 interface IFamilyService {
   create(data: CreateFamilyDto, user: IJwtPayload): Promise<void>;
@@ -19,6 +19,8 @@ interface IFamilyService {
   getByUuid(uuid: string): Promise<FamilyEntity | null>;
   getByOwner(owner_id: string): Promise<FamilyEntity | null>;
   removeMember(member_id: string, ownerId: string): Promise<void>;
+  requestToJoinFamily(userId: string, familyId: string): Promise<void>;
+  getByUser(userId: string): Promise<FamilyEntity>
 }
 
 @Injectable()
@@ -108,5 +110,22 @@ export class FamilyService implements IFamilyService {
     family.members = family.members.splice(family.members.indexOf(member));
 
     await this.familyRepository.save(family);
+  }
+
+  async requestToJoinFamily(userId: string, familyId: string): Promise<void> {
+    const user = await this.userService.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+    const family = await this.familyRepository.findOneBy({ id: familyId });
+    if (!family) throw new NotFoundException('Family not found');
+
+    user.requestingToJoinFamily = family;
+  }
+
+  async getByUser(userId: string): Promise<FamilyEntity> {
+    const user = await this.userService.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+    if (!user.family) throw new NotFoundException('Family not found');
+
+    return user.family;
   }
 }

@@ -12,6 +12,8 @@ import { MonthlySummaryEntity } from './transaction/entities/MonthlySummary.enti
 import { UserModule } from './user/user.module';
 import { OneTimePasswordModule } from './one-time-password/one-time-password.module';
 import { OneTimePasswordEntity } from './one-time-password/entities/OneTimePassword.entity';
+import { FamilyController } from './family/family.controller';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -37,7 +39,8 @@ import { OneTimePasswordEntity } from './one-time-password/entities/OneTimePassw
     TransactionModule,
     UserModule,
     OneTimePasswordModule,
+    FileModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, FamilyController],
 })
 export class AppModule {}

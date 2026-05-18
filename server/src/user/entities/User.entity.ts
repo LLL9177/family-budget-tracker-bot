@@ -35,4 +35,9 @@ export class UserEntity {
 
   @Column({ nullable: true })
   googleId?: string;
+
+  @ManyToOne(() => FamilyEntity, (family) => family.joinRequests, {
+    nullable: true,
+  })
+  requestingToJoinFamily?: FamilyEntity;
 }

@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Get,
+  Param,
   Post,
   Req,
   UseGuards,
@@ -12,6 +14,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { FamilyGuard } from './family.guard';
 import { IJwtPayload } from 'src/types/IJwtPayload.interface';
 import { AddRemoveMemberDto } from 'src/dtos/addMember.dto';
+import { RequestToJoinFamilyDto } from 'src/dtos/RequestToJoinFamily.dto';
 
 @Controller('family')
 export class FamilyController {
@@ -42,5 +45,20 @@ export class FamilyController {
     @Req() req: { user: { id: string } },
   ) {
     await this.familyService.removeMember(body.user_id, req.user.id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('request_to_join')
+  async requestToJoinFamily(
+    @Param(new ValidationPipe()) dto: RequestToJoinFamilyDto,
+    @Req() req: { user: { id: string } },
+  ) {
+    await this.familyService.requestToJoinFamily(req.user.id, dto.familyId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get()
+  async getFamily(@Req() req: { user: { id: string } }) {
+    return await this.familyService.getByUser(req.user.id);
   }
 }

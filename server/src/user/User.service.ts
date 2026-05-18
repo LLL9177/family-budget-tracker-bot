@@ -43,7 +43,10 @@ export class UserService implements IUserService {
   ): Promise<UserEntity | null> {
     return this.userRepository.findOne({
       where: { id },
-      relations: { family: true, familyOwned: getOwned },
+      relations: {
+        family: { joinRequests: true, owner: true, members: true },
+        familyOwned: getOwned,
+      },
     });
   }
 

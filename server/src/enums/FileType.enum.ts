@@ -1,0 +1,5 @@
+export enum FileTypeEnum {
+  USER_AVATAR = 'USER_AVATAR',
+  FAMILY_AVATAR = 'FAMILY_AVATAR',
+  FAMILY_BANNER = 'FAMILY_BANNER',
+}
