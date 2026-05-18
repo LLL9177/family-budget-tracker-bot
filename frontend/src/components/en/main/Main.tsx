@@ -17,6 +17,7 @@ import EarnerCategoryLeaderboard_en from "./earnerCategoryLeaderboard";
 import SpenderCategoryLeaderboard_en from "./spenderCategoryLeaderboard";
 import DifferentMonthsComparison_en from "./differentMonthsComparison";
 import FamilyId_en from "./familyId";
+import { useTheme } from "@/components/theme-provider";
 
 export default function Main_en() {
   const auth = useContext(AuthContext);
@@ -27,6 +28,8 @@ export default function Main_en() {
     ITransaction[] | [] | ITransactionWithDate[]
   >([]);
   const [prevMonth, setPrevMonth] = useState<IFetchError | IMonthlySummary>();
+  const { theme, resolvedTheme, systemTheme } = useTheme();
+  const currentTheme = theme === "system" ? systemTheme : theme;
 
   const familyData: IFamilyData = {
     pnl: 0,
@@ -258,7 +261,12 @@ export default function Main_en() {
   }, [decodedJwt, auth.access, navigate]);
 
   return (
-    <div className="flex h-[100vh] w-[100vw] flex-col items-center justify-center">
+    <div
+      className={
+        "flex h-full w-[100vw] flex-col items-center justify-center bg-cover bg-fixed bg-center" +
+        `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
+      }
+    >
       {familyId == "" || !familyId ? (
         <>
           <h1 className="mb-5 text-2xl font-bold">Whoops!</h1>
@@ -283,7 +291,7 @@ export default function Main_en() {
           </div>
         </>
       ) : (
-        <div className="flex-col h-full w-[100vw] items-center justify-center gap-3">
+        <div className="h-full w-[100vw] flex-col items-center justify-center gap-3">
           <div className="flex h-full w-[100vw] items-center justify-center gap-3">
             <div className="h-[100vh] w-125">
               <MonthComparison_en
@@ -321,7 +329,7 @@ export default function Main_en() {
               <MainChart_en data={transactions as ITransactionWithDate[]} />
             </div>
           </div>
-          <div className="flex gap-5 justify-center items-center">
+          <div className="flex items-center justify-center gap-5">
             <SpenderLeaderboard_en topSpenders={topSpenders} />
             <EarnerLeaderboard_en topEarners={topEarners} />
             <EarnerCategoryLeaderboard_en topEarnerCategories={topEarnedFrom} />

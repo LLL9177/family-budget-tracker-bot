@@ -12,7 +12,12 @@ import {
 import type { ITransactionWithDate } from "@/types/TransactionWithDate.interface";
 import { BarChart3, LineChart as LineChartIcon } from "lucide-react";
 import type { ITransaction } from "@/types/Transaction.interface";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 import { useState } from "react";
 import { useTheme } from "@/components/theme-provider";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -55,13 +60,13 @@ export default function MainChart_en({ data }: Props) {
   const chartData =
     frame === "days"
       ? Array.from(dayMap.entries())
-        .sort(([a], [b]) => a - b)
-        .map(([day, total]) => ({ date: `Day ${day}`, PnL: total }))
+          .sort(([a], [b]) => a - b)
+          .map(([day, total]) => ({ date: `Day ${day}`, PnL: total }))
       : monthTransactions.map((t, i) => ({
-        transactionIndex: String(i + 1),
-        PnL: t.amount,
-        date: `Day ${t.createdAt.getDate()}`,
-      }));
+          transactionIndex: String(i + 1),
+          PnL: t.amount,
+          date: `Day ${t.createdAt.getDate()}`,
+        }));
 
   if (frame == "transactions") {
     let transactionIndex = 0;
@@ -74,10 +79,11 @@ export default function MainChart_en({ data }: Props) {
   return (
     <div className="flex w-full items-center justify-center">
       <div
-        className={`h-190 w-350 rounded-[30px] border border-[rgb(100,100,100)] ${currentTheme === "dark"
+        className={`h-190 w-350 rounded-[30px] border border-[rgb(100,100,100)] ${
+          currentTheme === "dark"
             ? "bg-gradient-to-t from-primary/5 to-card"
             : "bg-gradient-to-t from-primary/5 to-white"
-          } p-10`}
+        } bg-card p-10`}
       >
         <div className="flex space-x-[54%] pr-10 pl-10">
           <div>
@@ -89,8 +95,9 @@ export default function MainChart_en({ data }: Props) {
           <div className="flex pb-10">
             <div className="mr-10 flex space-x-[10%]">
               <button
-                className={`cursor-pointer rounded border-[2px] pr-1 pl-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${displayMode == "line" ? "border-[rgb(100,100,100)]" : ""
-                  } `}
+                className={`cursor-pointer rounded border-[2px] pr-1 pl-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${
+                  displayMode == "line" ? "border-[rgb(100,100,100)]" : ""
+                } `}
                 onClick={() => {
                   setDisplayMode("line");
                 }}
@@ -98,8 +105,9 @@ export default function MainChart_en({ data }: Props) {
                 <LineChartIcon />
               </button>
               <button
-                className={`cursor-pointer rounded border-[2px] pr-1 pl-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${displayMode == "bars" ? "border-[rgb(100,100,100)]" : ""
-                  } `}
+                className={`cursor-pointer rounded border-[2px] pr-1 pl-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${
+                  displayMode == "bars" ? "border-[rgb(100,100,100)]" : ""
+                } `}
                 onClick={() => {
                   setDisplayMode("bars");
                 }}
@@ -113,14 +121,15 @@ export default function MainChart_en({ data }: Props) {
                 className="rounded-lg border-1 border-[rgb(50,50,50)]"
               >
                 <Button
-                  className={`text-[16px] ${frame == "days"
+                  className={`text-[16px] ${
+                    frame == "days"
                       ? currentTheme == "dark"
                         ? "bg-[rgb(30,30,30)]"
                         : "bg-[rgb(255,255,255)]"
                       : currentTheme == "dark"
                         ? "bg-[rgb(15,15,15)]"
                         : "bg-[rgb(240,240,240)]"
-                    } p-4 ${currentTheme == "dark" ? "text-white" : "text-black"}`}
+                  } p-4 ${currentTheme == "dark" ? "text-white" : "text-black"}`}
                   onClick={() => {
                     setFrame("days");
                   }}
@@ -128,14 +137,15 @@ export default function MainChart_en({ data }: Props) {
                   days
                 </Button>
                 <Button
-                  className={`text-[16px] ${frame == "transactions"
+                  className={`text-[16px] ${
+                    frame == "transactions"
                       ? currentTheme == "dark"
                         ? "bg-[rgb(30,30,30)]"
                         : "bg-[rgb(255,255,255)]"
                       : currentTheme == "dark"
                         ? "bg-[rgb(15,15,15)]"
                         : "bg-[rgb(240,240,240)]"
-                    } p-4 ${currentTheme == "dark" ? "text-white" : "text-black"}`}
+                  } p-4 ${currentTheme == "dark" ? "text-white" : "text-black"}`}
                   onClick={() => {
                     setFrame("transactions");
                   }}

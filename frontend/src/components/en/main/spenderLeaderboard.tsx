@@ -14,7 +14,7 @@ type Props = {
 
 export default function SpenderLeaderboard_en({ topSpenders }: Props) {
   return (
-    <div className="rounded-xl bg-gradient-to-t from-primary/5 to-card p-1">
+    <div className="rounded-xl bg-gradient-to-t from-primary/5 to-card p-1 bg-card">
       {topSpenders ? (
         <Table>
           <TableCaption>Top Spenders</TableCaption>

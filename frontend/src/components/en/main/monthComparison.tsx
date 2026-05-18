@@ -23,7 +23,7 @@ export default function MonthComparison_en({
   if (!data.current || !data.prev) return null;
 
   return (
-    <div className="mt-2 h-87 w-full rounded-xl bg-gradient-to-t from-primary/5 to-card">
+    <div className="mt-2 h-87 w-full rounded-xl bg-gradient-to-t from-primary/5 to-card bg-card">
       <Table className="h-full overflow-x-scroll bg-[rgba(0,0,0,0)]">
         <TableCaption>{caption}</TableCaption>
         <TableHeader>

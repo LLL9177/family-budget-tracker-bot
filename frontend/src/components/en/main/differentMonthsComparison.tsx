@@ -116,7 +116,7 @@ export default function DifferentMonthsComparison_en({ familyId }: Props) {
   }
 
   return (
-    <div className="mt-2 h-100 w-full rounded-xl bg-gradient-to-t from-primary/5 to-card">
+    <div className="mt-2 h-100 w-full rounded-xl bg-gradient-to-t from-primary/5 to-card bg-card">
       <form
         className="flex w-full flex-col items-center gap-2 rounded-t-xl border-1 bg-[rgba(150,150,150,0.1)] p-2 -mb-2"
         onSubmit={(e) => {
