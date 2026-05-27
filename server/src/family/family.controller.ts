@@ -8,13 +8,13 @@ import {
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { CreateFamilyDto } from 'src/dtos/createFamily.dto';
 import { FamilyService } from './services/Family.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { FamilyGuard } from './family.guard';
 import { IJwtPayload } from 'src/types/IJwtPayload.interface';
 import { AddRemoveMemberDto } from 'src/dtos/addMember.dto';
 import { RequestToJoinFamilyDto } from 'src/dtos/RequestToJoinFamily.dto';
+import { CreateFamilyDto } from '../dtos/createFamily.dto';
 
 @Controller('family')
 export class FamilyController {

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
@@ -67,7 +67,7 @@ export class FileService implements IFileService {
 
   async get(id: string): Promise<FileEntity> {
     const file = await this.fileRepository.findOneBy({ id });
-    if (!file) throw new Error('File not found');
+    if (!file) throw new NotFoundException('File not found');
 
     return file;
   }

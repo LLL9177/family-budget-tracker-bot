@@ -268,7 +268,7 @@ export default function Main_en() {
       }
     >
       {familyId == "" || !familyId ? (
-        <>
+        <div className="flex h-[100vh] flex-col items-center justify-center">
           <h1 className="mb-5 text-2xl font-bold">Whoops!</h1>
           <p className="mb-3 w-150 text-center">
             Seems like your account doesn't have Family ID connected. To access
@@ -289,7 +289,7 @@ export default function Main_en() {
               Create Family
             </Button>
           </div>
-        </>
+        </div>
       ) : (
         <div className="h-full w-[100vw] flex-col items-center justify-center gap-3">
           <div className="flex h-full w-[100vw] items-center justify-center gap-3">
