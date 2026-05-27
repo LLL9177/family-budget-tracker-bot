@@ -14,6 +14,7 @@ import { OneTimePasswordModule } from './one-time-password/one-time-password.mod
 import { OneTimePasswordEntity } from './one-time-password/entities/OneTimePassword.entity';
 import { FamilyController } from './family/family.controller';
 import { FileModule } from './file/file.module';
+import { FileEntity } from './file/entities/File.entity';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { FileModule } from './file/file.module';
         TransactionEntity,
         MonthlySummaryEntity,
         OneTimePasswordEntity,
+        FileEntity,
       ],
       synchronize: true,
     }),

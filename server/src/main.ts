@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
+import { v2 as cloudinary } from 'cloudinary';
 
 const cookieParser = require('cookie-parser');
 
@@ -11,6 +12,13 @@ async function bootstrap() {
     credentials: true,
   });
   app.use(cookieParser());
+
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_SECRET,
+  });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
