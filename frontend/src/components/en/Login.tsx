@@ -24,6 +24,7 @@ import {
 } from "../ui/alert-dialog";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { AuthContext } from "@/contexts/AuthContext";
+import { useTheme } from "../theme-provider";
 
 export default function Login_en() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
@@ -34,8 +35,10 @@ export default function Login_en() {
   const auth = useContext(AuthContext);
   const { googleAuth, generatedPassword } = useGoogleAuth(
     auth.setAccess,
-    () => { }
+    () => {}
   );
+  const { theme, resolvedTheme, systemTheme } = useTheme();
+  const currentTheme = theme === "system" ? systemTheme : theme;
 
   useEffect(() => {
     if (generatedPassword == null) navigate("/en");
@@ -78,7 +81,12 @@ export default function Login_en() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-10 bg-[#1a191f]">
+    <div
+      className={
+        "flex min-h-screen flex-col items-center justify-center gap-10 bg-[#1a191f]" +
+        `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
+      }
+    >
       <ChangeLanguage
         className="relative top-8 left-45 h-10 w-10"
         iconClass="!w-5 !h-5"
@@ -159,8 +167,8 @@ export default function Login_en() {
             <AlertDialogTitle>Password</AlertDialogTitle>
           </AlertDialogHeader>
           <AlertDialogDescription>
-            We generated a one-time password for your account. You will need to use this
-            password when logging in to your account in our bot.
+            We generated a one-time password for your account. You will need to
+            use this password when logging in to your account in our bot.
             <br />
             Here's your password:
           </AlertDialogDescription>

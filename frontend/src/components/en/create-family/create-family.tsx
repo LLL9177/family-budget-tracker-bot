@@ -33,8 +33,8 @@ export default function CreateFamily_en() {
               "Content-Type": "application/json",
             },
           }
-        ).then((res) => res.json());
-        console.log(data);
+        );
+        if (!data.ok) console.error(data);
       } catch (err) {
         console.error(err);
       }

@@ -1,8 +1,10 @@
+import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { AuthContext } from "@/contexts/AuthContext";
 import React, { useContext, useState } from "react";
+import { resumeToPipeableStream } from "react-dom/server";
 
 export default function ConnectFamily_en() {
   const auth = useContext(AuthContext);
@@ -10,21 +12,27 @@ export default function ConnectFamily_en() {
   const [familyId, setFamilyId] = useState("");
   const [error, setError] = useState("");
 
+  const { theme, resolvedTheme, systemTheme } = useTheme();
+  const currentTheme = theme === "system" ? systemTheme : theme;
+
   async function joinFamily() {
     try {
-      const data = await fetch(
-        import.meta.env.VITE_BACKEND_URL + `/request_to_join/${familyId}`,
+      const result = await fetch(
+        import.meta.env.VITE_BACKEND_URL + "/family/request_to_join",
         {
           method: "POST",
           credentials: "include",
+          body: JSON.stringify({ familyId }),
           headers: {
             "Content-Type": "application/json",
             Authorization: auth.access ? `Bearer ${auth.access}` : "",
           },
         }
-      ).then((res) => res.json());
-
-      console.log(data);
+      );
+      if (!result.ok) {
+        console.error(result);
+      }
+      console.log(result);
     } catch (err) {
       console.error(err);
       setError("Something went wrong while joining the family");
@@ -49,11 +57,14 @@ export default function ConnectFamily_en() {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center gap-4">
+    <div
+      className={
+        "flex h-screen w-screen flex-col items-center justify-center gap-4" +
+        `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
+      }
+    >
       <Card className="flex h-[15%] w-[40%] flex-row items-center justify-around">
-        <h1 className="text-2xl font-semibold">
-          Connect To A Family
-        </h1>
+        <h1 className="text-2xl font-semibold">Connect To A Family</h1>
 
         <form className="flex items-center justify-center gap-2">
           <Input
@@ -63,10 +74,7 @@ export default function ConnectFamily_en() {
             placeholder="Family ID"
           />
 
-          <Button
-            onClick={(e) => submitFamilyId(e)}
-            className="cursor-pointer"
-          >
+          <Button onClick={(e) => submitFamilyId(e)} className="cursor-pointer">
             Join
           </Button>
         </form>
@@ -76,7 +84,7 @@ export default function ConnectFamily_en() {
         className={`transform text-red-500 transition-all duration-300 ease-out ${
           error
             ? "translate-y-0 opacity-100"
-            : "-translate-y-2 pointer-events-none opacity-0"
+            : "pointer-events-none -translate-y-2 opacity-0"
         }`}
       >
         {error}
