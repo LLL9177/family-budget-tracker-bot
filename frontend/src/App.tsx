@@ -11,12 +11,14 @@ import Renew_en from "./components/en/renew";
 import ConnectFamily_en from "./components/en/connect-family/connect-family";
 import Family_en from "./components/en/family/family";
 import CreateFamily_en from "./components/en/create-family/create-family";
+import AuthBootstrap from "./hooks/useRenewAccess";
 
 export function App() {
   const [access, setAccess] = useState("");
 
   return (
     <AuthContext value={{ access, setAccess }}>
+      <AuthBootstrap />
       <Routes>
         <Route path="/en" element={<Main_en />} />
         <Route path="/uk" element={<Main_uk />} />

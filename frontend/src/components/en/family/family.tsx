@@ -1,10 +1,64 @@
 import { AuthContext } from "@/contexts/AuthContext";
 import type { IFamily } from "@/types/Family.interface";
-import { useContext, useEffect, useState } from "react";
+import { RolesEnum } from "@/enums/RolesEnum";
+import { useContext, useEffect, useRef, useState } from "react";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import { Badge } from "@/components/ui/badge";
+
+import { Button } from "@/components/ui/button";
+
+import { Separator } from "@/components/ui/separator";
+
+import { Skeleton } from "@/components/ui/skeleton";
+
+import {
+  Crown,
+  Users,
+  Shield,
+  Sparkles,
+  UserPlus,
+  Check,
+  X,
+  Pencil,
+  Camera,
+  Loader2,
+} from "lucide-react";
+
+type AccessTokenPayload = {
+  id: string;
+  roles: RolesEnum[];
+};
+
+function parseJwt<T>(token: string): T | null {
+  try {
+    const payload = token.split(".")[1];
+
+    return JSON.parse(atob(payload)) as T;
+  } catch {
+    return null;
+  }
+}
 
 export default function Family_en() {
   const auth = useContext(AuthContext);
+
   const [familyData, setFamilyData] = useState<IFamily>();
+
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function fetchFamilyData() {
@@ -28,5 +82,475 @@ export default function Family_en() {
     fetchFamilyData();
   }, [auth.access]);
 
-  return <div></div>;
+  async function uploadAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!e.target.files?.[0] || !familyData) return;
+
+    const file = e.target.files[0];
+
+    try {
+      setUploadingAvatar(true);
+
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      const updatedFamily = await fetch(
+        import.meta.env.VITE_BACKEND_URL + "/family/avatar",
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            Authorization: auth.access ? `Bearer ${auth.access}` : "",
+          },
+          body: formData,
+        }
+      ).then((res) => res.json());
+
+      setFamilyData(updatedFamily);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  async function uploadBanner(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!e.target.files?.[0] || !familyData) return;
+
+    const file = e.target.files[0];
+
+    try {
+      setUploadingBanner(true);
+
+      const formData = new FormData();
+      formData.append("banner", file);
+
+      const updatedFamily = await fetch(
+        import.meta.env.VITE_BACKEND_URL + "/family/banner",
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            Authorization: auth.access ? `Bearer ${auth.access}` : "",
+          },
+          body: formData,
+        }
+      ).then((res) => res.json());
+
+      setFamilyData(updatedFamily);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploadingBanner(false);
+    }
+  }
+
+  if (!familyData) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="mx-auto max-w-7xl space-y-6">
+          <Skeleton className="h-72 w-full rounded-[32px]" />
+
+          <div className="grid gap-6 lg:grid-cols-3">
+            <Skeleton className="h-40 rounded-[32px]" />
+            <Skeleton className="h-40 rounded-[32px]" />
+            <Skeleton className="h-40 rounded-[32px]" />
+          </div>
+
+          <Skeleton className="h-[500px] rounded-[32px]" />
+        </div>
+      </div>
+    );
+  }
+
+  const tokenData = auth.access
+    ? parseJwt<AccessTokenPayload>(auth.access)
+    : null;
+
+  console.log(familyData);
+  const isOwner =
+    tokenData?.id === familyData.owner.id &&
+    tokenData.roles.includes(RolesEnum.FAMILY_OWNER);
+
+  return (
+    <div className="min-h-screen bg-background p-6">
+      {familyData.banner?.url && (
+        <>
+          <img
+            src={familyData.banner.url}
+            alt=""
+            className="pointer-events-none fixed inset-0 h-full w-full scale-110 object-cover opacity-20 blur-sm"
+          />
+
+          <div className="pointer-events-none fixed inset-0 -z-10 bg-black/70" />
+        </>
+      )}
+
+      <div className="mx-auto max-w-7xl space-y-6">
+        {/* HIDDEN INPUTS */}
+        <input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={uploadAvatar}
+        />
+
+        <input
+          ref={bannerInputRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={uploadBanner}
+        />
+
+        {/* HERO */}
+        <div className="group relative overflow-hidden rounded-[32px] border shadow-2xl">
+          {/* Banner */}
+          <img
+            src={familyData.banner?.url}
+            alt="Family Banner"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/90 transition group-hover:bg-black/70" />
+
+          {/* Glow */}
+          <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
+
+          {/* EDIT BANNER */}
+          {isOwner && (
+            <Button
+              onClick={() => bannerInputRef.current?.click()}
+              className="absolute top-6 right-6 z-20 rounded-2xl opacity-0 backdrop-blur-xl transition-all duration-300 group-hover:opacity-100"
+            >
+              {uploadingBanner ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Camera className="mr-2 h-4 w-4" />
+                  Edit Banner
+                </>
+              )}
+            </Button>
+          )}
+
+          <div className="relative z-10 flex flex-col gap-8 p-8 lg:flex-row lg:items-end lg:justify-between lg:p-12">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end">
+              {/* AVATAR */}
+              <div className="group/avatar relative">
+                <Avatar className="h-36 w-36 rounded-[28px] border-4 border-white/20 shadow-2xl">
+                  <AvatarImage
+                    src={familyData.avatar?.url}
+                    className="object-cover"
+                  />
+
+                  <AvatarFallback className="rounded-[28px] text-4xl font-black">
+                    {familyData.name.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+
+                {/* Avatar Overlay */}
+                {isOwner && (
+                  <>
+                    <div className="absolute inset-0 flex items-center justify-center rounded-[28px] bg-black/60 opacity-0 transition-all duration-300 group-hover/avatar:opacity-100">
+                      {uploadingAvatar ? (
+                        <Loader2 className="h-8 w-8 animate-spin text-white" />
+                      ) : (
+                        <Camera className="h-8 w-8 text-white" />
+                      )}
+                    </div>
+
+                    <Button
+                      size="icon"
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="absolute -right-2 -bottom-2 rounded-2xl shadow-xl"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              {/* INFO */}
+              <div className="space-y-4 text-white">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge className="rounded-full border-none bg-white/15 px-4 py-1 text-white backdrop-blur-xl">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Private Family
+                  </Badge>
+
+                  <Badge className="rounded-full border-none bg-emerald-500/20 px-4 py-1 text-emerald-300 backdrop-blur-xl">
+                    Active
+                  </Badge>
+                </div>
+
+                <div>
+                  <h1 className="text-5xl font-black tracking-tight lg:text-7xl">
+                    {familyData.name}
+                  </h1>
+
+                  <p className="mt-3 max-w-2xl text-lg text-zinc-300">
+                    Built on loyalty, chaos, shared memes, and random arguments
+                    that somehow end after food arrives.
+                  </p>
+                </div>
+
+                {/* OWNER */}
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-xl">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback>
+                      {familyData.owner.username?.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div>
+                    <p className="text-sm text-zinc-400">Family Owner</p>
+
+                    <div className="flex items-center gap-2">
+                      <Crown className="h-4 w-4 text-yellow-400" />
+
+                      <p className="font-semibold">
+                        {familyData.owner.username}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* STATS */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Card className="rounded-3xl border-white/10 bg-white/10 text-white backdrop-blur-xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <Users className="h-8 w-8 text-blue-300" />
+
+                    <div>
+                      <p className="text-sm text-zinc-300">Members</p>
+
+                      <h2 className="text-3xl font-black">
+                        {familyData.members.length}
+                      </h2>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-3xl border-white/10 bg-white/10 text-white backdrop-blur-xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <Shield className="h-8 w-8 text-emerald-300" />
+
+                    <div>
+                      <p className="text-sm text-zinc-300">Status</p>
+
+                      <h2 className="text-2xl font-black">Protected</h2>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+
+        {/* CONTENT */}
+        <div className="grid gap-6 xl:grid-cols-[1fr_350px]">
+          {/* MEMBERS */}
+          <Card className="rounded-[32px] border-none shadow-xl">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-3xl font-black">Members</CardTitle>
+
+                  <CardDescription className="mt-2">
+                    The people responsible for your character development.
+                  </CardDescription>
+                </div>
+
+                <Badge className="rounded-full px-4 py-2 text-sm">
+                  {familyData.members.length} Total
+                </Badge>
+              </div>
+            </CardHeader>
+
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                {familyData.members.map((member) => (
+                  <Card
+                    key={member.id}
+                    className="group rounded-3xl border bg-muted/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                  >
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-4">
+                          <Avatar className="h-14 w-14 border-2 border-background">
+                            <AvatarFallback className="font-bold">
+                              {member.username?.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-bold">
+                                {member.username}
+                              </h3>
+
+                              {member.id === familyData.owner.id && (
+                                <Crown className="h-4 w-4 text-yellow-500" />
+                              )}
+                            </div>
+
+                            <p className="text-sm text-muted-foreground">
+                              Family Member
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+
+                          <span className="text-xs text-muted-foreground">
+                            Online
+                          </span>
+                        </div>
+                      </div>
+
+                      <Separator className="my-4" />
+
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground">User ID</p>
+
+                        <code className="rounded-lg bg-muted px-2 py-1 text-xs">
+                          {member.id}
+                        </code>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* SIDEBAR */}
+          <div className="space-y-6">
+            {/* JOIN REQUESTS */}
+            <Card className="rounded-[32px] border-none shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-2xl font-black">
+                  <UserPlus className="h-6 w-6" />
+                  Join Requests
+                </CardTitle>
+
+                <CardDescription>
+                  People waiting outside the gates.
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {familyData.joinRequests?.length ? (
+                  familyData.joinRequests.map((request) => (
+                    <div
+                      key={request.id}
+                      className="rounded-2xl border bg-muted/40 p-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarFallback>
+                            {request.username?.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="flex-1">
+                          <p className="font-semibold">{request.username}</p>
+
+                          <p className="text-sm text-muted-foreground">
+                            Wants to join
+                          </p>
+                        </div>
+                      </div>
+
+                      {isOwner && (
+                        <div className="mt-4 flex gap-2">
+                          <Button className="flex-1 rounded-xl">
+                            <Check className="mr-2 h-4 w-4" />
+                            Accept
+                          </Button>
+
+                          <Button
+                            variant="destructive"
+                            className="flex-1 rounded-xl"
+                          >
+                            <X className="mr-2 h-4 w-4" />
+                            Reject
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-2xl border border-dashed p-8 text-center">
+                    <UserPlus className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+
+                    <p className="font-medium">No requests yet</p>
+
+                    <p className="text-sm text-muted-foreground">
+                      The gates are quiet today.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* INFO */}
+            <Card className="rounded-[32px] border-none shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-2xl font-black">
+                  Family Info
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-5">
+                <div>
+                  <p className="text-sm text-muted-foreground">Family ID</p>
+
+                  <code className="mt-1 block rounded-xl bg-muted p-3 text-xs">
+                    {familyData.id}
+                  </code>
+                </div>
+
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <p className="text-muted-foreground">Members</p>
+
+                  <Badge>{familyData.members.length}</Badge>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <p className="text-muted-foreground">Requests</p>
+
+                  <Badge variant="secondary">
+                    {familyData.joinRequests?.length || 0}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <p className="text-muted-foreground">Owner</p>
+
+                  <Badge className="gap-1">
+                    <Crown className="h-3 w-3" />
+                    Leader
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
