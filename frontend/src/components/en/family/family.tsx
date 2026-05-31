@@ -103,9 +103,19 @@ export default function Family_en() {
           },
           body: formData,
         }
-      ).then((res) => res.json());
+      );
 
-      setFamilyData(updatedFamily);
+      const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/family", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: auth.access ? `Bearer ${auth.access}` : "",
+        },
+      });
+
+      if (!res.ok) throw new Error(res.error);
+      setFamilyData(await res.json());
     } catch (err) {
       console.error(err);
     } finally {
@@ -124,19 +134,26 @@ export default function Family_en() {
       const formData = new FormData();
       formData.append("banner", file);
 
-      const updatedFamily = await fetch(
-        import.meta.env.VITE_BACKEND_URL + "/family/banner",
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            Authorization: auth.access ? `Bearer ${auth.access}` : "",
-          },
-          body: formData,
-        }
-      ).then((res) => res.json());
+      await fetch(import.meta.env.VITE_BACKEND_URL + "/family/banner", {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          Authorization: auth.access ? `Bearer ${auth.access}` : "",
+        },
+        body: formData,
+      });
 
-      setFamilyData(updatedFamily);
+      const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/family", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: auth.access ? `Bearer ${auth.access}` : "",
+        },
+      });
+
+      if (!res.ok) throw new Error(res.error);
+      setFamilyData(await res.json());
     } catch (err) {
       console.error(err);
     } finally {
@@ -166,10 +183,80 @@ export default function Family_en() {
     ? parseJwt<AccessTokenPayload>(auth.access)
     : null;
 
-  console.log(familyData);
   const isOwner =
     tokenData?.id === familyData.owner.id &&
     tokenData.roles.includes(RolesEnum.FAMILY_OWNER);
+
+  function acceptJoinRequest(userId: string) {
+    if (!isOwner) return;
+    async function fetchData(userId: string) {
+      if (!familyData) return;
+      try {
+        await fetch(
+          import.meta.env.VITE_BACKEND_URL + "/family/accept_join_request",
+          {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify({ id: userId }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${auth.access}`,
+            },
+          }
+        );
+        const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/family", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: auth.access ? `Bearer ${auth.access}` : "",
+          },
+        });
+
+        if (!res.ok) throw new Error(res.error);
+        setFamilyData(await res.json());
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    fetchData(userId);
+  }
+
+  function rejectJoinRequest(userId: string) {
+    if (!isOwner) return;
+    async function fetchData(userId: string) {
+      try {
+        await fetch(
+          import.meta.env.VITE_BACKEND_URL + "/family/reject_join_request",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${auth.access}`,
+            },
+            body: JSON.stringify({ id: userId }),
+          }
+        );
+        const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/family", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: auth.access ? `Bearer ${auth.access}` : "",
+          },
+        });
+
+        if (!res.ok) throw new Error(res.error);
+        setFamilyData(await res.json());
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    fetchData(userId);
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -475,7 +562,10 @@ export default function Family_en() {
 
                       {isOwner && (
                         <div className="mt-4 flex gap-2">
-                          <Button className="flex-1 rounded-xl">
+                          <Button
+                            className="flex-1 rounded-xl"
+                            onClick={() => acceptJoinRequest(request.id)}
+                          >
                             <Check className="mr-2 h-4 w-4" />
                             Accept
                           </Button>
@@ -483,6 +573,7 @@ export default function Family_en() {
                           <Button
                             variant="destructive"
                             className="flex-1 rounded-xl"
+                            onClick={() => rejectJoinRequest(request.id)}
                           >
                             <X className="mr-2 h-4 w-4" />
                             Reject
