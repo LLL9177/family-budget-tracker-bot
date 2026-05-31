@@ -101,4 +101,10 @@ export class AuthController {
   async botGoogleAuth(@Body(new ValidationPipe()) body: BotGoogleLoginDto) {
     return await this.authService.botGoogleAuth(body);
   }
+
+  @UseGuards(AuthGuard)
+  @Get('/renew-access')
+  renewAccess() {
+    return null; // since auth guard does that already
+  }
 }

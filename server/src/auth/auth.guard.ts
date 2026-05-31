@@ -5,16 +5,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { JwtTokenService } from 'src/jwt/Jwt.service';
-
-interface RequestWithRefresh extends Request {
-  cookies: {
-    refresh?: string;
-  };
-  headers: {
-    'x-refresh-token'?: string;
-  };
-}
+import { JwtTokenService } from '../jwt/Jwt.service';
+import { RequestWithRefresh } from '../types/RequestWithRefresh.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -26,7 +18,7 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(req);
     const { refresh, isBot } = this.useRefresh(req);
 
-    if (token) {
+    if (token && refresh) {
       try {
         const payload = this.jwtService.validateAccess(token);
         req['user'] = payload;
@@ -34,6 +26,8 @@ export class AuthGuard implements CanActivate {
         if (!refresh) throw new UnauthorizedException('Log in again');
         const pair = await this.jwtService.refresh(refresh);
         res.setHeader('x-access-token', pair.access);
+        const payload = this.jwtService.validateAccess(pair.access);
+        req['user'] = payload;
       }
       return true;
     } else if (refresh) {

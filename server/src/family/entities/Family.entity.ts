@@ -1,3 +1,4 @@
+import { FileEntity } from '../../file/entities/File.entity';
 import { UserEntity } from '../../user/entities/User.entity';
 import {
   Column,
@@ -19,10 +20,18 @@ export class FamilyEntity {
   @OneToMany(() => UserEntity, (user: UserEntity) => user.family)
   members: UserEntity[];
 
-  @OneToOne(() => UserEntity)
+  @OneToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn()
   owner: UserEntity;
 
   @OneToMany(() => UserEntity, (user) => user.requestingToJoinFamily)
   joinRequests: UserEntity[];
+
+  @OneToOne(() => FileEntity, { nullable: true })
+  @JoinColumn()
+  avatar?: FileEntity;
+
+  @OneToOne(() => FileEntity)
+  @JoinColumn()
+  banner: FileEntity;
 }

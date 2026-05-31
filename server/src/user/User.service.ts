@@ -44,7 +44,13 @@ export class UserService implements IUserService {
     return this.userRepository.findOne({
       where: { id },
       relations: {
-        family: { joinRequests: true, owner: true, members: true },
+        family: {
+          joinRequests: true,
+          owner: true,
+          members: true,
+          avatar: true,
+          banner: true,
+        },
         familyOwned: getOwned,
       },
     });

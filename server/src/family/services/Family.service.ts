@@ -12,6 +12,8 @@ import { IJwtPayload } from 'src/types/IJwtPayload.interface';
 import { Roles } from 'src/auth/enums/Roles.enum';
 import { AddRemoveMemberDto } from 'src/dtos/addMember.dto';
 import { UserService } from '../../user/User.service';
+import { FileService } from '../../file/services/File.service';
+import { FileTypeEnum } from '../../enums/FileType.enum';
 
 interface IFamilyService {
   create(data: CreateFamilyDto, user: IJwtPayload): Promise<void>;
@@ -20,7 +22,11 @@ interface IFamilyService {
   getByOwner(owner_id: string): Promise<FamilyEntity | null>;
   removeMember(member_id: string, ownerId: string): Promise<void>;
   requestToJoinFamily(userId: string, familyId: string): Promise<void>;
-  getByUser(userId: string): Promise<FamilyEntity>
+  getByUser(userId: string): Promise<FamilyEntity>;
+  acceptJoinFamily(userId: string, ownerId: string): Promise<void>;
+  rejectJoinFamily(userId: string, ownerId: string): Promise<void>;
+  uploadBanner(file: Express.Multer.File, userId: string): Promise<void>;
+  uploadAvatar(file: Express.Multer.File, userId: string): Promise<void>;
 }
 
 @Injectable()
@@ -29,15 +35,22 @@ export class FamilyService implements IFamilyService {
     @InjectRepository(FamilyEntity)
     private readonly familyRepository: Repository<FamilyEntity>,
     private readonly userService: UserService,
+    private readonly fileService: FileService,
   ) {}
 
   async create(data: CreateFamilyDto, user: IJwtPayload): Promise<void> {
     const owner = await this.userService.findById(user.id);
     if (owner) {
+      if (!process.env.DEFAULT_FAMILY_BANNER)
+        throw new Error('App misconfigured');
+      const banner = await this.fileService.getByUrl(
+        process.env.DEFAULT_FAMILY_BANNER,
+      );
       await this.familyRepository.insert({
         name: data.name,
         owner: owner,
         members: [owner],
+        banner,
       });
 
       const family = await this.getByOwner(owner.id);
@@ -78,10 +91,14 @@ export class FamilyService implements IFamilyService {
   }
 
   async getByUuid(uuid: string): Promise<FamilyEntity | null> {
-    return await this.familyRepository.findOne({
+    const family = await this.familyRepository.findOne({
       where: { id: uuid },
-      relations: ['members'],
+      relations: ['members', 'banner', 'avatar'],
     });
+
+    if (!family) throw new NotFoundException('Family not found');
+
+    return family;
   }
 
   async getByOwner(owner_id: string): Promise<FamilyEntity | null> {
@@ -89,7 +106,13 @@ export class FamilyService implements IFamilyService {
 
     if (!owner) throw new NotFoundException("User wasn't found");
 
-    return await this.familyRepository.findOneBy({ owner });
+    const family = await this.familyRepository.findOne({
+      where: { owner },
+      relations: ['banner', 'avatar'],
+    });
+    if (!family) throw new NotFoundException('Family not found');
+
+    return family;
   }
 
   async removeMember(memberId: string, ownerId: string): Promise<void> {
@@ -119,6 +142,14 @@ export class FamilyService implements IFamilyService {
     if (!family) throw new NotFoundException('Family not found');
 
     user.requestingToJoinFamily = family;
+    if (family.joinRequests) {
+      family.joinRequests.push(user);
+    } else {
+      family.joinRequests = [user];
+    }
+
+    await this.userService.changeUser(user);
+    await this.familyRepository.save(family);
   }
 
   async getByUser(userId: string): Promise<FamilyEntity> {
@@ -126,6 +157,84 @@ export class FamilyService implements IFamilyService {
     if (!user) throw new NotFoundException('User not found');
     if (!user.family) throw new NotFoundException('Family not found');
 
-    return user.family;
+    const family = user.family;
+
+    return family;
+  }
+
+  async acceptJoinFamily(userId: string, ownerId: string): Promise<void> {
+    const user = await this.userService.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+    const owner = await this.userService.findById(ownerId);
+    if (!owner) throw new NotFoundException('User not found');
+    const family = await this.familyRepository.findOne({
+      where: { owner },
+      relations: { joinRequests: true, members: true },
+    });
+    if (!family) throw new NotFoundException('Family not found');
+
+    const i = family.joinRequests.findIndex((u) => u.id === user.id);
+    family.joinRequests.splice(i, 1);
+    family.members.push(user);
+    user.requestingToJoinFamily = null;
+
+    await this.userService.changeUser(user);
+    await this.familyRepository.save(family);
+  }
+
+  async uploadBanner(file: Express.Multer.File, userId: string): Promise<void> {
+    const user = await this.userService.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+    const family = user.family;
+    if (!family) throw new NotFoundException('Family not found');
+
+    const fileEntity = await this.fileService.upload(
+      file.buffer,
+      FileTypeEnum.FAMILY_BANNER,
+    );
+    family.banner = fileEntity;
+
+    await this.familyRepository.save(family);
+  }
+
+  async uploadAvatar(file: Express.Multer.File, userId: string): Promise<void> {
+    const user = await this.userService.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    const family = user.family;
+    if (!family) throw new NotFoundException('Family not found');
+
+    const avatar = await this.fileService.upload(
+      file.buffer,
+      FileTypeEnum.FAMILY_AVATAR,
+    );
+    family.avatar = avatar;
+
+    await this.familyRepository.save(family);
+  }
+
+  async rejectJoinFamily(userId: string, ownerId: string): Promise<void> {
+    const owner = await this.userService.findById(ownerId);
+    if (!owner) throw new NotFoundException('User not found');
+    const family = await this.familyRepository.findOne({
+      where: { owner },
+      relations: {
+        joinRequests: true,
+      },
+    });
+    if (!family) throw new NotFoundException('Family not found');
+
+    const index = family.joinRequests.findIndex((user) => user.id == userId);
+    if (index == -1)
+      throw new NotFoundException('User not found in requests list');
+
+    const user = await this.userService.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    family.joinRequests.splice(index, 1);
+    user.requestingToJoinFamily = null;
+
+    await this.familyRepository.save(family);
+    await this.userService.changeUser(user);
   }
 }

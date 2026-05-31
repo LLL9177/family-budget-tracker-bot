@@ -10,6 +10,7 @@ import { FileTypeEnum } from 'src/enums/FileType.enum';
 interface IFileService {
   upload(file: Buffer, type: FileTypeEnum): Promise<FileEntity>;
   get(id: string): Promise<FileEntity>;
+  getByUrl(url: string): Promise<FileEntity>;
 }
 
 @Injectable()
@@ -67,6 +68,13 @@ export class FileService implements IFileService {
 
   async get(id: string): Promise<FileEntity> {
     const file = await this.fileRepository.findOneBy({ id });
+    if (!file) throw new NotFoundException('File not found');
+
+    return file;
+  }
+
+  async getByUrl(url: string): Promise<FileEntity> {
+    const file = await this.fileRepository.findOneBy({ url });
     if (!file) throw new NotFoundException('File not found');
 
     return file;

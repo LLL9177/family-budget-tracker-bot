@@ -24,7 +24,7 @@ export class UserEntity {
   password?: string;
 
   @Column({ default: JSON.stringify([Roles.USER]) })
-  roles: string; // json list
+  roles: string; // json arr
 
   @ManyToOne(() => FamilyEntity, (family) => family.members)
   family: FamilyEntity;
@@ -36,8 +36,12 @@ export class UserEntity {
   @Column({ nullable: true })
   googleId?: string;
 
-  @ManyToOne(() => FamilyEntity, (family) => family.joinRequests, {
-    nullable: true,
-  })
-  requestingToJoinFamily?: FamilyEntity;
+  @ManyToOne(
+    () => FamilyEntity,
+    (family: FamilyEntity) => family.joinRequests,
+    {
+      nullable: true,
+    },
+  )
+  requestingToJoinFamily?: FamilyEntity | null;
 }
