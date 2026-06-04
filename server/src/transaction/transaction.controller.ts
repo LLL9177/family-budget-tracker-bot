@@ -18,6 +18,7 @@ import { EditCategoryDto } from 'src/dtos/EditCategory.dto';
 import { EditAmountDto } from 'src/dtos/EditAmount.dto';
 import { SummaryDto } from 'src/dtos/Summary.dto';
 import { SummaryService } from './services/Summary.service';
+import { GetUserDto } from '../dtos/getUser.dto';
 
 @Controller('transaction')
 export class TransactionController {
@@ -56,6 +57,12 @@ export class TransactionController {
   @Get('get_user_transactions')
   async getUserTransactions(@Req() req: { user: { id: string } }) {
     return await this.transactionService.findByUserId(req.user.id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('get_by_user')
+  async getByUser(@Query(new ValidationPipe()) dto: GetUserDto) {
+    return await this.transactionService.findByUserId(dto.id);
   }
 
   @Role(Roles.FAMILY_OWNER)

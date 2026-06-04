@@ -33,6 +33,7 @@ import {
   Camera,
   Loader2,
 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 type AccessTokenPayload = {
   id: string;
@@ -60,17 +61,25 @@ export default function Family_en() {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
+  const [searchParams] = useSearchParams();
+  const familyId = searchParams.get("id");
+
+  const navigate = useNavigate();
+
   useEffect(() => {
     async function fetchFamilyData() {
       try {
-        const data = await fetch(import.meta.env.VITE_BACKEND_URL + "/family", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: auth.access ? `Bearer ${auth.access}` : "",
-          },
-        }).then((res) => res.json());
+        const data = await fetch(
+          import.meta.env.VITE_BACKEND_URL + "/family?id=" + familyId,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: auth.access ? `Bearer ${auth.access}` : "",
+            },
+          }
+        ).then((res) => res.json());
 
         if (data.id) setFamilyData(data);
         else throw new Error(data.error);
@@ -80,7 +89,7 @@ export default function Family_en() {
     }
 
     fetchFamilyData();
-  }, [auth.access]);
+  }, [auth.access, familyId]);
 
   async function uploadAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     if (!e.target.files?.[0] || !familyData) return;
@@ -161,6 +170,11 @@ export default function Family_en() {
     }
   }
 
+  async function copyFamilyId() {
+    await navigator.clipboard.writeText(familyData.id);
+  }
+
+  console.log(familyData);
   if (!familyData) {
     return (
       <div className="min-h-screen bg-background p-6">
@@ -330,14 +344,16 @@ export default function Family_en() {
               {/* AVATAR */}
               <div className="group/avatar relative">
                 <Avatar className="h-36 w-36 rounded-[28px] border-4 border-white/20 shadow-2xl">
-                  <AvatarImage
-                    src={familyData.avatar?.url}
-                    className="object-cover"
-                  />
-
-                  <AvatarFallback className="rounded-[28px] text-4xl font-black">
-                    {familyData.name.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
+                  {familyData.avatar ? (
+                    <AvatarImage
+                      src={familyData.avatar.url}
+                      className="rounded-[24px] border-none object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback className="rounded-[28px] text-4xl font-black">
+                      {familyData.name.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
 
                 {/* Avatar Overlay */}
@@ -387,11 +403,18 @@ export default function Family_en() {
                 </div>
 
                 {/* OWNER */}
-                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-xl">
+                <div
+                  className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-xl select-none"
+                  onClick={() => navigate("/en/user?id=" + familyData.owner.id)}
+                >
                   <Avatar className="h-12 w-12">
-                    <AvatarFallback>
-                      {familyData.owner.username?.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
+                    {familyData.owner.avatar ? (
+                      <AvatarImage src={familyData.owner.avatar.url} />
+                    ) : (
+                      <AvatarFallback>
+                        {familyData.owner.username?.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    )}
                   </Avatar>
 
                   <div>
@@ -469,15 +492,20 @@ export default function Family_en() {
                 {familyData.members.map((member) => (
                   <Card
                     key={member.id}
-                    className="group rounded-3xl border bg-muted/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                    className="group cursor-pointer rounded-3xl border bg-muted/40 transition-all duration-300 select-none hover:-translate-y-1 hover:shadow-xl"
+                    onClick={() => navigate("/en/user?id=" + member.id)}
                   >
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
                           <Avatar className="h-14 w-14 border-2 border-background">
-                            <AvatarFallback className="font-bold">
-                              {member.username?.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
+                            {member.avatar ? (
+                              <AvatarImage src={member.avatar.url} />
+                            ) : (
+                              <AvatarFallback className="font-bold">
+                                {member.username?.slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            )}
                           </Avatar>
 
                           <div>
@@ -608,7 +636,10 @@ export default function Family_en() {
                 <div>
                   <p className="text-sm text-muted-foreground">Family ID</p>
 
-                  <code className="mt-1 block rounded-xl bg-muted p-3 text-xs">
+                  <code
+                    className="mt-1 block rounded-xl bg-muted p-3 text-xs"
+                    onClick={() => copyFamilyId}
+                  >
                     {familyData.id}
                   </code>
                 </div>

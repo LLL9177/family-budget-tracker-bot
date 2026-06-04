@@ -4,6 +4,8 @@ import { UserDto } from 'src/dtos/user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HashService } from '../auth/services/Hash.service';
 import { UserEntity } from './entities/User.entity';
+import { FileService } from '../file/services/File.service';
+import { FileTypeEnum } from '../enums/FileType.enum';
 
 interface IUserService {
   create(user: UserDto): Promise<void>;
@@ -19,6 +21,7 @@ interface IUserService {
   ): Promise<UserEntity | null>;
   changeUser(newUser: UserEntity): Promise<void>;
   userType(id: string): Promise<'google' | 'local'>;
+  setAvatar(file: Express.Multer.File, userId: string): Promise<void>;
 }
 
 @Injectable()
@@ -27,6 +30,7 @@ export class UserService implements IUserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly hashService: HashService,
+    private readonly fileService: FileService,
   ) {}
 
   async create(data: UserDto): Promise<void> {
@@ -41,7 +45,7 @@ export class UserService implements IUserService {
     id: string,
     getOwned: boolean = false,
   ): Promise<UserEntity | null> {
-    return this.userRepository.findOne({
+    const user = await this.userRepository.findOne({
       where: { id },
       relations: {
         family: {
@@ -52,8 +56,13 @@ export class UserService implements IUserService {
           banner: true,
         },
         familyOwned: getOwned,
+        avatar: true,
       },
     });
+    if (!user) throw new NotFoundException('User not found');
+
+    delete user.password;
+    return user;
   }
 
   async findByUsername(
@@ -62,7 +71,7 @@ export class UserService implements IUserService {
   ): Promise<UserEntity | null> {
     return this.userRepository.findOne({
       where: { username },
-      relations: { family: true, familyOwned: getOwned },
+      relations: { family: true, familyOwned: getOwned, avatar: true },
     });
   }
 
@@ -72,7 +81,7 @@ export class UserService implements IUserService {
   ): Promise<UserEntity | null> {
     return this.userRepository.findOne({
       where: { email },
-      relations: { family: true, familyOwned: getOwned },
+      relations: { family: true, familyOwned: getOwned, avatar: true },
     });
   }
 
@@ -82,7 +91,7 @@ export class UserService implements IUserService {
   ): Promise<UserEntity | null> {
     return this.userRepository.findOne({
       where: { googleId },
-      relations: { family: true, familyOwned: getOwned },
+      relations: { family: true, familyOwned: getOwned, avatar: true },
     });
   }
 
@@ -95,5 +104,18 @@ export class UserService implements IUserService {
     if (!user) throw new NotFoundException('User not found');
     if (user?.googleId) return 'google';
     return 'local';
+  }
+
+  async setAvatar(file: Express.Multer.File, userId: string): Promise<void> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('User not found');
+
+    const avatar = await this.fileService.upload(
+      file.buffer,
+      FileTypeEnum.USER_AVATAR,
+    );
+
+    user.avatar = avatar;
+    await this.userRepository.save(user);
   }
 }

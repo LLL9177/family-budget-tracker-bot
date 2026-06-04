@@ -8,12 +8,12 @@ import { CreateFamilyDto } from 'src/dtos/createFamily.dto';
 import { Repository } from 'typeorm';
 import { FamilyEntity } from '../entities/Family.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IJwtPayload } from 'src/types/IJwtPayload.interface';
 import { Roles } from 'src/auth/enums/Roles.enum';
 import { AddRemoveMemberDto } from 'src/dtos/addMember.dto';
 import { UserService } from '../../user/User.service';
 import { FileService } from '../../file/services/File.service';
 import { FileTypeEnum } from '../../enums/FileType.enum';
+import { IJwtPayload } from '../../types/IJwtPayload.interface';
 
 interface IFamilyService {
   create(data: CreateFamilyDto, user: IJwtPayload): Promise<void>;
@@ -93,7 +93,16 @@ export class FamilyService implements IFamilyService {
   async getByUuid(uuid: string): Promise<FamilyEntity | null> {
     const family = await this.familyRepository.findOne({
       where: { id: uuid },
-      relations: ['members', 'banner', 'avatar'],
+      relations: {
+        members: {
+          avatar: true,
+        },
+        banner: true,
+        avatar: true,
+        owner: {
+          avatar: true,
+        },
+      },
     });
 
     if (!family) throw new NotFoundException('Family not found');

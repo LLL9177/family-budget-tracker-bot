@@ -31,7 +31,7 @@ export default function FamilyId_en({ familyId }: Props) {
 
   return (
     <div className="mt-2 flex h-[18.9vh] flex-col items-center justify-around rounded-xl bg-gradient-to-t from-primary/5 to-card bg-card">
-      <div><Button onClick={() => navigate("family  ")}>Open Family</Button></div>
+      <div><Button onClick={() => navigate("family?id="+familyId)}>Open Family</Button></div>
       <div className="text-5xl" id="family-id-value" ref={familyIdRef}>
         {familyId.slice(0, 17) + "..."}
       </div>

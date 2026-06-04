@@ -902,6 +902,8 @@ def get_family_data(telegram_id):
         print(e)
         db.close()
         return 1
+
+    db.close()
     return fetch(f"/transaction/get_family_transactions?family_uuid={user['family_id']}", {}, telegram_id, "get")
 
 def payment_process_db(amount, date, telegram_id, category):
@@ -918,6 +920,8 @@ def payment_process_db(amount, date, telegram_id, category):
         "createdAt": date,
         "category": category,
     }, telegram_id)
+
+    db.close()
 
 def recievement_process_db(recieved_amount, recieved_date, telegram_id, category):
     db = get_db()
@@ -971,6 +975,8 @@ def get_user_transactions(telegram_id):
         return 1
     if server_uid is None:
         return 404
+
+    db.close()
     return fetch("/transaction/get_user_transactions", {}, telegram_id, "get")
 
 def fetch(url, data, telegram_id, method="post"):
@@ -985,14 +991,20 @@ def fetch(url, data, telegram_id, method="post"):
     if method == "post":
         res = requests.post(
             BACKEND_URL + url,
-            json={**data, "refresh": user["refresh"]},
-            headers={"Authorization": f"Bearer {user['access']}"},
+            json={ **data },
+            headers={
+                "Authorization": f"Bearer {user['access']}",
+                "x-refresh-token": user["refresh"]
+            },
         )
     elif method == "get":
         res = requests.get(
             BACKEND_URL + url,
-            json={**data, "refresh": user["refresh"]},
-            headers={"Authorization": f"Bearer {user['access']}"},
+            json={ **data },
+            headers={
+                "Authorization": f"Bearer {user['access']}",
+                "x-refresh-token": user["refresh"]
+            },
         )
 
     if "x-access-token" in res.headers:
@@ -1006,8 +1018,8 @@ def fetch(url, data, telegram_id, method="post"):
 
     if res.status_code == 401:
         login(telegram_id)
-        fetch(url, data, telegram_id, method)
-        return None
+        db.close()
+        return fetch(url, data, telegram_id, method)
 
     db.close()
     return res

@@ -1,11 +1,11 @@
-import type { IUser } from "./User.interface";
+import type { IUserData } from "./UserData.interface";
 
 export interface IFamily {
   id: string;
   name: string;
-  members: IUser[];
-  owner: IUser;
-  joinRequests: IUser[];
+  members: IUserData[];
+  owner: IUserData;
+  joinRequests: IUserData[];
   avatar: {
     id: string;
     url: string;

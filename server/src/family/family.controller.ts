@@ -4,6 +4,7 @@ import {
   Get,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -20,6 +21,7 @@ import { AcceptFamilyJoinDto } from '../dtos/AcceptFamilyJoin.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RejectFamilyJoinDto } from '../dtos/rejectFamilyJoin.dto';
+import { GetFamilyDto } from '../dtos/GetFamily.dto';
 
 @Controller('family')
 export class FamilyController {
@@ -81,8 +83,8 @@ export class FamilyController {
 
   @UseGuards(AuthGuard)
   @Get()
-  async getFamily(@Req() req: { user: { id: string } }) {
-    return await this.familyService.getByUser(req.user.id);
+  async getFamily(@Query() dto: GetFamilyDto) {
+    return await this.familyService.getByUuid(dto.id);
   }
 
   @UseGuards(AuthGuard, FamilyGuard)

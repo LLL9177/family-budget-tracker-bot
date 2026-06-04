@@ -8,6 +8,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { FileEntity } from '../../file/entities/File.entity';
 
 @Entity()
 export class UserEntity {
@@ -44,4 +45,8 @@ export class UserEntity {
     },
   )
   requestingToJoinFamily?: FamilyEntity | null;
+
+  @OneToOne(() => FileEntity)
+  @JoinColumn()
+  avatar?: FileEntity | null;
 }
