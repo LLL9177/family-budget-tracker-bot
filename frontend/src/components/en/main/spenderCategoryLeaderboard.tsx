@@ -16,7 +16,7 @@ export default function SpenderCategoryLeaderboard_en({
   topSpenderCategories,
 }: Props) {
   return (
-    <div className="rounded-xl bg-gradient-to-t from-primary/5 to-card p-1 bg-card">
+    <div className="rounded-xl bg-card bg-gradient-to-t from-primary/5 to-card p-1 pb-2 overflox-x-scroll max-w-120">
       {topSpenderCategories ? (
         <Table>
           <TableCaption>Top Spender Categories</TableCaption>

@@ -9,8 +9,8 @@ import { OneTimePasswordEntity } from '../entities/OneTimePassword.entity';
 import { Repository } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { UserService } from 'src/user/User.service';
 import { HashService } from 'src/auth/services/Hash.service';
+import { UserService } from '../../user/User.service';
 
 interface IOneTimePasswordService {
   create(): Promise<{ password: string; otpId: string }>;
@@ -55,8 +55,8 @@ export class OneTimePasswordService
     return { password, otpId: result.id };
   }
 
-  async validate(password: string): Promise<boolean> {
-    const otps = await this.otpRepository.findBy({ password });
+  async validate(password: string, userId: string): Promise<boolean> {
+    const otps = await this.otpRepository.findBy({ userId });
 
     for (const otp of otps) {
       if (this.hashService.compare(password, otp.password)) return true;

@@ -80,7 +80,7 @@ export function SectionCards_en({ data }: Props) {
         <CardHeader>
           <CardDescription>Most Spent On</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {shortenIfNeeded(data.mostSpentOn)}
+            {shortenIfNeeded(data.mostSpentOn, 15)}
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
@@ -88,7 +88,7 @@ export function SectionCards_en({ data }: Props) {
             Least Spent On
           </div>
           <div className="text-muted-foreground">
-            {shortenIfNeeded(data.leastSpentOn, 35)}
+            {shortenIfNeeded(data.leastSpentOn, 30)}
           </div>
         </CardFooter>
       </Card>

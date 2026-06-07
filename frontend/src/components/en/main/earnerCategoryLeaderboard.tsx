@@ -16,7 +16,7 @@ export default function EarnerCategoryLeaderboard_en({
   topEarnerCategories,
 }: Props) {
   return (
-    <div className="rounded-xl bg-gradient-to-t from-primary/5 to-card p-1 bg-card">
+    <div className="overflox-x-scroll max-w-120 rounded-xl bg-card bg-gradient-to-t from-primary/5 to-card p-1 pb-2">
       {topEarnerCategories ? (
         <Table>
           <TableCaption>Top Earner Categories</TableCaption>

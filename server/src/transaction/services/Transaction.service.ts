@@ -29,6 +29,8 @@ export class TransactionService implements ITransactionService {
   ) {}
 
   async create(transaction: ITransaction): Promise<void> {
+    if (transaction.category.length > 100)
+      throw new BadRequestException('Category is too long');
     const user = await this.userService.findById(transaction.userId);
     if (!user) throw new NotFoundException('User not found');
 

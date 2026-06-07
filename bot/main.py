@@ -541,7 +541,12 @@ def payment_process(msg, category=None, *, lang):
             bot.register_next_step_handler(m, get_date)
             return
 
-        payment_process_db(amount, date, msg.from_user.id, category)
+        res = payment_process_db(amount, date, msg.from_user.id, category)
+        if not res:
+            bot.send_message(msg.chat.id, t("something wrong"))
+            main_menu(m, lang=lang)
+            return None
+
         if amount != 0:
             bot.send_message(msg.chat.id, t("success"))
         m = bot.send_message(msg.chat.id, t("loading"))
@@ -759,7 +764,7 @@ def google_auth(msg, family_id, user_id, *, lang):
             bot.send_message(msg.chat.id, t("something_wrong"))
             m = bot.send_message(msg.chat.id, t("loading"))
 
-        res = login_google(telegram_id)
+        res = login_google(telegram_id, otp)
 
         if res == 404:
             bot.send_message(msg.chat.id, t("something_wrong"))
@@ -849,7 +854,18 @@ def login(telegram_id):
     db.close()
     return save_jwt(jwt["access"], jwt["refresh"], telegram_id)
 
-def login_google(telegram_id):
+def save_jwt(access, refresh, telegram_id):
+    db = get_db()
+    try:
+        db.execute("UPDATE user SET access = ?, refresh = ? WHERE telegram_id = ?", (access, refresh, telegram_id))
+        db.commit()
+    except Exception as e:
+        print(e)
+        db.close()
+        return 1
+    return 0
+
+def login_google(telegram_id, otp):
     db = get_db()
 
     user = None
@@ -864,7 +880,7 @@ def login_google(telegram_id):
         return 404
 
     res = fetch("/auth/bot/google", {
-        "oneTimePassword": user["one_time_password"],
+        "oneTimePassword": otp,
         "userId": user["server_uid"],
         "botToken": os.getenv("BOT_TOKEN")
     }, telegram_id).json()
@@ -872,7 +888,7 @@ def login_google(telegram_id):
     if "statusCode" in res.keys(): return res["statusCode"]
 
     if "access_token" in res.keys():
-        set_jwt(
+        save_jwt(
             res["access_token"]["access"], 
             res["access_token"]["refresh"], 
             telegram_id
@@ -880,17 +896,6 @@ def login_google(telegram_id):
 
     db.close()
     return res
-
-def save_jwt(access, refresh, telegram_id):
-    db = get_db()
-    try:
-        db.execute("UPDATE user SET access = ?, refresh = ? WHERE telegram_id = ?", (access, refresh, telegram_id))
-        db.commit()
-    except Exception as e:
-        print(e)
-        db.close()
-        return 1
-    return 0
 
 def get_family_data(telegram_id):
     db = get_db()
@@ -914,14 +919,16 @@ def payment_process_db(amount, date, telegram_id, category):
         print(e)
         db.close()
         return 1
-    fetch("/transaction/new", {
+    res = fetch("/transaction/new", {
         "familyId": user["family_id"],
         "amount": -amount,
         "createdAt": date,
         "category": category,
     }, telegram_id)
-
-    db.close()
+    
+    if res.status_code != 201:
+        db.close()
+        return False
 
 def recievement_process_db(recieved_amount, recieved_date, telegram_id, category):
     db = get_db()
@@ -938,11 +945,9 @@ def recievement_process_db(recieved_amount, recieved_date, telegram_id, category
         "category": category,
         "createdAt": recieved_date
     }, telegram_id)
-    try:
-        if res.decode() != '':
-            return False
-    except Exception:
-        pass
+    if (res.status_code != 201):
+        return False
+
     return "success"
 
 def get_user_data(telegram_id):

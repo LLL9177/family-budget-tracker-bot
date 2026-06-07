@@ -5,7 +5,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserDto } from 'src/dtos/user.dto';
 import { UserService } from '../../user/User.service';
 import { JwtTokenService } from 'src/jwt/Jwt.service';
 import { LoginDto } from 'src/dtos/login.dto';
@@ -16,9 +15,10 @@ import { IAccessToken } from 'src/types/IAccessToken.interface';
 import { BotLoginDto } from 'src/dtos/BotLogin.dto';
 import { GoogleAuthDto } from 'src/dtos/GoogleAuth.dto';
 import { IGoogleAuth } from 'src/types/GoogleAuth.interface';
-import { OneTimePasswordService } from 'src/one-time-password/services/OneTimePassword.service';
 import { IUser } from 'src/types/User.interface';
 import { BotGoogleLoginDto } from 'src/dtos/BotGoogleLogin.dto';
+import { OneTimePasswordService } from '../../one-time-password/services/OneTimePassword.service';
+import { UserDto } from '../../dtos/user.dto';
 
 interface IAuthService {
   register(data: UserDto): Promise<IAccessToken | void>; // although it will 100% return the first option
@@ -42,6 +42,8 @@ export class AuthService implements IAuthService {
     const user = await this.userService.findByUsername(data.username);
 
     if (!user) {
+      if (data.username.length > 40)
+        throw new BadRequestException('Username is too long');
       if (data.password == data.repeat_password) {
         await this.userService.create(data);
         return await this.login({
@@ -58,7 +60,7 @@ export class AuthService implements IAuthService {
 
     if (!user) throw new NotFoundException('User not found');
 
-    const { id, password, ...ret } = user;
+    const { password, ...ret } = user;
     return ret;
   }
 
@@ -146,10 +148,12 @@ export class AuthService implements IAuthService {
   }
 
   async botGoogleAuth(data: BotGoogleLoginDto): Promise<IAccessToken | void> {
-    const user = await this.userService.findById(data.userId);
+    const user = await this.userService.findById(data.userId, false);
     if (!user) throw new NotFoundException('User not found');
+    console.log(data);
+    console.log(user);
 
-    if (!(await this.otpService.validate(data.oneTimePassword)))
+    if (!(await this.otpService.validate(data.oneTimePassword, user.id)))
       throw new BadRequestException('Not a valid one-time password');
 
     const jwtPair = this.jwtService.sign({

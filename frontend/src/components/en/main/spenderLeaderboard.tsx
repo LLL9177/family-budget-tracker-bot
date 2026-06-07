@@ -14,7 +14,7 @@ type Props = {
 
 export default function SpenderLeaderboard_en({ topSpenders }: Props) {
   return (
-    <div className="rounded-xl bg-gradient-to-t from-primary/5 to-card p-1 bg-card">
+    <div className="overflox-x-auth rounded-xl bg-card bg-gradient-to-t from-primary/5 to-card p-1 pb-2 overflox-x-scroll max-w-120">
       {topSpenders ? (
         <Table>
           <TableCaption>Top Spenders</TableCaption>

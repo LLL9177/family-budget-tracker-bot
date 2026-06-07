@@ -21,7 +21,7 @@ import { useTheme } from "@/components/theme-provider";
 
 export default function Main_en() {
   const auth = useContext(AuthContext);
-  const decodedJwt = auth.access ? jwtDecode(auth.access) : "";
+  // const decodedJwt = auth.access ? jwtDecode(auth.access) : "";
   const navigate = useNavigate();
   const [familyId, setFamilyId] = useState("");
   const [transactions, setTransactions] = useState<
@@ -258,7 +258,7 @@ export default function Main_en() {
       }
     };
     getProfile();
-  }, [decodedJwt, auth.access, navigate]);
+  }, [auth.access, navigate]);
 
   return (
     <div
@@ -309,7 +309,10 @@ export default function Main_en() {
                 monthOneName="This Month"
                 monthTwoName="Last Month"
               />
-              <DifferentMonthsComparison_en familyId={familyId} />
+              <DifferentMonthsComparison_en
+                familyId={familyId}
+                captionText=""
+              />
               <FamilyId_en familyId={familyId} />
             </div>
             <div className="flex h-[100vh] w-[72vw] flex-col items-center justify-center gap-3">
@@ -329,7 +332,7 @@ export default function Main_en() {
               <MainChart_en data={transactions as ITransactionWithDate[]} />
             </div>
           </div>
-          <div className="flex items-center justify-center gap-5">
+          <div className="flex items-start justify-center gap-5 mb-5 overflow-x-scroll w-screen">
             <SpenderLeaderboard_en topSpenders={topSpenders} />
             <EarnerLeaderboard_en topEarners={topEarners} />
             <EarnerCategoryLeaderboard_en topEarnerCategories={topEarnedFrom} />

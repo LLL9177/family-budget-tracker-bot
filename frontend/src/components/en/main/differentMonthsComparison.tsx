@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 
 type Props = {
   familyId: string;
+  captionText?: string;
 };
 
 interface IMonthDate {
@@ -15,7 +16,10 @@ interface IMonthDate {
 }
 
 // This one is for choosing between different months
-export default function DifferentMonthsComparison_en({ familyId }: Props) {
+export default function DifferentMonthsComparison_en({
+  familyId,
+  captionText,
+}: Props) {
   const [monthOne, setMonthOne] = useState<IMonthDate | null>(null);
   const [monthTwo, setMonthTwo] = useState<IMonthDate | null>(null);
   const monthOneRef = useRef<HTMLInputElement>(null);
@@ -45,7 +49,7 @@ export default function DifferentMonthsComparison_en({ familyId }: Props) {
   useEffect(() => {
     if (!monthOne) return;
     console.log(familyId, "family_id");
-    const getMonthOne = async function() {
+    const getMonthOne = async function () {
       try {
         const data = await fetch(
           import.meta.env.VITE_BACKEND_URL + "/transaction/monthly_summary",
@@ -77,7 +81,7 @@ export default function DifferentMonthsComparison_en({ familyId }: Props) {
   useEffect(() => {
     if (!monthTwo) return;
     console.log(familyId, "family_id");
-    const getMonthOne = async function() {
+    const getMonthOne = async function () {
       try {
         const data = await fetch(
           import.meta.env.VITE_BACKEND_URL + "/transaction/monthly_summary",
@@ -107,18 +111,18 @@ export default function DifferentMonthsComparison_en({ familyId }: Props) {
   }, [monthTwo, auth.access, familyId]);
 
   let caption = "";
-  let month1Str = '';
-  let month2Str = '';
+  let month1Str = "";
+  let month2Str = "";
   if (monthOne && monthTwo) {
     month1Str = `${monthOne.year}-${String(monthOne.month).padStart(2, "0")}`;
     month2Str = `${monthTwo.year}-${String(monthTwo.month).padStart(2, "0")}`;
-    caption = `${month1Str} and ${month2Str} Comparison`;
+    caption = captionText ?? `${month1Str} and ${month2Str} Comparison`;
   }
 
   return (
-    <div className="mt-2 h-100 w-full rounded-xl bg-gradient-to-t from-primary/5 to-card bg-card">
+    <div className="mt-2 h-116 w-full rounded-xl bg-card bg-gradient-to-t from-primary/5 to-card">
       <form
-        className="flex w-full flex-col items-center gap-2 rounded-t-xl border-1 bg-[rgba(150,150,150,0.1)] p-2 -mb-2"
+        className="-mb-2 flex w-full flex-col items-center gap-2 rounded-t-xl border-1 bg-[rgba(150,150,150,0.1)] p-2"
         onSubmit={(e) => {
           e.preventDefault();
           if (!monthOneRef.current || !monthTwoRef.current) return;

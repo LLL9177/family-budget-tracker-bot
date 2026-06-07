@@ -1,10 +1,10 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateFamilyDto } from 'src/dtos/createFamily.dto';
 import { Repository } from 'typeorm';
 import { FamilyEntity } from '../entities/Family.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +14,7 @@ import { UserService } from '../../user/User.service';
 import { FileService } from '../../file/services/File.service';
 import { FileTypeEnum } from '../../enums/FileType.enum';
 import { IJwtPayload } from '../../types/IJwtPayload.interface';
+import { CreateFamilyDto } from '../../dtos/createFamily.dto';
 
 interface IFamilyService {
   create(data: CreateFamilyDto, user: IJwtPayload): Promise<void>;
@@ -39,6 +40,7 @@ export class FamilyService implements IFamilyService {
   ) {}
 
   async create(data: CreateFamilyDto, user: IJwtPayload): Promise<void> {
+    if (data.name.length > 60) throw new BadRequestException('Name is too big');
     const owner = await this.userService.findById(user.id);
     if (owner) {
       if (!process.env.DEFAULT_FAMILY_BANNER)
@@ -46,7 +48,7 @@ export class FamilyService implements IFamilyService {
       const banner = await this.fileService.getByUrl(
         process.env.DEFAULT_FAMILY_BANNER,
       );
-      await this.familyRepository.insert({
+      await this.familyRepository.save({
         name: data.name,
         owner: owner,
         members: [owner],
@@ -102,6 +104,7 @@ export class FamilyService implements IFamilyService {
         owner: {
           avatar: true,
         },
+        joinRequests: true,
       },
     });
 
@@ -130,16 +133,23 @@ export class FamilyService implements IFamilyService {
     if (!owner.familyOwned)
       throw new ForbiddenException('User does not own any family');
 
-    const family = owner.familyOwned;
+    const family = await this.familyRepository.findOne({
+      where: { owner },
+      relations: {
+        members: true,
+      },
+    });
     const member = await this.userService.findById(memberId);
+    console.log(family);
 
     if (!member)
       throw new NotFoundException("The user is not this family's member.");
     if (!family) throw new NotFoundException('Family not found');
-    if (!family.members.includes(member))
+    const index = family.members.findIndex((member) => member.id == memberId);
+    if (index == -1)
       throw new NotFoundException('This user is not your family member');
 
-    family.members = family.members.splice(family.members.indexOf(member));
+    family.members.splice(index, 1);
 
     await this.familyRepository.save(family);
   }

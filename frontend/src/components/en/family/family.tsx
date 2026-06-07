@@ -272,6 +272,41 @@ export default function Family_en() {
     fetchData(userId);
   }
 
+  function kickMember(id: string) {
+    async function fetchData() {
+      try {
+        await fetch(
+          import.meta.env.VITE_BACKEND_URL + "/family/remove_member",
+          {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify({ user_id: id }),
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: auth.access ? `Bearer ${auth.access}` : "",
+            },
+          }
+        );
+
+        const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/family", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: auth.access ? `Bearer ${auth.access}` : "",
+          },
+        });
+
+        if (!res.ok) throw new Error(res.error);
+        setFamilyData(await res.json());
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    fetchData();
+  }
+
   return (
     <div className="min-h-screen bg-background p-6">
       {familyData.banner?.url && (
@@ -526,11 +561,27 @@ export default function Family_en() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                          {isOwner && member.id !== familyData.owner.id && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="opacity-0 transition-all group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                kickMember(member.id);
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
 
-                          <span className="text-xs text-muted-foreground">
-                            Online
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+
+                            <span className="text-xs text-muted-foreground">
+                              Online
+                            </span>
+                          </div>
                         </div>
                       </div>
 

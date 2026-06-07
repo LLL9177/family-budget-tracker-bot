@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/contexts/AuthContext";
 
 export default function Renew_en() {
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState("");
   const navigate = useNavigate();
   const auth = useContext(AuthContext);
 
@@ -26,11 +26,12 @@ export default function Renew_en() {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${auth.access}`,
+              Authorization: auth.access ? `Bearer ${auth.access}` : "",
             },
           }
         );
 
+        console.log(res);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
@@ -45,7 +46,7 @@ export default function Renew_en() {
   }, [auth]);
   return (
     <div>
-      <AlertDialog open={otp !== ''}>
+      <AlertDialog open={otp !== ""}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>One-time password</AlertDialogTitle>

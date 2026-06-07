@@ -114,6 +114,8 @@ export class SummaryService implements ISummaryService {
       pnl,
     };
 
+    console.log({ ...ret, family, month: data.month, year: data.year });
+
     await this.summaryRepository.insert({
       ...ret,
       family,

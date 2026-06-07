@@ -14,7 +14,7 @@ type Props = {
 
 export default function EarnerLeaderboard_en({ topEarners }: Props) {
   return (
-    <div className="rounded-xl bg-gradient-to-t from-primary/5 to-card p-1 bg-card">
+    <div className="rounded-xl bg-gradient-to-t from-primary/5 to-card p-1 bg-card pb-2 overflox-x-scroll max-w-120">
       {topEarners ? (
         <Table>
           <TableCaption>Top Earners</TableCaption>
