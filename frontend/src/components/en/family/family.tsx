@@ -174,7 +174,6 @@ export default function Family_en() {
     await navigator.clipboard.writeText(familyData.id);
   }
 
-  console.log(familyData);
   if (!familyData) {
     return (
       <div className="min-h-screen bg-background p-6">

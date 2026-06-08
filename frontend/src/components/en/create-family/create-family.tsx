@@ -11,13 +11,14 @@ import {
 import { Input } from "@/components/ui/input";
 import type { IFamily } from "@/types/Family.interface";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function CreateFamily_en() {
   const [family, setFamily] = useState<IFamily>();
   const [name, setName] = useState("");
   const { theme, resolvedTheme, systemTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
+  const navigate = useNavigate();
 
   function createFamily(e: React.MouseEvent) {
     e.preventDefault();
@@ -35,6 +36,7 @@ export default function CreateFamily_en() {
           }
         );
         if (!data.ok) console.error(data);
+        else navigate("/en");
       } catch (err) {
         console.error(err);
       }

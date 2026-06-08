@@ -4,13 +4,14 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { AuthContext } from "@/contexts/AuthContext";
 import React, { useContext, useState } from "react";
-import { resumeToPipeableStream } from "react-dom/server";
+import { useNavigate } from "react-router-dom";
 
 export default function ConnectFamily_en() {
   const auth = useContext(AuthContext);
 
   const [familyId, setFamilyId] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const { theme, resolvedTheme, systemTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
@@ -31,8 +32,11 @@ export default function ConnectFamily_en() {
       );
       if (!result.ok) {
         console.error(result);
+      } else {
+        setMessage(
+          "Join request has been sent to the family owner. Wait until they accept it or reject."
+        );
       }
-      console.log(result);
     } catch (err) {
       console.error(err);
       setError("Something went wrong while joining the family");
@@ -80,15 +84,23 @@ export default function ConnectFamily_en() {
         </form>
       </Card>
 
-      <span
-        className={`transform text-red-500 transition-all duration-300 ease-out ${
-          error
-            ? "translate-y-0 opacity-100"
-            : "pointer-events-none -translate-y-2 opacity-0"
-        }`}
-      >
-        {error}
-      </span>
+      {error.length ? (
+        <span
+          className={`transform text-red-500 transition-all duration-300 ease-out ${
+            error.length
+              ? "translate-y-0 opacity-100"
+              : "pointer-events-none -translate-y-2 opacity-0"
+          }`}
+        >
+          {error}
+        </span>
+      ) : (
+        <span
+          className={`transform text-green-300 transition-all duration-300 ease-out ${message.length ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"}`}
+        >
+          {message}
+        </span>
+      )}
     </div>
   );
 }
