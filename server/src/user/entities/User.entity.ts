@@ -5,10 +5,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { FileEntity } from '../../file/entities/File.entity';
+import { NotificationEntity } from '../../notification/entities/Notifitcation.entity';
 
 @Entity()
 export class UserEntity {
@@ -49,4 +51,10 @@ export class UserEntity {
   @OneToOne(() => FileEntity)
   @JoinColumn()
   avatar?: FileEntity | null;
+
+  @OneToMany(() => NotificationEntity, (notification) => notification.user, {
+    onDelete: 'CASCADE',
+    cascade: true,
+  })
+  notifications: NotificationEntity[];
 }

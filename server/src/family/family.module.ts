@@ -7,6 +7,7 @@ import { HashService } from 'src/auth/services/Hash.service';
 import { UserModule } from 'src/user/user.module';
 import { FileModule } from '../file/file.module';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -14,10 +15,10 @@ import { AuthModule } from '../auth/auth.module';
     TypeOrmModule.forFeature([FamilyEntity]),
     forwardRef(() => UserModule),
     forwardRef(() => FileModule),
+    NotificationModule,
   ],
   controllers: [FamilyController],
   providers: [FamilyService, HashService],
   exports: [FamilyService],
 })
 export class FamilyModule {}
- 

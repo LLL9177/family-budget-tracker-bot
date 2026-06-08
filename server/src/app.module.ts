@@ -15,6 +15,8 @@ import { OneTimePasswordEntity } from './one-time-password/entities/OneTimePassw
 import { FamilyController } from './family/family.controller';
 import { FileModule } from './file/file.module';
 import { FileEntity } from './file/entities/File.entity';
+import { NotificationModule } from './notification/notification.module';
+import { NotificationEntity } from './notification/entities/Notifitcation.entity';
 
 @Module({
   imports: [
@@ -34,6 +36,7 @@ import { FileEntity } from './file/entities/File.entity';
         MonthlySummaryEntity,
         OneTimePasswordEntity,
         FileEntity,
+        NotificationEntity,
       ],
       synchronize: true,
     }),
@@ -42,6 +45,7 @@ import { FileEntity } from './file/entities/File.entity';
     UserModule,
     OneTimePasswordModule,
     FileModule,
+    NotificationModule,
   ],
   controllers: [AuthController, FamilyController],
 })

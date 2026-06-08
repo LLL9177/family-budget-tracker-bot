@@ -57,6 +57,7 @@ export class UserService implements IUserService {
         },
         familyOwned: getOwned,
         avatar: true,
+        notifications: true,
       },
     });
     if (!user) throw new NotFoundException('User not found');

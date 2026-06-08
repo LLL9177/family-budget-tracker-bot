@@ -15,6 +15,7 @@ import { FileService } from '../../file/services/File.service';
 import { FileTypeEnum } from '../../enums/FileType.enum';
 import { IJwtPayload } from '../../types/IJwtPayload.interface';
 import { CreateFamilyDto } from '../../dtos/createFamily.dto';
+import { NotificationService } from '../../notification/services/Notification.service';
 
 interface IFamilyService {
   create(data: CreateFamilyDto, user: IJwtPayload): Promise<void>;
@@ -37,6 +38,7 @@ export class FamilyService implements IFamilyService {
     private readonly familyRepository: Repository<FamilyEntity>,
     private readonly userService: UserService,
     private readonly fileService: FileService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async create(data: CreateFamilyDto, user: IJwtPayload): Promise<void> {
@@ -140,7 +142,6 @@ export class FamilyService implements IFamilyService {
       },
     });
     const member = await this.userService.findById(memberId);
-    console.log(family);
 
     if (!member)
       throw new NotFoundException("The user is not this family's member.");
@@ -151,13 +152,35 @@ export class FamilyService implements IFamilyService {
 
     family.members.splice(index, 1);
 
+    await this.notificationService.create(
+      {
+        title: `You've been kicked out of ${family.name}`,
+        body: '',
+      },
+      member.id,
+    );
+
+    for (const user of family.members) {
+      if (user.id == owner.id) continue;
+      await this.notificationService.create(
+        {
+          title: `Say bye-bye to ${member.username}`,
+          body: `${member.username} has been kicked out of the family`,
+        },
+        user.id,
+      );
+    }
+
     await this.familyRepository.save(family);
   }
 
   async requestToJoinFamily(userId: string, familyId: string): Promise<void> {
     const user = await this.userService.findById(userId);
     if (!user) throw new NotFoundException('User not found');
-    const family = await this.familyRepository.findOneBy({ id: familyId });
+    const family = await this.familyRepository.findOne({
+      where: { id: familyId },
+      relations: { owner: { notifications: true } },
+    });
     if (!family) throw new NotFoundException('Family not found');
 
     user.requestingToJoinFamily = family;
@@ -166,6 +189,14 @@ export class FamilyService implements IFamilyService {
     } else {
       family.joinRequests = [user];
     }
+
+    await this.notificationService.create(
+      {
+        title: 'User tries to join your family',
+        body: `User ${user.username} has sent a request to join your family. Open the family page to review it.`,
+      },
+      family.owner.id,
+    );
 
     await this.userService.changeUser(user);
     await this.familyRepository.save(family);
@@ -188,14 +219,39 @@ export class FamilyService implements IFamilyService {
     if (!owner) throw new NotFoundException('User not found');
     const family = await this.familyRepository.findOne({
       where: { owner },
-      relations: { joinRequests: true, members: true },
+      relations: {
+        joinRequests: true,
+        members: true,
+        owner: { notifications: true },
+      },
     });
     if (!family) throw new NotFoundException('Family not found');
 
     const i = family.joinRequests.findIndex((u) => u.id === user.id);
     family.joinRequests.splice(i, 1);
-    family.members.push(user);
     user.requestingToJoinFamily = null;
+
+    // someone's gotta patch these message texts at some point
+    await this.notificationService.create(
+      {
+        title: `Welcome to ${family.name}!`,
+        body: `The family owner, ${family.owner.username}, has accepted your join request. Have a productive time!`,
+      },
+      user.id,
+    );
+
+    for (const member of family.members) {
+      if (member.id == family.owner.id) continue;
+      await this.notificationService.create(
+        {
+          title: 'Say hello to your new family member!',
+          body: `${user.username} has joined the family.`,
+        },
+        member.id,
+      );
+    }
+
+    family.members.push(user);
 
     await this.userService.changeUser(user);
     await this.familyRepository.save(family);
@@ -252,6 +308,14 @@ export class FamilyService implements IFamilyService {
 
     family.joinRequests.splice(index, 1);
     user.requestingToJoinFamily = null;
+
+    await this.notificationService.create(
+      {
+        title: 'You have been rejected to join the family :(',
+        body: 'The owner has rejected your join request.',
+      },
+      userId,
+    );
 
     await this.familyRepository.save(family);
     await this.userService.changeUser(user);
