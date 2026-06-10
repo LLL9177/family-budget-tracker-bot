@@ -33,9 +33,7 @@ export class NotificationService implements INotificationService {
     const user = await this.userService.findById(userId);
     if (!user) throw new NotFoundException('User not found');
 
-    const notification = await this.repository.save({ user, ...data });
-    user.notifications.push(notification);
-    await this.userService.changeUser(user);
+    await this.repository.save({ user, ...data });
   }
 
   async findById(id: string): Promise<NotificationEntity | null> {

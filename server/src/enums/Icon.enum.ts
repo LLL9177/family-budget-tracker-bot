@@ -1,0 +1,7 @@
+export enum IconEnum {
+  JOIN_REQUEST = 'JOIN_REQUEST',
+  JOINED = 'JOINED',
+  KICKED = 'KICKED',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}

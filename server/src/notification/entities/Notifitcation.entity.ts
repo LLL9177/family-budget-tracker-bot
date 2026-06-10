@@ -1,5 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from '../../user/entities/User.entity';
+import { IconEnum } from '../../enums/Icon.enum';
 
 @Entity()
 export class NotificationEntity {
@@ -14,4 +15,7 @@ export class NotificationEntity {
 
   @Column()
   body: string;
+
+  @Column({ enum: IconEnum })
+  icon: IconEnum;
 }

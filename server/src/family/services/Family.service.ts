@@ -16,6 +16,7 @@ import { FileTypeEnum } from '../../enums/FileType.enum';
 import { IJwtPayload } from '../../types/IJwtPayload.interface';
 import { CreateFamilyDto } from '../../dtos/createFamily.dto';
 import { NotificationService } from '../../notification/services/Notification.service';
+import { IconEnum } from '../../enums/Icon.enum';
 
 interface IFamilyService {
   create(data: CreateFamilyDto, user: IJwtPayload): Promise<void>;
@@ -156,8 +157,9 @@ export class FamilyService implements IFamilyService {
       {
         title: `You've been kicked out of ${family.name}`,
         body: '',
+        icon: IconEnum.KICKED,
       },
-      member.id,
+      memberId,
     );
 
     for (const user of family.members) {
@@ -166,6 +168,7 @@ export class FamilyService implements IFamilyService {
         {
           title: `Say bye-bye to ${member.username}`,
           body: `${member.username} has been kicked out of the family`,
+          icon: IconEnum.KICKED,
         },
         user.id,
       );
@@ -194,6 +197,7 @@ export class FamilyService implements IFamilyService {
       {
         title: 'User tries to join your family',
         body: `User ${user.username} has sent a request to join your family. Open the family page to review it.`,
+        icon: IconEnum.JOIN_REQUEST,
       },
       family.owner.id,
     );
@@ -232,12 +236,14 @@ export class FamilyService implements IFamilyService {
     user.requestingToJoinFamily = null;
 
     // someone's gotta patch these message texts at some point
+    await this.userService.changeUser(user);
     await this.notificationService.create(
       {
         title: `Welcome to ${family.name}!`,
         body: `The family owner, ${family.owner.username}, has accepted your join request. Have a productive time!`,
+        icon: IconEnum.ACCEPTED,
       },
-      user.id,
+      userId,
     );
 
     for (const member of family.members) {
@@ -246,6 +252,7 @@ export class FamilyService implements IFamilyService {
         {
           title: 'Say hello to your new family member!',
           body: `${user.username} has joined the family.`,
+          icon: IconEnum.JOINED,
         },
         member.id,
       );
@@ -253,7 +260,6 @@ export class FamilyService implements IFamilyService {
 
     family.members.push(user);
 
-    await this.userService.changeUser(user);
     await this.familyRepository.save(family);
   }
 
@@ -309,15 +315,16 @@ export class FamilyService implements IFamilyService {
     family.joinRequests.splice(index, 1);
     user.requestingToJoinFamily = null;
 
+    await this.userService.changeUser(user);
     await this.notificationService.create(
       {
         title: 'You have been rejected to join the family :(',
         body: 'The owner has rejected your join request.',
+        icon: IconEnum.REJECTED,
       },
       userId,
     );
 
     await this.familyRepository.save(family);
-    await this.userService.changeUser(user);
   }
 }

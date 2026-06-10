@@ -18,6 +18,7 @@ import SpenderCategoryLeaderboard_en from "./spenderCategoryLeaderboard";
 import DifferentMonthsComparison_en from "./differentMonthsComparison";
 import FamilyId_en from "./familyId";
 import { useTheme } from "@/components/theme-provider";
+import Notifications_en from "../notifications";
 
 export default function Main_en() {
   const auth = useContext(AuthContext);
@@ -332,7 +333,7 @@ export default function Main_en() {
               <MainChart_en data={transactions as ITransactionWithDate[]} />
             </div>
           </div>
-          <div className="flex items-start justify-center gap-5 mb-5 overflow-x-scroll w-screen">
+          <div className="mb-5 flex w-screen items-start justify-center gap-5 overflow-x-scroll">
             <SpenderLeaderboard_en topSpenders={topSpenders} />
             <EarnerLeaderboard_en topEarners={topEarners} />
             <EarnerCategoryLeaderboard_en topEarnerCategories={topEarnedFrom} />
