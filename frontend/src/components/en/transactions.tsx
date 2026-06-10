@@ -24,32 +24,6 @@ export default function Transactions_en({
   const [user, setUser] = useState<IUserData>();
   const [transaction, setTransaction] = useState<ITransaction | null>();
 
-  // useEffect(() => {
-  //   if (!familyId) return;
-  //   async function fetchTransactions() {
-  //     try {
-  //       const res = await fetch(
-  //         import.meta.env.VITE_BACKEND_URL +
-  //           `/transaction/get_family_transactions?family_uuid=${familyId}`,
-  //         {
-  //           method: "GET",
-  //           credentials: "include",
-  //           headers: {
-  //             "Content-Type": "appliaction/json",
-  //             Authorization: auth.access ? `Bearer ${auth.access}` : "",
-  //           },
-  //         }
-  //       );
-  //       if (!res.ok) throw new Error(res.statusText);
-  //       const data = await res.json();
-  //       setTransactions(data);
-  //     } catch (err) {
-  //       console.error(err);
-  //     }
-  //   }
-  //   fetchTransactions();
-  // }, [auth.access, familyId]);
-
   useEffect(() => {
     if (!familyId) return;
     async function fetchUser() {
@@ -218,7 +192,7 @@ export default function Transactions_en({
                         }}
                       >
                         <Card
-                          className="flex cursor-pointer flex-row justify-between bg-white/2 p-4 text-xl hover:bg-white/4"
+                          className="flex cursor-pointer flex-row justify-between rounded-2xl p-4"
                           onClick={(e) => {
                             e.stopPropagation();
                             openTransaction(transaction);
@@ -237,7 +211,7 @@ export default function Transactions_en({
                           <div className="flex items-center gap-5 self-center">
                             <span
                               className={
-                                "text-3xl " +
+                                "text-2xl " +
                                 (transaction.amount > 0
                                   ? "text-green-400"
                                   : "text-red-300")
