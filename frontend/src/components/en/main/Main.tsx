@@ -271,6 +271,14 @@ export default function Main_en() {
         `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
       }
     >
+      {family && (
+        <Transactions_en
+          active={true}
+          familyId={familyId}
+          ownerId={family.owner.id}
+          transactions={transactions}
+        />
+      )}
       {familyId == "" || !familyId ? (
         <div className="flex h-[100vh] flex-col items-center justify-center">
           <h1 className="mb-5 text-2xl font-bold">Whoops!</h1>

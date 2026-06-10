@@ -237,7 +237,7 @@ export default function Transactions_en({
                           <div className="flex items-center gap-5 self-center">
                             <span
                               className={
-                                "text-lg " +
+                                "text-3xl " +
                                 (transaction.amount > 0
                                   ? "text-green-400"
                                   : "text-red-300")
