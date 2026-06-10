@@ -1,6 +1,7 @@
 import type { RolesEnum } from "@/enums/RolesEnum";
 import type { IFamily } from "./Family.interface";
 import type { INotification } from "./Notification.interface";
+import type { ITransaction } from "./Transaction.interface";
 
 export interface IUserData {
   id: string;
@@ -11,4 +12,5 @@ export interface IUserData {
   email: string;
   roles: RolesEnum[];
   notifications: INotification[];
+  transactions: ITransaction[];
 }
