@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/contexts/AuthContext";
 import type { ITransaction } from "@/types/Transaction.interface";
@@ -18,7 +17,8 @@ import SpenderCategoryLeaderboard_en from "./spenderCategoryLeaderboard";
 import DifferentMonthsComparison_en from "./differentMonthsComparison";
 import FamilyId_en from "./familyId";
 import { useTheme } from "@/components/theme-provider";
-import Notifications_en from "../notifications";
+import Transactions_en from "../transactions";
+import type { IFamily } from "@/types/Family.interface";
 
 export default function Main_en() {
   const auth = useContext(AuthContext);
@@ -31,6 +31,7 @@ export default function Main_en() {
   const [prevMonth, setPrevMonth] = useState<IFetchError | IMonthlySummary>();
   const { theme, resolvedTheme, systemTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
+  const [family, setFamily] = useState<IFamily>();
 
   const familyData: IFamilyData = {
     pnl: 0,
@@ -216,6 +217,7 @@ export default function Main_en() {
         }
 
         setFamilyId(data.family.id);
+        setFamily(data.family);
         const _familyId = data.family.id;
         if (_familyId == null) return;
 

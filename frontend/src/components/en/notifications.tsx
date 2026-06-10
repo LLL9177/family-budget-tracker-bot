@@ -5,10 +5,6 @@ import { Card, CardFooter, CardHeader } from "../ui/card";
 import type { INotification } from "@/types/Notification.interface";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  CheckCircle,
-  DoorClosed,
-  Hourglass,
-  Trash,
   Trash2,
   UserCheck,
   UserPlus,
@@ -17,7 +13,6 @@ import {
   XCircle,
 } from "lucide-react";
 import type { IconEnum } from "@/enums/IconEnum";
-import { h1 } from "framer-motion/client";
 
 type Props = {
   active: boolean;
@@ -237,7 +232,7 @@ export default function Notifications_en({ active }: Props) {
               }}
             >
               <Card
-                className="w-150 gap-2 rounded-3xl bg-card p-2"
+                className="w-150 gap-2 rounded-3xl bg-card p-2 max-h-400 overflow-y-scroll"
                 onClick={(e) => e.stopPropagation()}
               >
                 {user.notifications.length === 0 ? (

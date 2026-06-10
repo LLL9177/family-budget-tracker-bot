@@ -19,6 +19,7 @@ import { EditAmountDto } from 'src/dtos/EditAmount.dto';
 import { SummaryDto } from 'src/dtos/Summary.dto';
 import { SummaryService } from './services/Summary.service';
 import { GetUserDto } from '../dtos/getUser.dto';
+import { FamilyGuard } from '../family/family.guard';
 
 @Controller('transaction')
 export class TransactionController {
@@ -65,8 +66,7 @@ export class TransactionController {
     return await this.transactionService.findByUserId(dto.id);
   }
 
-  @Role(Roles.FAMILY_OWNER)
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, FamilyGuard)
   @Post('edit_category')
   async editCategory(@Body(new ValidationPipe()) body: EditCategoryDto) {
     return await this.transactionService.editCategory(
@@ -75,15 +75,13 @@ export class TransactionController {
     );
   }
 
-  @Role(Roles.FAMILY_OWNER)
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, FamilyGuard)
   @Post('edit_amount')
   async editAmount(@Body(new ValidationPipe()) body: EditAmountDto) {
     return await this.transactionService.editAmount(body.id, body.newAmount);
   }
-
-  @Role(Roles.FAMILY_OWNER)
-  @UseGuards(AuthGuard, RolesGuard)
+  
+  @UseGuards(AuthGuard, FamilyGuard)
   @Post('delete')
   async delete(@Query('id') id: number) {
     await this.transactionService.delete(id);

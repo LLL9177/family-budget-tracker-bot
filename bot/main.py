@@ -543,7 +543,8 @@ def payment_process(msg, category=None, *, lang):
 
         res = payment_process_db(amount, date, msg.from_user.id, category)
         if not res:
-            bot.send_message(msg.chat.id, t("something wrong"))
+            bot.send_message(msg.chat.id, t("something_wrong"))
+            m = bot.send_message(msg.chat.id, t("loading"))
             main_menu(m, lang=lang)
             return None
 
@@ -926,7 +927,7 @@ def payment_process_db(amount, date, telegram_id, category):
         "category": category,
     }, telegram_id)
     
-    if res.status_code != 201:
+    if res.status_code != 200:
         db.close()
         return False
 
