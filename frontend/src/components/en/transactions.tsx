@@ -10,40 +10,45 @@ type Props = {
   familyId: string;
   active: boolean;
   ownerId: string;
+  transactions: ITransaction[];
 };
 
-export default function Transactions_en({ familyId, active, ownerId }: Props) {
+export default function Transactions_en({
+  familyId,
+  active,
+  ownerId,
+  transactions,
+}: Props) {
   const [display, setDisplay] = useState(active);
   const auth = useContext(AuthContext);
-  const [transactions, setTransactions] = useState<ITransaction[]>();
   const [user, setUser] = useState<IUserData>();
   const [transaction, setTransaction] = useState<ITransaction | null>();
 
-  useEffect(() => {
-    if (!familyId) return;
-    async function fetchTransactions() {
-      try {
-        const res = await fetch(
-          import.meta.env.VITE_BACKEND_URL +
-            `/transaction/get_family_transactions?family_uuid=${familyId}`,
-          {
-            method: "GET",
-            credentials: "include",
-            headers: {
-              "Content-Type": "appliaction/json",
-              Authorization: auth.access ? `Bearer ${auth.access}` : "",
-            },
-          }
-        );
-        if (!res.ok) throw new Error(res.statusText);
-        const data = await res.json();
-        setTransactions(data);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    fetchTransactions();
-  }, [auth.access, familyId]);
+  // useEffect(() => {
+  //   if (!familyId) return;
+  //   async function fetchTransactions() {
+  //     try {
+  //       const res = await fetch(
+  //         import.meta.env.VITE_BACKEND_URL +
+  //           `/transaction/get_family_transactions?family_uuid=${familyId}`,
+  //         {
+  //           method: "GET",
+  //           credentials: "include",
+  //           headers: {
+  //             "Content-Type": "appliaction/json",
+  //             Authorization: auth.access ? `Bearer ${auth.access}` : "",
+  //           },
+  //         }
+  //       );
+  //       if (!res.ok) throw new Error(res.statusText);
+  //       const data = await res.json();
+  //       setTransactions(data);
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   }
+  //   fetchTransactions();
+  // }, [auth.access, familyId]);
 
   useEffect(() => {
     if (!familyId) return;
@@ -155,7 +160,7 @@ export default function Transactions_en({ familyId, active, ownerId }: Props) {
                 }}
               >
                 <Card
-                  className="min-h-40 w-120 flex-row justify-between p-4 rounded-3xl"
+                  className="min-h-40 w-120 flex-row justify-between rounded-3xl p-4"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex flex-col gap-2">
@@ -190,7 +195,7 @@ export default function Transactions_en({ familyId, active, ownerId }: Props) {
               }}
             >
               <Card
-                className="max-h-400 w-150 overflow-y-scroll rounded-3xl p-2 select-none"
+                className="max-h-200 w-150 overflow-y-scroll rounded-3xl p-2 select-none"
                 onClick={(e) => e.stopPropagation()}
               >
                 {transactions && transactions.length > 0 ? (
@@ -213,7 +218,7 @@ export default function Transactions_en({ familyId, active, ownerId }: Props) {
                         }}
                       >
                         <Card
-                          className="flex cursor-pointer flex-row justify-between rounded-2xl p-4"
+                          className="flex cursor-pointer flex-row justify-between bg-white/2 p-4 text-xl hover:bg-white/4"
                           onClick={(e) => {
                             e.stopPropagation();
                             openTransaction(transaction);

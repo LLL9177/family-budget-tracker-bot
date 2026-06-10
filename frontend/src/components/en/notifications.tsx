@@ -232,7 +232,7 @@ export default function Notifications_en({ active }: Props) {
               }}
             >
               <Card
-                className="w-150 gap-2 rounded-3xl bg-card p-2 max-h-400 overflow-y-scroll"
+                className="max-h-200 w-150 gap-2 overflow-y-scroll rounded-3xl bg-card p-2"
                 onClick={(e) => e.stopPropagation()}
               >
                 {user.notifications.length === 0 ? (

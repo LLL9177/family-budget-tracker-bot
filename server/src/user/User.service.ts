@@ -51,7 +51,9 @@ export class UserService implements IUserService {
         family: {
           joinRequests: true,
           owner: true,
-          members: true,
+          members: {
+            avatar: true,
+          },
           avatar: true,
           banner: true,
         },
