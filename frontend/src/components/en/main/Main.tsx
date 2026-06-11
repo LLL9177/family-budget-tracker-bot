@@ -20,6 +20,7 @@ import { useTheme } from "@/components/theme-provider";
 import Transactions_en from "../transactions";
 import type { IFamily } from "@/types/Family.interface";
 import Users_en from "../users";
+import Navigation_en from "../niavigation/navigation";
 
 export default function Main_en() {
   const auth = useContext(AuthContext);
@@ -271,6 +272,7 @@ export default function Main_en() {
         `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
       }
     >
+      <Navigation_en />
       {familyId == "" || !familyId ? (
         <div className="flex h-[100vh] flex-col items-center justify-center">
           <h1 className="mb-5 text-2xl font-bold">Whoops!</h1>

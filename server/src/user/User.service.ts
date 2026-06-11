@@ -53,7 +53,6 @@ export class UserService implements IUserService {
           owner: true,
           members: {
             avatar: true,
-            transactions: true,
           },
           avatar: true,
           banner: true,
