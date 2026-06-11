@@ -1,7 +1,7 @@
 import { AuthContext } from "@/contexts/AuthContext";
 import type { ITransaction } from "@/types/Transaction.interface";
-import React, { useContext, useEffect, useState } from "react";
-import { Card } from "../ui/card";
+import { useContext, useEffect, useState } from "react";
+import { Card } from "../../ui/card";
 import { Trash2 } from "lucide-react";
 import type { IUserData } from "@/types/UserData.interface";
 import { AnimatePresence, motion } from "framer-motion";
@@ -12,30 +12,55 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "../ui/combobox";
+} from "../../ui/combobox";
 
 type Props = {
   familyId: string;
   active: boolean;
   ownerId: string;
-  transactions: ITransaction[];
-  setTransactions: React.Dispatch<React.SetStateAction<ITransaction[]>>;
   users: IUserData[];
+  hide: () => void;
 };
 
 export default function Transactions_en({
   familyId,
   active,
   ownerId,
-  transactions,
-  setTransactions,
   users,
+  hide,
 }: Props) {
-  const [display, setDisplay] = useState(active);
   const auth = useContext(AuthContext);
   const [user, setUser] = useState<IUserData>();
   const [transaction, setTransaction] = useState<ITransaction | null>();
   const [filterBy, setFilterBy] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<ITransaction[]>();
+
+  useEffect(() => {
+    async function fetchTransactions() {
+      try {
+        const res = await fetch(
+          import.meta.env.VITE_BACKEND_URL +
+            `/transaction/get_family_transactions?family_uuid=${familyId}`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: auth.access ? `Bearer ${auth.access}` : "",
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error(res.statusText);
+        const data = await res.json();
+        setTransactions(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    fetchTransactions();
+  });
 
   useEffect(() => {
     if (!familyId) return;
@@ -118,12 +143,12 @@ export default function Transactions_en({
 
   return (
     <>
-      {display && (
-        <div
-          className="fixed top-0 z-11 flex h-screen w-screen items-center justify-center gap-5 bg-[rgba(0,0,0,0.5)] backdrop-blur-sm"
-          onClick={() => setDisplay(false)}
-        >
-          <AnimatePresence mode="popLayout">
+      <AnimatePresence mode="popLayout">
+        {active && (
+          <div
+            className="fixed top-0 z-11 flex h-screen w-screen items-center justify-center gap-5 bg-[rgba(0,0,0,0.5)] backdrop-blur-sm"
+            onClick={() => hide()}
+          >
             {transaction && (
               <motion.div
                 key={transaction.id}
@@ -182,6 +207,10 @@ export default function Transactions_en({
               transition={{
                 duration: 0.2,
               }}
+              exit={{
+                opacity: 0,
+                scale: 0.5,
+              }}
             >
               <Card
                 className="max-h-200 w-150 overflow-y-scroll rounded-3xl p-2 select-none"
@@ -233,9 +262,9 @@ export default function Transactions_en({
                           exit={{
                             opacity: 0,
                             scale: 0.5,
-                            transition: {
-                              duration: 0.15,
-                            },
+                          }}
+                          transition={{
+                            duration: 0.2
                           }}
                         >
                           <Card
@@ -290,9 +319,9 @@ export default function Transactions_en({
                 )}
               </Card>
             </motion.div>
-          </AnimatePresence>
-        </div>
-      )}
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

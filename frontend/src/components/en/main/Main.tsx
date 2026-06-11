@@ -17,9 +17,9 @@ import SpenderCategoryLeaderboard_en from "./spenderCategoryLeaderboard";
 import DifferentMonthsComparison_en from "./differentMonthsComparison";
 import FamilyId_en from "./familyId";
 import { useTheme } from "@/components/theme-provider";
-import Transactions_en from "../transactions";
+import Transactions_en from "../niavigation/transactions";
 import type { IFamily } from "@/types/Family.interface";
-import Users_en from "../users";
+import Users_en from "../niavigation/users";
 import Navigation_en from "../niavigation/navigation";
 
 export default function Main_en() {
@@ -272,7 +272,14 @@ export default function Main_en() {
         `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
       }
     >
-      <Navigation_en />
+      {family && transactions && (
+        <Navigation_en
+          family={family}
+          users={family.members}
+          ownerId={family.owner.id}
+          transactions={transactions}
+        />
+      )}
       {familyId == "" || !familyId ? (
         <div className="flex h-[100vh] flex-col items-center justify-center">
           <h1 className="mb-5 text-2xl font-bold">Whoops!</h1>

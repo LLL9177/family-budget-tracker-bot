@@ -1,22 +1,20 @@
 import type { IFamily } from "@/types/Family.interface";
 import { AnimatePresence } from "framer-motion";
 import { motion } from "framer-motion";
-import { Card } from "../ui/card";
+import { Card } from "../../ui/card";
 import { use, useState } from "react";
 import type { IUserData } from "@/types/UserData.interface";
 import { useNavigate } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Badge } from "../ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
+import { Badge } from "../../ui/badge";
 import type { RolesEnum } from "@/enums/RolesEnum";
 import type { ITransaction } from "@/types/Transaction.interface";
 import type { ITransactionWithDate } from "@/types/TransactionWithDate.interface";
-import { span } from "framer-motion/client";
-import type { IUser } from "@/types/User.interface";
 
 type Props = {
   family: IFamily;
   active: boolean;
-  transcations: ITransaction[];
+  transactions: ITransaction[];
 };
 
 export default function Users_en({ family, active, transactions }: Props) {

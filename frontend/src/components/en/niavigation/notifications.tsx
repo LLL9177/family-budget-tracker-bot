@@ -1,7 +1,7 @@
 import { AuthContext } from "@/contexts/AuthContext";
 import type { IUserData } from "@/types/UserData.interface";
 import { useContext, useEffect, useRef, useState } from "react";
-import { Card, CardFooter, CardHeader } from "../ui/card";
+import { Card, CardFooter, CardHeader } from "../../ui/card";
 import type { INotification } from "@/types/Notification.interface";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -16,12 +16,13 @@ import type { IconEnum } from "@/enums/IconEnum";
 
 type Props = {
   active: boolean;
+  hide: () => void;
 };
 
 const notificationMeta = {
   JOIN_REQUEST: {
     icon: UserPlus,
-    color: "text-yellow-400",
+    color: "dark:text-yellow-400 text-yellow-500",
   },
   JOINED: {
     icon: Users,
@@ -41,8 +42,7 @@ const notificationMeta = {
   },
 };
 
-export default function Notifications_en({ active }: Props) {
-  const [display, setDisplay] = useState(active);
+export default function Notifications_en({ active, hide }: Props) {
   const [user, setUser] = useState<IUserData>();
   const auth = useContext(AuthContext);
   const [notification, setNotification] = useState<INotification | null>(); // currently viewing
@@ -178,109 +178,131 @@ export default function Notifications_en({ active }: Props) {
 
   return (
     <>
-      {display && user && (
-        <div
-          className="fixed top-0 z-10 flex h-screen w-screen items-center justify-center gap-5 bg-[rgba(0,0,0,0.5)] backdrop-blur-sm"
-          onClick={() => setDisplay(false)}
-        >
-          <AnimatePresence mode="popLayout">
-            {notification && (
+      <AnimatePresence mode="popLayout">
+        {active && user && (
+          <motion.div
+            layout
+            className="fixed top-0 z-10 w-screen"
+            initial={{
+              opacity: 0,
+            }}
+            animate={{
+              opacity: 1,
+            }}
+            exit={{
+              opacity: 0,
+            }}
+          >
+            <div
+              className="top-0 flex h-screen w-screen items-center justify-center gap-5 bg-[rgba(0,0,0,0.5)] backdrop-blur-sm"
+              onClick={() => hide()}
+            >
+              {notification && (
+                <motion.div
+                  key={notification.id}
+                  initial={{
+                    opacity: 0,
+                    scale: 0.6,
+                    x: 150,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    scale: 1,
+                    x: 0,
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 25,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.6,
+                    x: 150,
+                  }}
+                >
+                  <Card
+                    ref={notificationRef}
+                    className="w-150"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <CardHeader className="text-2xl font-bold">
+                      {notification.title}
+                    </CardHeader>
+                    <CardFooter className="text-lg">
+                      {notification.body}
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              )}
               <motion.div
-                key={notification.id}
+                layout
                 initial={{
                   opacity: 0,
                   scale: 0.6,
-                  x: 150,
                 }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                  x: 0,
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.4,
                 }}
                 transition={{
                   type: "spring",
-                  stiffness: 400,
+                  stiffness: 250,
                   damping: 25,
-                }}
-                exit={{
-                  opacity: 0,
-                  scale: 0.6,
-                  x: 150,
                 }}
               >
                 <Card
-                  ref={notificationRef}
-                  className="w-150"
+                  className="max-h-200 w-150 gap-2 overflow-y-scroll rounded-3xl bg-card p-2"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <CardHeader className="text-2xl font-bold">
-                    {notification.title}
-                  </CardHeader>
-                  <CardFooter className="text-lg">
-                    {notification.body}
-                  </CardFooter>
+                  {user.notifications.length === 0 ? (
+                    <div className="p-6 text-center text-lg text-white/50">
+                      No notifications
+                    </div>
+                  ) : (
+                    <>
+                      <motion.button
+                        className="mb-2 flex h-5 w-20 cursor-pointer items-center justify-center self-end rounded-xl border-[1px] border-[rgba(180,180,180,0.3)] bg-[rgba(180,180,180,0.1)]"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          clearAll();
+                        }}
+                        whileHover={{ transform: "translateY(2px)" }}
+                        transition={{
+                          duration: 0.3,
+                        }}
+                      >
+                        Clear all
+                      </motion.button>
+                      {user.notifications.map((notification) => (
+                        <motion.div key={notification.id} variants={item}>
+                          <Card
+                            className="flex cursor-pointer flex-row justify-between bg-white/2 p-4 text-xl hover:bg-white/4"
+                            onClick={() => openNotification(notification)}
+                          >
+                            <div className="flex gap-4">
+                              <NotificationIcon icon={notification.icon} />
+                              {notification.title}
+                            </div>
+                            <Trash2
+                              className="text-red-400 hover:text-red-300"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeNotification(notification);
+                              }}
+                            />
+                          </Card>
+                        </motion.div>
+                      ))}
+                    </>
+                  )}
                 </Card>
               </motion.div>
-            )}
-            <motion.div
-              layout
-              animate={{ opacity: 1 }}
-              transition={{
-                type: "spring",
-                stiffness: 250,
-                damping: 25,
-              }}
-            >
-              <Card
-                className="max-h-200 w-150 gap-2 overflow-y-scroll rounded-3xl bg-card p-2"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {user.notifications.length === 0 ? (
-                  <div className="p-6 text-center text-lg text-white/50">
-                    No notifications
-                  </div>
-                ) : (
-                  <>
-                    <motion.button
-                      className="mb-2 flex h-5 w-20 cursor-pointer items-center justify-center self-end rounded-xl border-[1px] border-[rgba(255,255,255,0.3)] bg-[rgba(255,255,255,0.1)]"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        clearAll();
-                      }}
-                      whileHover={{ transform: "translateY(2px)" }}
-                      transition={{
-                        duration: 0.3,
-                      }}
-                    >
-                      Clear all
-                    </motion.button>
-                    {user.notifications.map((notification) => (
-                      <motion.div key={notification.id} variants={item}>
-                        <Card
-                          className="flex cursor-pointer flex-row justify-between bg-white/2 p-4 text-xl hover:bg-white/4"
-                          onClick={() => openNotification(notification)}
-                        >
-                          <div className="flex gap-4">
-                            <NotificationIcon icon={notification.icon} />
-                            {notification.title}
-                          </div>
-                          <Trash2
-                            className="text-red-400 hover:text-red-300"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeNotification(notification);
-                            }}
-                          />
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </>
-                )}
-              </Card>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

@@ -1,8 +1,24 @@
+// OH NO IT WAS WRITTEN BY AI!!!??
+// What can you do about it?
 "use client";
 
 import { Menu } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
+import Notifications_en from "./notifications";
+import Transactions_en from "./transactions";
+import type { IUserData } from "@/types/UserData.interface";
+import type { IFamily } from "@/types/Family.interface";
+import Users_en from "./users";
+import type { ITransaction } from "@/types/Transaction.interface";
+
+type Props = {
+  family: IFamily;
+  users: IUserData[];
+  ownerId: string;
+  transactions: ITransaction[];
+};
 
 const ITEMS = [
   "Family Page",
@@ -59,7 +75,12 @@ function FixedAnchor({
   );
 }
 
-export default function FloatingMenu() {
+export default function FloatingMenu({
+  family,
+  users,
+  ownerId,
+  transactions,
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: MARGIN, y: MARGIN });
@@ -67,6 +88,7 @@ export default function FloatingMenu() {
   const isDraggingRef = useRef(false);
   const didDragRef = useRef(false);
   const cornerPositionRef = useRef({ x: MARGIN, y: MARGIN });
+  const [openedItem, setOpenedItem] = useState<string | null>();
 
   useEffect(() => {
     const handleMove = (e: MouseEvent) => {
@@ -122,10 +144,13 @@ export default function FloatingMenu() {
       <FixedAnchor
         x={position.x}
         y={position.y}
-        className={isDragging ? "" : "z-20 transition-[left,top] duration-300"}
+        className={
+          isDragging ? "z-20" : "z-20 transition-[left,top] duration-300"
+        }
       >
         <motion.button
           onMouseDown={() => {
+            if (isOpen) return;
             isDraggingRef.current = true;
             didDragRef.current = false;
             setIsDragging(true);
@@ -133,14 +158,21 @@ export default function FloatingMenu() {
           onClick={toggleMenu}
           animate={{ scale: isOpen ? 0.85 : 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="rounded-full bg-black p-3 text-white dark:bg-white dark:text-black"
+          className={cn(
+            "rounded-full bg-black p-3 text-white dark:bg-white dark:text-black",
+            isDragging ? "cursor-grabbing" : "cursor-grab",
+            isOpen
+              ? "shadow-[0_0_10px_0_rgb(100,100,100)] dark:shadow-[0_0_20px_0_white]"
+              : ""
+          )}
+          hidden={openedItem ? true : false}
         >
           <Menu />
         </motion.button>
       </FixedAnchor>
 
       {/* Menu items — wrapper animates position, Framer animates scale+opacity */}
-      <AnimatePresence>
+      <AnimatePresence mode="popLayout">
         {isOpen &&
           ITEMS.map((item, i) => {
             const radius = 160;
@@ -164,7 +196,7 @@ export default function FloatingMenu() {
                 }}
               >
                 <motion.button
-                  className="rounded-full border bg-background px-4 py-2"
+                  className="cursor-pointer rounded-full border bg-background px-4 py-2 shadow-[0_0_10px_0_rgba(0,0,0,0.1)] hover:bg-[rgb(240,240,240)] dark:shadow-[0_0_10px_0_rgba(255,255,255,0.1)] dark:hover:bg-[rgb(30,30,30)]"
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.5 }}
@@ -178,6 +210,7 @@ export default function FloatingMenu() {
                     console.log(item);
                     setIsOpen(false);
                     setPosition(cornerPositionRef.current);
+                    setOpenedItem(item);
                   }}
                 >
                   {item}
@@ -185,6 +218,22 @@ export default function FloatingMenu() {
               </motion.div>
             );
           })}
+        <Notifications_en
+          active={openedItem == "Notifications"}
+          hide={() => setOpenedItem(null)}
+        />
+        <Transactions_en
+          active={openedItem == "Transactions"}
+          familyId={family.id}
+          ownerId={ownerId}
+          users={users}
+          hide={() => setOpenedItem(null)}
+        />
+        <Users_en
+          active={openedItem == "Users"}
+          transactions={transactions}
+          family={family}
+        />
       </AnimatePresence>
     </>
   );
