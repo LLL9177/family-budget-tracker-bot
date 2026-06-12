@@ -46,6 +46,10 @@ export class FamilyService implements IFamilyService {
     if (data.name.length > 60) throw new BadRequestException('Name is too big');
     const owner = await this.userService.findById(user.id);
     if (owner) {
+      if (owner.family)
+        throw new ForbiddenException(
+          'User is not allowed to create more than 1 family',
+        );
       if (!process.env.DEFAULT_FAMILY_BANNER)
         throw new Error('App misconfigured');
       const banner = await this.fileService.getByUrl(

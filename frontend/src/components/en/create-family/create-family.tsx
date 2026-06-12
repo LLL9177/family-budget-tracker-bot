@@ -15,7 +15,6 @@ import { Link, useNavigate } from "react-router-dom";
 import Navigation_en from "../niavigation/navigation";
 
 export default function CreateFamily_en() {
-  const [family, setFamily] = useState<IFamily>();
   const [name, setName] = useState("");
   const { theme, resolvedTheme, systemTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
@@ -36,7 +35,7 @@ export default function CreateFamily_en() {
             },
           }
         );
-        if (!data.ok) console.error(data);
+        if (!data.ok) throw new Error(data.statusText);
         else navigate("/en");
       } catch (err) {
         console.error(err);
@@ -53,7 +52,7 @@ export default function CreateFamily_en() {
         `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
       }
     >
-      <Navigation_en />
+      <Navigation_en exclude="Create Family Page" />
       <Card className="w-100">
         <CardHeader>
           <CardTitle>Create a family</CardTitle>
