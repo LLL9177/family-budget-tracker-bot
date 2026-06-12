@@ -57,16 +57,38 @@ export default function MainChart_en({ data }: Props) {
     dayMap.set(day, (dayMap.get(day) ?? 0) + t.amount);
   }
 
+  const sortedDays = Array.from(dayMap.entries()).sort(([a], [b]) => a - b);
+
+  let running = 0;
+
   const chartData =
     frame === "days"
-      ? Array.from(dayMap.entries())
-          .sort(([a], [b]) => a - b)
-          .map(([day, total]) => ({ date: `Day ${day}`, PnL: total }))
-      : monthTransactions.map((t, i) => ({
-          transactionIndex: String(i + 1),
-          PnL: t.amount,
-          date: `Day ${t.createdAt.getDate()}`,
-        }));
+      ? sortedDays.map(([day, total]) => {
+          running += total;
+
+          return {
+            date: `Day ${day}`,
+            PnL: running,
+          };
+        })
+      : (() => {
+          let running = 0;
+
+          const sorted = [...monthTransactions].sort(
+            (a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+
+          return sorted.map((t, i) => {
+            running += t.amount;
+
+            return {
+              transactionIndex: String(i + 1),
+              PnL: running,
+              date: `Day ${new Date(t.createdAt).getDate()}`,
+            };
+          });
+        })();
 
   if (frame == "transactions") {
     let transactionIndex = 0;
