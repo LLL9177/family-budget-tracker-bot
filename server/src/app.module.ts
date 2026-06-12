@@ -17,6 +17,8 @@ import { FileModule } from './file/file.module';
 import { FileEntity } from './file/entities/File.entity';
 import { NotificationModule } from './notification/notification.module';
 import { NotificationEntity } from './notification/entities/Notifitcation.entity';
+import { TelegramModule } from './telegram/telegram.module';
+import { TelegramEntity } from './telegram/entities/Telegram.entity';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { NotificationEntity } from './notification/entities/Notifitcation.entity
         OneTimePasswordEntity,
         FileEntity,
         NotificationEntity,
+        TelegramEntity,
       ],
       synchronize: true,
     }),
@@ -46,6 +49,7 @@ import { NotificationEntity } from './notification/entities/Notifitcation.entity
     OneTimePasswordModule,
     FileModule,
     NotificationModule,
+    TelegramModule,
   ],
   controllers: [AuthController, FamilyController],
 })

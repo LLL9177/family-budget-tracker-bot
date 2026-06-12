@@ -12,19 +12,20 @@ import { Roles } from '../enums/Roles.enum';
 import { HashService } from './Hash.service';
 import { UserEntity } from 'src/user/entities/User.entity';
 import { IAccessToken } from 'src/types/IAccessToken.interface';
-import { BotLoginDto } from 'src/dtos/BotLogin.dto';
 import { GoogleAuthDto } from 'src/dtos/GoogleAuth.dto';
 import { IGoogleAuth } from 'src/types/GoogleAuth.interface';
 import { IUser } from 'src/types/User.interface';
-import { BotGoogleLoginDto } from 'src/dtos/BotGoogleLogin.dto';
 import { OneTimePasswordService } from '../../one-time-password/services/OneTimePassword.service';
 import { UserDto } from '../../dtos/user.dto';
+import { TelegramService } from '../../telegram/services/Telegram.service';
+import { BotLoginDto } from '../../dtos/BotLogin.dto';
+import { BotGoogleLoginDto } from '../../dtos/BotGoogleLogin.dto';
 
 interface IAuthService {
   register(data: UserDto): Promise<IAccessToken | void>; // although it will 100% return the first option
   getProfile(user_id: string): Promise<IUser>;
   login(data: LoginDto): Promise<IAccessToken | void>;
-  botLogin(data: BotLoginDto): Promise<IAccessToken | void>;
+  botLogin(data: BotLoginDto): Promise<void>;
   googleAuth(data: GoogleAuthDto): Promise<IAccessToken | void>;
   botGoogleAuth(data: BotGoogleLoginDto): Promise<IAccessToken | void>;
 }
@@ -36,6 +37,7 @@ export class AuthService implements IAuthService {
     private readonly jwtService: JwtTokenService,
     private readonly hashService: HashService,
     private readonly otpService: OneTimePasswordService,
+    private readonly telegramService: TelegramService,
   ) {}
 
   async register(data: UserDto): Promise<IAccessToken | void> {
@@ -88,13 +90,14 @@ export class AuthService implements IAuthService {
     throw new UnauthorizedException('Incorrect username or password');
   }
 
-  async botLogin(data: BotLoginDto): Promise<IAccessToken | void> {
-    const user = (await this.getProfile(data.userId)) as UserEntity;
+  async botLogin(data: BotLoginDto): Promise<void> {
+    const user = await this.userService.findById(data.userId, false, true);
+    if (!user || !user.password) throw new NotFoundException('User not found');
 
-    return await this.login({
-      username: user.username,
-      password: data.password,
-    });
+    if (!this.hashService.compare(data.password, user.password))
+      throw new UnauthorizedException();
+
+    await this.telegramService.create({ ...data });
   }
 
   async googleAuth(data: GoogleAuthDto): Promise<IGoogleAuth | void> {
@@ -150,19 +153,12 @@ export class AuthService implements IAuthService {
   async botGoogleAuth(data: BotGoogleLoginDto): Promise<IAccessToken | void> {
     const user = await this.userService.findById(data.userId, false);
     if (!user) throw new NotFoundException('User not found');
-    console.log(data);
-    console.log(user);
 
     if (!(await this.otpService.validate(data.oneTimePassword, user.id)))
       throw new BadRequestException('Not a valid one-time password');
 
-    const jwtPair = this.jwtService.sign({
-      id: user.id,
-      roles: JSON.parse(user.roles),
+    await this.telegramService.create({
+      ...data,
     });
-
-    return {
-      access_token: { access: jwtPair.access, refresh: jwtPair.refresh },
-    };
   }
 }

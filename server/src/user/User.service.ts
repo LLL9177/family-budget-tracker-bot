@@ -44,6 +44,7 @@ export class UserService implements IUserService {
   async findById(
     id: string,
     getOwned: boolean = false,
+    getPassword: boolean = false,
   ): Promise<UserEntity | null> {
     const user = await this.userRepository.findOne({
       where: { id },
@@ -64,7 +65,7 @@ export class UserService implements IUserService {
     });
     if (!user) throw new NotFoundException('User not found');
 
-    delete user.password;
+    if (!getPassword) delete user.password;
     return user;
   }
 

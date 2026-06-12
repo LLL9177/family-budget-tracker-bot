@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { FileEntity } from '../../file/entities/File.entity';
 import { NotificationEntity } from '../../notification/entities/Notifitcation.entity';
+import { TelegramEntity } from '../../telegram/entities/Telegram.entity';
 
 @Entity()
 export class UserEntity {
@@ -57,4 +58,10 @@ export class UserEntity {
     cascade: true,
   })
   notifications: NotificationEntity[];
+
+  @Column({ nullable: true, unique: true })
+  telegramId?: number;
+
+  @OneToMany(() => TelegramEntity, (telegram) => telegram.user)
+  telegramRequests: TelegramEntity[];
 }
