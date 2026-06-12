@@ -17,23 +17,19 @@ import SpenderCategoryLeaderboard_en from "./spenderCategoryLeaderboard";
 import DifferentMonthsComparison_en from "./differentMonthsComparison";
 import FamilyId_en from "./familyId";
 import { useTheme } from "@/components/theme-provider";
-import Transactions_en from "../niavigation/transactions";
-import type { IFamily } from "@/types/Family.interface";
-import Users_en from "../niavigation/users";
 import Navigation_en from "../niavigation/navigation";
+import { TransactionsContext } from "@/contexts/TransactionsContext";
+import { FamilyContext } from "@/contexts/FamilyContext";
 
 export default function Main_en() {
   const auth = useContext(AuthContext);
-  // const decodedJwt = auth.access ? jwtDecode(auth.access) : "";
   const navigate = useNavigate();
   const [familyId, setFamilyId] = useState("");
-  const [transactions, setTransactions] = useState<
-    ITransaction[] | [] | ITransactionWithDate[]
-  >([]);
+  const { setTransactions, transactions } = useContext(TransactionsContext);
   const [prevMonth, setPrevMonth] = useState<IFetchError | IMonthlySummary>();
   const { theme, resolvedTheme, systemTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
-  const [family, setFamily] = useState<IFamily>();
+  const { setFamily } = useContext(FamilyContext);
 
   const familyData: IFamilyData = {
     pnl: 0,
@@ -263,7 +259,7 @@ export default function Main_en() {
       }
     };
     getProfile();
-  }, [auth.access, navigate]);
+  }, [auth.access, navigate, setFamily, setTransactions]);
 
   return (
     <div
@@ -272,14 +268,7 @@ export default function Main_en() {
         `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
       }
     >
-      {family && transactions && (
-        <Navigation_en
-          family={family}
-          users={family.members}
-          ownerId={family.owner.id}
-          transactions={transactions}
-        />
-      )}
+      <Navigation_en exclude="Main Page" />
       {familyId == "" || !familyId ? (
         <div className="flex h-[100vh] flex-col items-center justify-center">
           <h1 className="mb-5 text-2xl font-bold">Whoops!</h1>

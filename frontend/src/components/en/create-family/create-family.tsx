@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import type { IFamily } from "@/types/Family.interface";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Navigation_en from "../niavigation/navigation";
 
 export default function CreateFamily_en() {
   const [family, setFamily] = useState<IFamily>();
@@ -52,6 +53,7 @@ export default function CreateFamily_en() {
         `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
       }
     >
+      <Navigation_en />
       <Card className="w-100">
         <CardHeader>
           <CardTitle>Create a family</CardTitle>

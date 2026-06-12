@@ -24,6 +24,7 @@ import {
 } from "../ui/alert-dialog";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { AuthContext } from "@/contexts/AuthContext";
+import Navigation_en from "./niavigation/navigation";
 
 export default function Register_en() {
   const [email, setEmail] = useState("");
@@ -97,6 +98,7 @@ export default function Register_en() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-10 bg-[#1a191f]">
+      <Navigation_en exclude="Register Page" />
       <ChangeLanguage
         route="/uk/register"
         className="relative top-8 left-45 h-10 w-10"

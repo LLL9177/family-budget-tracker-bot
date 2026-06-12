@@ -10,6 +10,7 @@ import {
 } from "../ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/contexts/AuthContext";
+import Navigation_en from "./niavigation/navigation";
 
 export default function Renew_en() {
   const [otp, setOtp] = useState("");
@@ -31,11 +32,9 @@ export default function Renew_en() {
           }
         );
 
-        console.log(res);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
-        console.log(data);
         if (data.otp) setOtp(data.otp);
       } catch (err) {
         console.error(err);
@@ -46,6 +45,7 @@ export default function Renew_en() {
   }, [auth]);
   return (
     <div>
+      <Navigation_en exclude="Renew OTP Page" />
       <AlertDialog open={otp !== ""}>
         <AlertDialogContent>
           <AlertDialogHeader>

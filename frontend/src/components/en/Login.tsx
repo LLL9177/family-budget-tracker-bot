@@ -25,6 +25,7 @@ import {
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { AuthContext } from "@/contexts/AuthContext";
 import { useTheme } from "../theme-provider";
+import Navigation_en from "./niavigation/navigation";
 
 export default function Login_en() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
@@ -92,6 +93,7 @@ export default function Login_en() {
         iconClass="!w-5 !h-5"
         route="/uk/login"
       />
+      <Navigation_en exclude="Login Page" />
       <form>
         <Card className="w-100">
           <CardHeader>

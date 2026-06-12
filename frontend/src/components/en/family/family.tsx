@@ -34,6 +34,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { FamilyContext } from "@/contexts/FamilyContext";
+import Navigation_en from "../niavigation/navigation";
 
 type AccessTokenPayload = {
   id: string;
@@ -53,7 +55,8 @@ function parseJwt<T>(token: string): T | null {
 export default function Family_en() {
   const auth = useContext(AuthContext);
 
-  const [familyData, setFamilyData] = useState<IFamily>();
+  // const [familyContext.family, familyContext.setFamily] = useState<IFamily>();
+  const familyContext = useContext(FamilyContext);
 
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
@@ -68,6 +71,7 @@ export default function Family_en() {
 
   useEffect(() => {
     async function fetchFamilyData() {
+      if (familyContext.family) return;
       try {
         const data = await fetch(
           import.meta.env.VITE_BACKEND_URL + "/family?id=" + familyId,
@@ -81,7 +85,7 @@ export default function Family_en() {
           }
         ).then((res) => res.json());
 
-        if (data.id) setFamilyData(data);
+        if (data.id) familyContext.setFamily(data);
         else throw new Error(data.error);
       } catch (err) {
         console.error(err);
@@ -89,10 +93,10 @@ export default function Family_en() {
     }
 
     fetchFamilyData();
-  }, [auth.access, familyId]);
+  }, [auth.access, familyId, familyContext]);
 
   async function uploadAvatar(e: React.ChangeEvent<HTMLInputElement>) {
-    if (!e.target.files?.[0] || !familyData) return;
+    if (!e.target.files?.[0] || !familyContext.family) return;
 
     const file = e.target.files[0];
 
@@ -124,7 +128,7 @@ export default function Family_en() {
       });
 
       if (!res.ok) throw new Error(res.error);
-      setFamilyData(await res.json());
+      familyContext.setFamily(await res.json());
     } catch (err) {
       console.error(err);
     } finally {
@@ -133,7 +137,7 @@ export default function Family_en() {
   }
 
   async function uploadBanner(e: React.ChangeEvent<HTMLInputElement>) {
-    if (!e.target.files?.[0] || !familyData) return;
+    if (!e.target.files?.[0] || !familyContext.family) return;
 
     const file = e.target.files[0];
 
@@ -162,7 +166,7 @@ export default function Family_en() {
       });
 
       if (!res.ok) throw new Error(res.error);
-      setFamilyData(await res.json());
+      familyContext.setFamily(await res.json());
     } catch (err) {
       console.error(err);
     } finally {
@@ -171,10 +175,11 @@ export default function Family_en() {
   }
 
   async function copyFamilyId() {
-    await navigator.clipboard.writeText(familyData.id);
+    if (!familyContext.family) return;
+    await navigator.clipboard.writeText(familyContext.family.id);
   }
 
-  if (!familyData) {
+  if (!familyContext.family) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="mx-auto max-w-7xl space-y-6">
@@ -197,13 +202,13 @@ export default function Family_en() {
     : null;
 
   const isOwner =
-    tokenData?.id === familyData.owner.id &&
+    tokenData?.id === familyContext.family.owner.id &&
     tokenData.roles.includes(RolesEnum.FAMILY_OWNER);
 
   function acceptJoinRequest(userId: string) {
     if (!isOwner) return;
     async function fetchData(userId: string) {
-      if (!familyData) return;
+      if (!familyContext.family) return;
       try {
         await fetch(
           import.meta.env.VITE_BACKEND_URL + "/family/accept_join_request",
@@ -227,7 +232,7 @@ export default function Family_en() {
         });
 
         if (!res.ok) throw new Error(res.error);
-        setFamilyData(await res.json());
+        familyContext.setFamily(await res.json());
       } catch (err) {
         console.error(err);
       }
@@ -262,7 +267,7 @@ export default function Family_en() {
         });
 
         if (!res.ok) throw new Error(res.error);
-        setFamilyData(await res.json());
+        familyContext.setFamily(await res.json());
       } catch (err) {
         console.error(err);
       }
@@ -297,7 +302,7 @@ export default function Family_en() {
         });
 
         if (!res.ok) throw new Error(res.error);
-        setFamilyData(await res.json());
+        familyContext.setFamily(await res.json());
       } catch (err) {
         console.error(err);
       }
@@ -308,10 +313,10 @@ export default function Family_en() {
 
   return (
     <div className="min-h-screen bg-background p-6">
-      {familyData.banner?.url && (
+      {familyContext.family.banner?.url && (
         <>
           <img
-            src={familyData.banner.url}
+            src={familyContext.family.banner.url}
             alt=""
             className="pointer-events-none fixed inset-0 h-full w-full scale-110 object-cover opacity-20 blur-sm"
           />
@@ -319,6 +324,8 @@ export default function Family_en() {
           <div className="pointer-events-none fixed inset-0 -z-10 bg-black/70" />
         </>
       )}
+
+      <Navigation_en exclude="Family Page" />
 
       <div className="mx-auto max-w-7xl space-y-6">
         {/* HIDDEN INPUTS */}
@@ -342,7 +349,7 @@ export default function Family_en() {
         <div className="group relative overflow-hidden rounded-[32px] border shadow-2xl">
           {/* Banner */}
           <img
-            src={familyData.banner?.url}
+            src={familyContext.family.banner?.url}
             alt="Family Banner"
             className="absolute inset-0 h-full w-full object-cover"
           />
@@ -378,14 +385,14 @@ export default function Family_en() {
               {/* AVATAR */}
               <div className="group/avatar relative">
                 <Avatar className="h-36 w-36 rounded-[28px] border-4 border-white/20 shadow-2xl">
-                  {familyData.avatar ? (
+                  {familyContext.family.avatar ? (
                     <AvatarImage
-                      src={familyData.avatar.url}
+                      src={familyContext.family.avatar.url}
                       className="rounded-[24px] border-none object-cover"
                     />
                   ) : (
                     <AvatarFallback className="rounded-[28px] text-4xl font-black">
-                      {familyData.name.slice(0, 2).toUpperCase()}
+                      {familyContext.family.name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   )}
                 </Avatar>
@@ -427,7 +434,7 @@ export default function Family_en() {
 
                 <div>
                   <h1 className="text-5xl font-black tracking-tight lg:text-7xl">
-                    {familyData.name}
+                    {familyContext.family.name}
                   </h1>
 
                   <p className="mt-3 max-w-2xl text-lg text-zinc-300">
@@ -439,14 +446,14 @@ export default function Family_en() {
                 {/* OWNER */}
                 <div
                   className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-xl select-none"
-                  onClick={() => navigate("/en/user?id=" + familyData.owner.id)}
+                  onClick={() => navigate("/en/user?id=" + familyContext.family.owner.id)}
                 >
                   <Avatar className="h-12 w-12">
-                    {familyData.owner.avatar ? (
-                      <AvatarImage src={familyData.owner.avatar.url} />
+                    {familyContext.family.owner.avatar ? (
+                      <AvatarImage src={familyContext.family.owner.avatar.url} />
                     ) : (
                       <AvatarFallback>
-                        {familyData.owner.username?.slice(0, 2).toUpperCase()}
+                        {familyContext.family.owner.username?.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     )}
                   </Avatar>
@@ -458,7 +465,7 @@ export default function Family_en() {
                       <Crown className="h-4 w-4 text-yellow-400" />
 
                       <p className="font-semibold">
-                        {familyData.owner.username}
+                        {familyContext.family.owner.username}
                       </p>
                     </div>
                   </div>
@@ -477,7 +484,7 @@ export default function Family_en() {
                       <p className="text-sm text-zinc-300">Members</p>
 
                       <h2 className="text-3xl font-black">
-                        {familyData.members.length}
+                        {familyContext.family.members.length}
                       </h2>
                     </div>
                   </div>
@@ -516,14 +523,14 @@ export default function Family_en() {
                 </div>
 
                 <Badge className="rounded-full px-4 py-2 text-sm">
-                  {familyData.members.length} Total
+                  {familyContext.family.members.length} Total
                 </Badge>
               </div>
             </CardHeader>
 
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2">
-                {familyData.members.map((member) => (
+                {familyContext.family.members.map((member) => (
                   <Card
                     key={member.id}
                     className="group cursor-pointer rounded-3xl border bg-muted/40 transition-all duration-300 select-none hover:-translate-y-1 hover:shadow-xl"
@@ -548,7 +555,7 @@ export default function Family_en() {
                                 {member.username}
                               </h3>
 
-                              {member.id === familyData.owner.id && (
+                              {member.id === familyContext.family.owner.id && (
                                 <Crown className="h-4 w-4 text-yellow-500" />
                               )}
                             </div>
@@ -560,7 +567,7 @@ export default function Family_en() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          {isOwner && member.id !== familyData.owner.id && (
+                          {isOwner && member.id !== familyContext.family.owner.id && (
                             <Button
                               size="icon"
                               variant="ghost"
@@ -616,8 +623,8 @@ export default function Family_en() {
               </CardHeader>
 
               <CardContent className="space-y-4">
-                {familyData.joinRequests?.length ? (
-                  familyData.joinRequests.map((request) => (
+                {familyContext.family.joinRequests?.length ? (
+                  familyContext.family.joinRequests.map((request) => (
                     <div
                       key={request.id}
                       className="rounded-2xl border bg-muted/40 p-4"
@@ -690,7 +697,7 @@ export default function Family_en() {
                     className="mt-1 block rounded-xl bg-muted p-3 text-xs"
                     onClick={() => copyFamilyId}
                   >
-                    {familyData.id}
+                    {familyContext.family.id}
                   </code>
                 </div>
 
@@ -699,14 +706,14 @@ export default function Family_en() {
                 <div className="flex items-center justify-between">
                   <p className="text-muted-foreground">Members</p>
 
-                  <Badge>{familyData.members.length}</Badge>
+                  <Badge>{familyContext.family.members.length}</Badge>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <p className="text-muted-foreground">Requests</p>
 
                   <Badge variant="secondary">
-                    {familyData.joinRequests?.length || 0}
+                    {familyContext.family.joinRequests?.length || 0}
                   </Badge>
                 </div>
 

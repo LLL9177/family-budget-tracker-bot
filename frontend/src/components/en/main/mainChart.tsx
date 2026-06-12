@@ -45,15 +45,15 @@ export default function MainChart_en({ data }: Props) {
   const monthTransactions = data.filter((t) => {
     const today = new Date();
     return (
-      t.createdAt.getMonth() === today.getMonth() &&
-      t.createdAt.getFullYear() === today.getFullYear()
+      new Date(t.createdAt).getMonth() === today.getMonth() &&
+      new Date(t.createdAt).getFullYear() === today.getFullYear()
     );
   });
 
   // group by day for the "days" frame
   const dayMap = new Map<number, number>();
   for (const t of monthTransactions) {
-    const day = t.createdAt.getDate();
+    const day = new Date(t.createdAt).getDate();
     dayMap.set(day, (dayMap.get(day) ?? 0) + t.amount);
   }
 

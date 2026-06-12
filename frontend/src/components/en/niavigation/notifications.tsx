@@ -15,7 +15,6 @@ import {
 import type { IconEnum } from "@/enums/IconEnum";
 
 type Props = {
-  active: boolean;
   hide: () => void;
 };
 
@@ -42,7 +41,7 @@ const notificationMeta = {
   },
 };
 
-export default function Notifications_en({ active, hide }: Props) {
+export default function Notifications_en({ hide }: Props) {
   const [user, setUser] = useState<IUserData>();
   const auth = useContext(AuthContext);
   const [notification, setNotification] = useState<INotification | null>(); // currently viewing
@@ -179,7 +178,7 @@ export default function Notifications_en({ active, hide }: Props) {
   return (
     <>
       <AnimatePresence mode="popLayout">
-        {active && user && (
+        {user && (
           <motion.div
             layout
             className="fixed top-0 z-10 w-screen"
@@ -223,7 +222,7 @@ export default function Notifications_en({ active, hide }: Props) {
                 >
                   <Card
                     ref={notificationRef}
-                    className="w-150"
+                    className="w-150 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <CardHeader className="text-2xl font-bold">
@@ -253,7 +252,7 @@ export default function Notifications_en({ active, hide }: Props) {
                 }}
               >
                 <Card
-                  className="max-h-200 w-150 gap-2 overflow-y-scroll rounded-3xl bg-card p-2"
+                  className="max-h-200 w-150 gap-2 overflow-y-scroll rounded-3xl bg-card p-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {user.notifications.length === 0 ? (

@@ -1,8 +1,7 @@
-import type { IFamily } from "@/types/Family.interface";
 import { AnimatePresence } from "framer-motion";
 import { motion } from "framer-motion";
 import { Card } from "../../ui/card";
-import { use, useState } from "react";
+import { useContext } from "react";
 import type { IUserData } from "@/types/UserData.interface";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
@@ -10,16 +9,17 @@ import { Badge } from "../../ui/badge";
 import type { RolesEnum } from "@/enums/RolesEnum";
 import type { ITransaction } from "@/types/Transaction.interface";
 import type { ITransactionWithDate } from "@/types/TransactionWithDate.interface";
+import { TransactionsContext } from "@/contexts/TransactionsContext";
+import { FamilyContext } from "@/contexts/FamilyContext";
 
 type Props = {
-  family: IFamily;
-  active: boolean;
-  transactions: ITransaction[];
+  hide: () => void;
 };
 
-export default function Users_en({ family, active, transactions }: Props) {
-  const [display, setDisplay] = useState(active);
+export default function Users_en({ hide }: Props) {
   const navigate = useNavigate();
+  const { transactions } = useContext(TransactionsContext);
+  const { family } = useContext(FamilyContext);
 
   function openUser(u: IUserData) {
     navigate("/en/user?id=" + u.id);
@@ -27,15 +27,15 @@ export default function Users_en({ family, active, transactions }: Props) {
 
   return (
     <>
-      {display && (
+      {family && (
         <div
           className="fixed top-0 z-12 flex h-screen w-screen items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={() => setDisplay(false)}
+          onClick={() => hide()}
         >
           <AnimatePresence mode="popLayout">
             <motion.div layout>
               <Card
-                className="max-h-200 w-150 overflow-y-scroll rounded-3xl p-2 select-none"
+                className="max-h-200 w-150 overflow-y-scroll rounded-3xl p-2 select-none gap-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
                 onClick={(e) => e.stopPropagation()}
               >
                 {family.members.map((user) => (
@@ -108,6 +108,8 @@ function GetUserDelta({ u, transactions }: GetUserDeltaProps) {
   );
 
   return (
-    <span className={"mr-2 " + (sum > 0 ? "text-green-300" : "text-red-300")}>{sum}</span>
+    <span className={"mr-2 " + (sum > 0 ? "dark:text-green-300 text-green-400" : "dark:text-red-300 text-red-400")}>
+      {sum}
+    </span>
   );
 }

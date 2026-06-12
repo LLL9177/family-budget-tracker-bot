@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { AuthContext } from "@/contexts/AuthContext";
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Navigation_en from "../niavigation/navigation";
 
 export default function ConnectFamily_en() {
   const auth = useContext(AuthContext);
@@ -67,6 +68,7 @@ export default function ConnectFamily_en() {
         `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
       }
     >
+      <Navigation_en exclude="Connect Family Page" />
       <Card className="flex h-[15%] w-[40%] flex-row items-center justify-around">
         <h1 className="text-2xl font-semibold">Connect To A Family</h1>
 
