@@ -868,26 +868,17 @@ def get_family_data(telegram_id):
         f"/transaction/bot/get_family_transactions?telegram_id={telegram_id}",
         {}, "get"
     )
-    print(res.json())
     return res
 
 def payment_process_db(amount, date, telegram_id, category):
-    db = get_db()
-    try:
-        user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
-    except Exception as e:
-        print(e)
-        db.close()
-        return 1
     res = fetch("/transaction/new", {
-        "familyId": user["family_id"],
+        "telegramId": telegram_id,
         "amount": -amount,
         "createdAt": date,
         "category": category,
-    }, telegram_id)
+    })
     
-    if res.status_code != 200:
-        db.close()
+    if res.status_code != 200: 
         return False
 
 def recievement_process_db(recieved_amount, recieved_date, telegram_id, category):

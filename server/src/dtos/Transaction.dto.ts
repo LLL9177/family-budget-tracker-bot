@@ -2,7 +2,7 @@ import { IsNumber, IsString } from 'class-validator';
 
 export class TransactionDto {
   @IsString()
-  familyId: string;
+  telegramId: bigint
 
   @IsNumber()
   amount: number;

@@ -100,11 +100,13 @@ export class TransactionService implements ITransactionService {
     telegramId: bigint,
   ): Promise<TransactionEntity[] | null> {
     const user = await this.userService.findByTelegramId(telegramId);
-    console.log(user, telegramId);
     if (!user) throw new NotFoundException('User not found');
 
-    return await this.transactionRepository.findBy({
-      familyId: user.family.id,
+    return await this.transactionRepository.find({
+      where: {
+        familyId: user.family.id,
+      },
+      relations: { user: true },
     });
   }
 }

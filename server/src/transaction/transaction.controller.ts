@@ -13,7 +13,6 @@ import { RolesGuard } from 'src/roles/roles.guard';
 import { Roles } from 'src/auth/enums/Roles.enum';
 import { Role } from 'src/roles/decorators/roles.decorator';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { TransactionDto } from 'src/dtos/Transaction.dto';
 import { EditCategoryDto } from 'src/dtos/EditCategory.dto';
 import { EditAmountDto } from 'src/dtos/EditAmount.dto';
 import { SummaryDto } from 'src/dtos/Summary.dto';
@@ -21,6 +20,7 @@ import { SummaryService } from './services/Summary.service';
 import { GetUserDto } from '../dtos/getUser.dto';
 import { FamilyGuard } from '../family/family.guard';
 import { BotGuard } from '../bot/bot.guard';
+import { TransactionDto } from '../dtos/Transaction.dto';
 
 @Controller('transaction')
 export class TransactionController {

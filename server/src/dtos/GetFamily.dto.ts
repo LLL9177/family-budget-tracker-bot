@@ -1,6 +1,6 @@
-import { IsUUID } from "class-validator";
+import { IsUUID } from 'class-validator';
 
 export class GetFamilyDto {
-    @IsUUID()
-    id: string;
+  @IsUUID()
+  id: string;
 }
