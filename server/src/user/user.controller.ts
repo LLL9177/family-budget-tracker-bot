@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
@@ -14,6 +15,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './User.service';
 import { GetUserDto } from '../dtos/getUser.dto';
+import { setTelegramDto } from '../dtos/SetTelegram.dto';
 
 @Controller('user')
 export class UserController {
@@ -32,5 +34,17 @@ export class UserController {
   @Get()
   async getUser(@Query(new ValidationPipe()) dto: GetUserDto) {
     return await this.userService.findById(dto.id);
+  }
+
+  @Post('set-telegram')
+  @UseGuards(AuthGuard)
+  async setTelegram(
+    @Body(new ValidationPipe()) dto: setTelegramDto,
+    @Req() req: { user: { id: string } },
+  ) {
+    await this.userService.setTelegram({
+      telegramId: dto.telegramId,
+      userId: req.user.id,
+    });
   }
 }

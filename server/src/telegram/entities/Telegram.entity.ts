@@ -9,8 +9,8 @@ export class TelegramEntity {
   @Column()
   telegramUsername: string;
 
-  @Column()
-  telegramId: number;
+  @Column({ type: 'bigint' })
+  telegramId: bigint;
 
   @ManyToOne(() => UserEntity, (user) => user.telegramRequests)
   user: UserEntity;

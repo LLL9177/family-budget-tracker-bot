@@ -15,11 +15,11 @@ import { AuthGuard } from './auth.guard';
 import { Role } from 'src/roles/decorators/roles.decorator';
 import { Roles } from './enums/Roles.enum';
 import { RolesGuard } from 'src/roles/roles.guard';
-import { BotGuard } from 'src/bot/bot.guard';
 import { BotLoginDto } from 'src/dtos/BotLogin.dto';
 import { GoogleAuthDto } from 'src/dtos/GoogleAuth.dto';
 import type { Response } from 'express';
-import { BotGoogleLoginDto } from 'src/dtos/BotGoogleLogin.dto';
+import { BotGuard } from '../bot/bot.guard';
+import { BotGoogleLoginDto } from '../dtos/BotGoogleLogin.dto';
 
 @Controller('auth')
 export class AuthController {

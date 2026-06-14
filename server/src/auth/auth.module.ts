@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from 'src/user/entities/User.entity';
@@ -8,12 +8,14 @@ import { JwtTokenService } from 'src/jwt/Jwt.service';
 import { JwtService } from '@nestjs/jwt';
 import { OneTimePasswordModule } from 'src/one-time-password/one-time-password.module';
 import { UserModule } from '../user/user.module';
+import { TelegramModule } from '../telegram/telegram.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity]),
     OneTimePasswordModule,
     UserModule,
+    forwardRef(() => TelegramModule),
   ],
   controllers: [AuthController],
   providers: [AuthService, HashService, JwtTokenService, JwtService],

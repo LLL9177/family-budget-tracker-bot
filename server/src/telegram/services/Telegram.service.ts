@@ -4,6 +4,7 @@ import { TelegramEntity } from '../entities/Telegram.entity';
 import { Repository } from 'typeorm';
 import { UserService } from '../../user/User.service';
 import { NotFoundException } from '@nestjs/common';
+import { UserEntity } from '../../user/entities/User.entity';
 
 interface ITelegramService {
   create(data: CreateTelegramRequestDto): Promise<void>;

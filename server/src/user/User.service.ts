@@ -6,6 +6,7 @@ import { HashService } from '../auth/services/Hash.service';
 import { UserEntity } from './entities/User.entity';
 import { FileService } from '../file/services/File.service';
 import { FileTypeEnum } from '../enums/FileType.enum';
+import { ISetTelegram } from '../types/SetTelegram.interface';
 
 interface IUserService {
   create(user: UserDto): Promise<void>;
@@ -22,6 +23,8 @@ interface IUserService {
   changeUser(newUser: UserEntity): Promise<void>;
   userType(id: string): Promise<'google' | 'local'>;
   setAvatar(file: Express.Multer.File, userId: string): Promise<void>;
+  findByTelegramId(telegramId: bigint): Promise<UserEntity | null>;
+  setTelegram(data: ISetTelegram): Promise<void>;
 }
 
 @Injectable()
@@ -122,5 +125,19 @@ export class UserService implements IUserService {
 
     user.avatar = avatar;
     await this.userRepository.save(user);
+  }
+
+  async findByTelegramId(telegramId: bigint): Promise<UserEntity | null> {
+    return await this.userRepository.findOne({
+      where: { telegramId },
+      relations: { family: true },
+    });
+  }
+
+  async setTelegram(data: ISetTelegram): Promise<void> {
+    const user = await this.userRepository.findOneBy({ id: data.userId });
+    if (!user) throw new NotFoundException('User not found');
+
+    await this.userRepository.save({ ...user, telegramId: data.telegramId });
   }
 }

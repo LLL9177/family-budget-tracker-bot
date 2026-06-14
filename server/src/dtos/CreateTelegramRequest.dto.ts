@@ -2,7 +2,7 @@ import { IsNumber, IsString, IsUUID } from 'class-validator';
 
 export class CreateTelegramRequestDto {
   @IsNumber()
-  telegramId: number;
+  telegramId: bigint;
 
   @IsString()
   telegramUsername: string;

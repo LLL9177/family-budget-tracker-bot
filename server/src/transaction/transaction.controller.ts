@@ -20,6 +20,7 @@ import { SummaryDto } from 'src/dtos/Summary.dto';
 import { SummaryService } from './services/Summary.service';
 import { GetUserDto } from '../dtos/getUser.dto';
 import { FamilyGuard } from '../family/family.guard';
+import { BotGuard } from '../bot/bot.guard';
 
 @Controller('transaction')
 export class TransactionController {
@@ -53,6 +54,12 @@ export class TransactionController {
     return await this.transactionService.findByFamilyId(familyUuid);
   }
 
+  @UseGuards(BotGuard)
+  @Get('bot/get_family_transactions')
+  async botGetFamilyTransactions(@Query('telegram_id') telegramId: bigint) {
+    return await this.transactionService.botGetFamilyTransactions(telegramId);
+  }
+
   @Role(Roles.USER)
   @UseGuards(AuthGuard, RolesGuard)
   @Get('get_user_transactions')
@@ -80,7 +87,7 @@ export class TransactionController {
   async editAmount(@Body(new ValidationPipe()) body: EditAmountDto) {
     return await this.transactionService.editAmount(body.id, body.newAmount);
   }
-  
+
   @UseGuards(AuthGuard, FamilyGuard)
   @Post('delete')
   async delete(@Query('id') id: number) {

@@ -13,9 +13,9 @@ export class BotGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const req: Request = context.switchToHttp().getRequest();
-    const body = req.body as { botToken: string };
+    const botToken = req.headers['x-bot-token'];
 
-    if (!body.botToken || body.botToken != process.env.BOT_TOKEN)
+    if (!botToken || botToken != process.env.BOT_TOKEN)
       throw new UnauthorizedException('Invalid or no bot token');
 
     return true;

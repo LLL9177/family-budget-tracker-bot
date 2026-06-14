@@ -335,22 +335,22 @@ def callback(call):
     routes = {
         "new_rec":          lambda m: new_rec(m, lang=lang),
         "rec user_option":  lambda m: rec_user_option(m, lang=lang),
-        "rec job":          lambda m: recievement_process(m, "job", lang=lang),
-        "rec credit":       lambda m: recievement_process(m, "credit", lang=lang),
-        "rec other":        lambda m: recievement_process(m, "other", lang=lang),
+        "rec job":          lambda m: recievement_process(m, "Job", lang=lang),
+        "rec credit":       lambda m: recievement_process(m, "Credit", lang=lang),
+        "rec other":        lambda m: recievement_process(m, "Other", lang=lang),
         "profile":          lambda m: show_user_data(m, call.from_user, lang=lang),
         "menu":             lambda m: main_menu(m, lang=lang),
         "settings":         lambda m: settings(m, lang=lang),
         "set_lang":         lambda m: settings(m, lang="uk" if lang == "en" else "en"),
         "new_pay":          lambda m: new_payment(m, lang=lang),
         "pay user_option":  lambda m: payment_user_option(m, lang=lang),
-        "pay groceries":    lambda m: payment_process(m, "groceries", lang=lang),
-        "pay taxes":        lambda m: payment_process(m, "taxes", lang=lang),
-        "pay fine":         lambda m: payment_process(m, "fine", lang=lang),
-        "pay tech":         lambda m: payment_process(m, "tech", lang=lang),
-        "pay onl_sub":      lambda m: payment_process(m, "online_subscription", lang=lang),
-        "pay shopping":     lambda m: payment_process(m, "shopping", lang=lang),
-        "pay other":        lambda m: payment_process(m, "other", lang=lang),
+        "pay groceries":    lambda m: payment_process(m, "Groceries", lang=lang),
+        "pay taxes":        lambda m: payment_process(m, "Taxes", lang=lang),
+        "pay fine":         lambda m: payment_process(m, "Fine", lang=lang),
+        "pay tech":         lambda m: payment_process(m, "Tech", lang=lang),
+        "pay onl_sub":      lambda m: payment_process(m, "Online subscription", lang=lang),
+        "pay shopping":     lambda m: payment_process(m, "Shopping", lang=lang),
+        "pay other":        lambda m: payment_process(m, "Other", lang=lang),
         "family":           lambda m: family(m, call.from_user, lang=lang),
         "user":             lambda m: user_data(m, call.from_user, lang=lang),
     }
@@ -728,7 +728,7 @@ def sync_account(msg, family_id, *, lang):
         if result == 1:
             bot.send_message(msg.chat.id, t("something_wrong"))
 
-        login_result = login(msg.from_user.id)
+        login_result = login(msg.from_user.id, password, msg.from_user.username, id)
 
         if login_result == 401 or login_result == 404:
             bot.send_message(msg.chat.id, t("incorrect_credentials"))
@@ -765,7 +765,7 @@ def google_auth(msg, family_id, user_id, *, lang):
             bot.send_message(msg.chat.id, t("something_wrong"))
             m = bot.send_message(msg.chat.id, t("loading"))
 
-        res = login_google(telegram_id, otp)
+        res = login_google(telegram_id, otp, msg.from_user.username, user_id)
 
         if res == 404:
             bot.send_message(msg.chat.id, t("something_wrong"))
@@ -830,30 +830,15 @@ def register_local(family_id, telegram_id, server_uid, password=None, one_time_p
     db.close()
     return 0
 
-def login(telegram_id):
-    db = get_db()
-    try:
-        local_user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
-    except Exception as e:
-        print(e)
-        db.close()
-        return 1
-
-    res = requests.post(BACKEND_URL+"/auth/bot/login", {
-        "userId": local_user["server_uid"],
-        "password": local_user["password"],
-        "botToken": os.getenv("BOT_TOKEN")
+def login(telegram_id, password, t_username, id):
+    res = fetch("/auth/bot/login", {
+        "telegramId": telegram_id,
+        "telegramUsername": t_username,
+        "userId": str(id),
+        "password": password
     })
 
-    db.close()
-    res = res.json()
-
-    if "statusCode" in res.keys():
-        return res["statusCode"]
-    
-    jwt = res["access_token"]
-    db.close()
-    return save_jwt(jwt["access"], jwt["refresh"], telegram_id)
+    return res
 
 def save_jwt(access, refresh, telegram_id):
     db = get_db()
@@ -866,51 +851,25 @@ def save_jwt(access, refresh, telegram_id):
         return 1
     return 0
 
-def login_google(telegram_id, otp):
-    db = get_db()
-
-    user = None
-    try:
-        user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
-    except Exception as e:
-        print(e)
-        db.close()
-        return 1 
-
-    if user is None:
-        return 404
-
+def login_google(telegram_id, otp, telegram_username, user_id):
     res = fetch("/auth/bot/google", {
         "oneTimePassword": otp,
-        "userId": user["server_uid"],
-        "botToken": os.getenv("BOT_TOKEN")
-    }, telegram_id).json()
+        "telegramId": telegram_id,
+        "telegramUsername": telegram_username,
+        "userId": user_id
+    }).json()
 
     if "statusCode" in res.keys(): return res["statusCode"]
 
-    if "access_token" in res.keys():
-        save_jwt(
-            res["access_token"]["access"], 
-            res["access_token"]["refresh"], 
-            telegram_id
-        )
-
-    db.close()
     return res
 
 def get_family_data(telegram_id):
-    db = get_db()
-    try:
-        user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
-        if user is None:
-            return 404
-    except Exception as e:
-        print(e)
-        db.close()
-        return 1
-
-    db.close()
-    return fetch(f"/transaction/get_family_transactions?family_uuid={user['family_id']}", {}, telegram_id, "get")
+    res = fetch(
+        f"/transaction/bot/get_family_transactions?telegram_id={telegram_id}",
+        {}, "get"
+    )
+    print(res.json())
+    return res
 
 def payment_process_db(amount, date, telegram_id, category):
     db = get_db()
@@ -985,22 +944,13 @@ def get_user_transactions(telegram_id):
     db.close()
     return fetch("/transaction/get_user_transactions", {}, telegram_id, "get")
 
-def fetch(url, data, telegram_id, method="post"):
-    db = get_db()
-    try:
-        user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
-    except Exception as e:
-        print(e)
-        db.close()
-        return 1
-
+def fetch(url, data, method="post"):
     if method == "post":
         res = requests.post(
             BACKEND_URL + url,
             json={ **data },
             headers={
-                "Authorization": f"Bearer {user['access']}",
-                "x-refresh-token": user["refresh"]
+                "x-bot-token": os.getenv("BOT_TOKEN")
             },
         )
     elif method == "get":
@@ -1008,26 +958,10 @@ def fetch(url, data, telegram_id, method="post"):
             BACKEND_URL + url,
             json={ **data },
             headers={
-                "Authorization": f"Bearer {user['access']}",
-                "x-refresh-token": user["refresh"]
+                "x-bot-token": os.getenv("BOT_TOKEN")
             },
         )
 
-    if "x-access-token" in res.headers:
-        try:
-            db.execute("UPDATE user SET access = ? WHERE telegram_id = ?", (res.headers["x-access-token"], telegram_id))
-            db.commit()
-        except Exception as e:
-            print(e)
-            db.close()
-            return 1
-
-    if res.status_code == 401:
-        login(telegram_id)
-        db.close()
-        return fetch(url, data, telegram_id, method)
-
-    db.close()
     return res
 
 

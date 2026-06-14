@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TransactionEntity } from '../entities/Transaction.entity';
 import { Repository } from 'typeorm';
 import { ITransaction } from 'src/types/ITransaction.interface';
-import { UserService } from 'src/user/User.service';
+import { UserService } from '../../user/User.service';
 
 interface ITransactionService {
   create(data: ITransaction): Promise<void>;
@@ -18,6 +18,9 @@ interface ITransactionService {
   editCategory(id: number, newCategory: string): Promise<TransactionEntity>;
   delete(id: number): Promise<void>;
   find(data): Promise<TransactionEntity[]>;
+  botGetFamilyTransactions(
+    telegramId: bigint,
+  ): Promise<TransactionEntity[] | null>;
 }
 
 @Injectable()
@@ -88,7 +91,20 @@ export class TransactionService implements ITransactionService {
     await this.transactionRepository.delete({ id });
   }
 
+  // what is this?
   async find(data: any): Promise<TransactionEntity[]> {
     return await this.transactionRepository.find(data);
+  }
+
+  async botGetFamilyTransactions(
+    telegramId: bigint,
+  ): Promise<TransactionEntity[] | null> {
+    const user = await this.userService.findByTelegramId(telegramId);
+    console.log(user, telegramId);
+    if (!user) throw new NotFoundException('User not found');
+
+    return await this.transactionRepository.findBy({
+      familyId: user.family.id,
+    });
   }
 }
