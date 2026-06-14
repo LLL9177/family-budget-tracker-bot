@@ -29,15 +29,10 @@ export class TransactionController {
     private readonly summaryService: SummaryService,
   ) {}
 
-  @Role(Roles.USER)
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(BotGuard)
   @Post('new')
-  async newTransaction(
-    @Body(new ValidationPipe()) body: TransactionDto,
-    @Req() req: { user: { id: string } },
-  ) {
-    const data = { ...body, userId: req.user.id };
-    await this.transactionService.create(data);
+  async newTransaction(@Body(new ValidationPipe()) dto: TransactionDto) {
+    await this.transactionService.create(dto);
   }
 
   @Role(Roles.USER)

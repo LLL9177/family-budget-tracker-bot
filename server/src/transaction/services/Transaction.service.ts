@@ -6,8 +6,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { TransactionEntity } from '../entities/Transaction.entity';
 import { Repository } from 'typeorm';
-import { ITransaction } from 'src/types/ITransaction.interface';
 import { UserService } from '../../user/User.service';
+import { ITransaction } from '../../types/ITransaction.interface';
 
 interface ITransactionService {
   create(data: ITransaction): Promise<void>;
@@ -34,14 +34,16 @@ export class TransactionService implements ITransactionService {
   async create(transaction: ITransaction): Promise<void> {
     if (transaction.category.length > 100)
       throw new BadRequestException('Category is too long');
-    const user = await this.userService.findById(transaction.userId);
+    const user = await this.userService.findByTelegramId(
+      transaction.telegramId,
+    );
     if (!user) throw new NotFoundException('User not found');
 
     const data = {
       amount: transaction.amount,
       category: transaction.category,
       cretedAt: transaction.createdAt,
-      familyId: transaction.familyId,
+      familyId: user.family.id,
       user,
     };
 

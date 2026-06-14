@@ -1,8 +1,9 @@
 import { IsNumber, IsString } from 'class-validator';
+import { IsBigInt } from '../decorators/IsBigInt.decorator';
 
 export class TransactionDto {
-  @IsString()
-  telegramId: bigint
+  @IsBigInt()
+  telegramId: bigint;
 
   @IsNumber()
   amount: number;

@@ -1,7 +1,8 @@
-import { IsNumber, IsString, IsUUID } from 'class-validator';
+import { IsString, IsUUID } from 'class-validator';
+import { IsBigInt } from '../decorators/IsBigInt.decorator';
 
 export class CreateTelegramRequestDto {
-  @IsNumber()
+  @IsBigInt()
   telegramId: bigint;
 
   @IsString()

@@ -1,6 +1,5 @@
 export interface ITransaction {
-  userId: string;
-  familyId: string;
+  telegramId: bigint;
   amount: number;
   category: string;
   createdAt: string;
