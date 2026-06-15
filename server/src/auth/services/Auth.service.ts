@@ -28,6 +28,7 @@ interface IAuthService {
   botLogin(data: BotLoginDto): Promise<void>;
   googleAuth(data: GoogleAuthDto): Promise<IAccessToken | void>;
   botGoogleAuth(data: BotGoogleLoginDto): Promise<IAccessToken | void>;
+  botGetProfile(telegramId: bigint): Promise<IUser>;
 }
 
 @Injectable()
@@ -160,5 +161,12 @@ export class AuthService implements IAuthService {
     await this.telegramService.create({
       ...data,
     });
+  }
+
+  async botGetProfile(telegramId: bigint): Promise<IUser> {
+    const user = await this.userService.findByTelegramId(telegramId);
+    if (!user) throw new NotFoundException('User not found');
+
+    return user
   }
 }

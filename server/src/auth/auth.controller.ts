@@ -7,6 +7,7 @@ import {
   Res,
   UseGuards,
   ValidationPipe,
+  Query
 } from '@nestjs/common';
 import { UserDto } from 'src/dtos/user.dto';
 import { AuthService } from './services/Auth.service';
@@ -20,6 +21,7 @@ import { GoogleAuthDto } from 'src/dtos/GoogleAuth.dto';
 import type { Response } from 'express';
 import { BotGuard } from '../bot/bot.guard';
 import { BotGoogleLoginDto } from '../dtos/BotGoogleLogin.dto';
+import { BotProfileDto } from 'src/dtos/BotProfile.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -105,5 +107,11 @@ export class AuthController {
   @Get('/renew-access')
   renewAccess() {
     return null; // since auth guard does that already
+  }
+
+  @UseGuards(BotGuard)
+  @Get('/bot/profile')
+  async botProfile(@Query() dto: BotProfileDto) {
+    return await this.authService.botGetProfile(dto.telegram_id)
   }
 }

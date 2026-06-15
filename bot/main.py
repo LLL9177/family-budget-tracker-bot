@@ -882,40 +882,23 @@ def payment_process_db(amount, date, telegram_id, category):
         return False
 
 def recievement_process_db(recieved_amount, recieved_date, telegram_id, category):
-    db = get_db()
-    try:
-        family_id = db.execute("SELECT family_id FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()["family_id"]
-    except Exception as e:
-        print(e)
-        db.close()
-        return False
-    db.close()
     res = fetch("/transaction/new", {
-        "familyId": family_id,
+        "telegramId": telegram_id,
         "amount": recieved_amount,
         "category": category,
         "createdAt": recieved_date
-    }, telegram_id)
+    })
     if (res.status_code != 201):
         return False
 
     return "success"
 
 def get_user_data(telegram_id):
-    db = get_db()
-    try:
-        user_id = db.execute("SELECT server_uid FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()["server_uid"]
-        if user_id is None:
-            return 404
-    except Exception as e:
-        print(e)
-        db.close()
-        return 1
-    res = fetch("/auth/profile", {}, telegram_id, "get")
-    content = json.loads(res.content)
-    db.close()
+    res = fetch("/auth/bot/profile?telegram_id=f{telegram_id}", {}, "get")
+    content = res.json()
     if type(content) == "object":
         return 1
+
     return content
 
 def get_user_transactions(telegram_id):
