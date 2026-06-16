@@ -24,7 +24,7 @@ import {
 } from "../ui/alert-dialog";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { AuthContext } from "@/contexts/AuthContext";
-import Navigation_en from "./niavigation/navigation";
+import Navigation_en from "./navigation/navigation";
 
 export default function Register_en() {
   const [email, setEmail] = useState("");

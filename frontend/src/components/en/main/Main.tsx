@@ -17,9 +17,10 @@ import SpenderCategoryLeaderboard_en from "./spenderCategoryLeaderboard";
 import DifferentMonthsComparison_en from "./differentMonthsComparison";
 import FamilyId_en from "./familyId";
 import { useTheme } from "@/components/theme-provider";
-import Navigation_en from "../niavigation/navigation";
 import { TransactionsContext } from "@/contexts/TransactionsContext";
 import { FamilyContext } from "@/contexts/FamilyContext";
+import Navigation_en from "../navigation/navigation";
+import TelegramRequests_en from "../navigation/telegram-request";
 
 export default function Main_en() {
   const auth = useContext(AuthContext);

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import type { IFamily } from "@/types/Family.interface";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Navigation_en from "../niavigation/navigation";
+import Navigation_en from "../navigation/navigation";
 
 export default function CreateFamily_en() {
   const [name, setName] = useState("");

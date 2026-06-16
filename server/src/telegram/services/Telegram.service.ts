@@ -3,8 +3,8 @@ import { CreateTelegramRequestDto } from '../../dtos/CreateTelegramRequest.dto';
 import { TelegramEntity } from '../entities/Telegram.entity';
 import { Repository } from 'typeorm';
 import { UserService } from '../../user/User.service';
-import { NotFoundException } from '@nestjs/common';
-import { request } from 'http';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 interface ITelegramService {
   create(data: CreateTelegramRequestDto): Promise<void>;
@@ -22,6 +22,11 @@ export class TelegramService implements ITelegramService {
   async create(data: CreateTelegramRequestDto): Promise<void> {
     const user = await this.userService.findById(data.userId);
     if (!user) throw new NotFoundException('User not found');
+    if (await this.repository.findOneBy({ telegramId: data.telegramId }))
+      throw new BadRequestException(
+        'Not allowed to create more than 1 request',
+      );
+
     await this.repository.save({ ...data, user });
   }
 
@@ -33,6 +38,10 @@ export class TelegramService implements ITelegramService {
       },
     });
     if (!request) throw new NotFoundException('Telegram request not found');
+    if (await this.userService.findByTelegramId(request.telegramId))
+      throw new BadRequestException(
+        'Only one user can have a telegram account tied to his account.',
+      );
     const user = request.user;
     if (!user) throw new NotFoundException('User not found');
     user.telegramId = request.telegramId;
@@ -67,6 +76,13 @@ export class TelegramService implements ITelegramService {
       headers: {
         'Content-Type': 'application/json',
       },
+    });
+  }
+
+  @Cron(CronExpression.EVERY_WEEK)
+  private telegamReqTimeout() {
+    const requests = this.repository.find({
+      where: {},
     });
   }
 }

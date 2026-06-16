@@ -23,7 +23,7 @@ import { IUser } from '../../types/User.interface';
 
 interface IAuthService {
   register(data: UserDto): Promise<IAccessToken | void>; // although it will 100% return the first option
-  getProfile(user_id: string): Promise<IUser>;
+  getProfile(user_id: string): Promise<UserEntity>;
   login(data: LoginDto): Promise<IAccessToken | void>;
   botLogin(data: BotLoginDto): Promise<void>;
   googleAuth(data: GoogleAuthDto): Promise<IAccessToken | void>;
@@ -59,20 +59,15 @@ export class AuthService implements IAuthService {
       throw new ConflictException('User with this username already exists');
   }
 
-  async getProfile(userId: string): Promise<IUser> {
+  async getProfile(userId: string): Promise<UserEntity> {
     const user = await this.userService.findById(userId);
 
     if (!user) throw new NotFoundException('User not found');
 
-    const ret: IUser = {
-      email: user.email,
-      roles: user.roles,
-      username: user.username,
-      family: user.family,
-      familyOwned: user.familyOwned,
-    };
+    delete user.password;
+    delete user.googleId;
 
-    return ret;
+    return user;
   }
 
   async login(data: LoginDto): Promise<IAccessToken | void> {

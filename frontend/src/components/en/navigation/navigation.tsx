@@ -12,6 +12,7 @@ import Users_en from "./users";
 import { FamilyContext } from "@/contexts/FamilyContext";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/contexts/AuthContext";
+import TelegramRequests_en from "./telegram-request";
 
 const MARGIN = 40;
 
@@ -67,6 +68,7 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
     "Users",
     "Login Page",
     "Connect Family Page",
+    "Auth Requests",
     "Notifications",
     "Profile Page",
     "Main Page",
@@ -217,7 +219,7 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
           <AnimatePresence mode="popLayout">
             {isOpen &&
               ITEMS.map((item, i) => {
-                const radius = 240;
+                const radius = 255;
                 const angle = (i / ITEMS.length) * Math.PI * 2;
                 const x = position.x + Math.cos(angle) * radius;
                 const y = position.y + Math.sin(angle) * radius;
@@ -266,6 +268,8 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
               <Transactions_en hide={() => setOpenedItem(null)} />
             ) : openedItem == "Users" ? (
               <Users_en hide={() => setOpenedItem(null)} />
+            ) : openedItem == "Auth Requests" ? (
+              <TelegramRequests_en hide={() => setOpenedItem(null)} />
             ) : (
               <></>
             )}

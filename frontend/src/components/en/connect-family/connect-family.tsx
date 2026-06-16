@@ -4,8 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { AuthContext } from "@/contexts/AuthContext";
 import React, { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Navigation_en from "../niavigation/navigation";
+import Navigation_en from "../navigation/navigation";
 
 export default function ConnectFamily_en() {
   const auth = useContext(AuthContext);

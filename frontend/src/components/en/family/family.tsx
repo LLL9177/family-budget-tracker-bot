@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FamilyContext } from "@/contexts/FamilyContext";
-import Navigation_en from "../niavigation/navigation";
+import Navigation_en from "../navigation/navigation";
 
 type AccessTokenPayload = {
   id: string;

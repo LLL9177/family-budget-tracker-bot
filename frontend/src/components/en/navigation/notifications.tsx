@@ -75,6 +75,8 @@ export default function Notifications_en({ hide }: Props) {
     fetchData();
   }, [auth]);
 
+  console.log(user)
+
   function openNotification(n: INotification) {
     if (!notification) {
       setNotification(n);

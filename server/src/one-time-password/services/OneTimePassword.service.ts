@@ -73,6 +73,7 @@ export class OneTimePasswordService
     const otp = await this.otpRepository.findOneBy({ id });
     if (!otp) throw new NotFoundException();
 
+    await this.otpRepository.delete({ userId });
     otp.userId = userId;
     await this.otpRepository.save(otp);
   }

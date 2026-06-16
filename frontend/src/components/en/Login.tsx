@@ -25,7 +25,7 @@ import {
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { AuthContext } from "@/contexts/AuthContext";
 import { useTheme } from "../theme-provider";
-import Navigation_en from "./niavigation/navigation";
+import Navigation_en from "./navigation/navigation";
 
 export default function Login_en() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");

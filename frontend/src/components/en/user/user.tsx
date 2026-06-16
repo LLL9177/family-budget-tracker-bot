@@ -6,7 +6,7 @@ import type { ITransactionWithDate } from "@/types/TransactionWithDate.interface
 import type { IUserData } from "@/types/UserData.interface";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import Navigation_en from "../niavigation/navigation";
+import Navigation_en from "../navigation/navigation";
 
 export default function User_en() {
   const auth = useContext(AuthContext);

@@ -63,6 +63,7 @@ export class UserService implements IUserService {
         familyOwned: getOwned,
         avatar: true,
         notifications: true,
+        telegramRequests: true,
       },
     });
     if (!user) throw new NotFoundException('User not found');
@@ -107,7 +108,6 @@ export class UserService implements IUserService {
 
   async userType(id: string): Promise<'google' | 'local'> {
     const user = await this.userRepository.findOneBy({ id });
-    console.log(user);
     if (!user) throw new NotFoundException('User not found');
     if (user?.googleId) return 'google';
     return 'local';
