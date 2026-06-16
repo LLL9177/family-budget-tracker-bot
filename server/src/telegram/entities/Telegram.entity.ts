@@ -14,4 +14,10 @@ export class TelegramEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.telegramRequests)
   user: UserEntity;
+
+  @Column({ type: 'bigint' })
+  chatId: bigint;
+
+  @Column()
+  lang: 'en' | 'uk';
 }

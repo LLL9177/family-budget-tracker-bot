@@ -14,12 +14,12 @@ import { UserEntity } from 'src/user/entities/User.entity';
 import { IAccessToken } from 'src/types/IAccessToken.interface';
 import { GoogleAuthDto } from 'src/dtos/GoogleAuth.dto';
 import { IGoogleAuth } from 'src/types/GoogleAuth.interface';
-import { IUser } from 'src/types/User.interface';
 import { OneTimePasswordService } from '../../one-time-password/services/OneTimePassword.service';
 import { UserDto } from '../../dtos/user.dto';
 import { TelegramService } from '../../telegram/services/Telegram.service';
 import { BotLoginDto } from '../../dtos/BotLogin.dto';
 import { BotGoogleLoginDto } from '../../dtos/BotGoogleLogin.dto';
+import { IUser } from '../../types/User.interface';
 
 interface IAuthService {
   register(data: UserDto): Promise<IAccessToken | void>; // although it will 100% return the first option
@@ -29,6 +29,7 @@ interface IAuthService {
   googleAuth(data: GoogleAuthDto): Promise<IAccessToken | void>;
   botGoogleAuth(data: BotGoogleLoginDto): Promise<IAccessToken | void>;
   botGetProfile(telegramId: bigint): Promise<IUser>;
+  telegramLogout(userId: string): Promise<void>;
 }
 
 @Injectable()
@@ -59,11 +60,18 @@ export class AuthService implements IAuthService {
   }
 
   async getProfile(userId: string): Promise<IUser> {
-    const user = (await this.userService.findById(userId)) as UserEntity;
+    const user = await this.userService.findById(userId);
 
     if (!user) throw new NotFoundException('User not found');
 
-    const { password, ...ret } = user;
+    const ret: IUser = {
+      email: user.email,
+      roles: user.roles,
+      username: user.username,
+      family: user.family,
+      familyOwned: user.familyOwned,
+    };
+
     return ret;
   }
 
@@ -167,6 +175,16 @@ export class AuthService implements IAuthService {
     const user = await this.userService.findByTelegramId(telegramId);
     if (!user) throw new NotFoundException('User not found');
 
-    return user
+    delete user.password;
+    delete user.googleId;
+    return user;
+  }
+
+  async telegramLogout(userId: string): Promise<void> {
+    const user = await this.userService.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    user.telegramId = null;
+    await this.userService.changeUser(user);
   }
 }

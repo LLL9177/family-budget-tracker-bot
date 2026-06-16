@@ -59,8 +59,8 @@ export class UserEntity {
   })
   notifications: NotificationEntity[];
 
-  @Column({ nullable: true, unique: true, type: 'bigint' })
-  telegramId?: bigint;
+  @Column({ unique: true, type: 'bigint', default: null })
+  telegramId: bigint | null;
 
   @OneToMany(() => TelegramEntity, (telegram) => telegram.user)
   telegramRequests: TelegramEntity[];

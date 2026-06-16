@@ -24,7 +24,6 @@ interface IUserService {
   userType(id: string): Promise<'google' | 'local'>;
   setAvatar(file: Express.Multer.File, userId: string): Promise<void>;
   findByTelegramId(telegramId: bigint): Promise<UserEntity | null>;
-  setTelegram(data: ISetTelegram): Promise<void>;
 }
 
 @Injectable()
@@ -132,12 +131,5 @@ export class UserService implements IUserService {
       where: { telegramId },
       relations: { family: true },
     });
-  }
-
-  async setTelegram(data: ISetTelegram): Promise<void> {
-    const user = await this.userRepository.findOneBy({ id: data.userId });
-    if (!user) throw new NotFoundException('User not found');
-
-    await this.userRepository.save({ ...user, telegramId: data.telegramId });
   }
 }

@@ -1,5 +1,10 @@
-import { IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsString, IsUUID } from 'class-validator';
 import { IsBigInt } from '../decorators/IsBigInt.decorator';
+
+enum Lang {
+  en = 'en',
+  uk = 'uk',
+}
 
 export class CreateTelegramRequestDto {
   @IsBigInt()
@@ -10,4 +15,10 @@ export class CreateTelegramRequestDto {
 
   @IsUUID()
   userId: string;
+
+  @IsBigInt()
+  chatId: bigint;
+
+  @IsEnum(Lang)
+  lang: Lang;
 }

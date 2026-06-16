@@ -1,6 +1,9 @@
 import telebot as tb
 from dotenv import load_dotenv
-import os, sqlite3, threading, datetime, re, uuid, requests, json, functools
+import os, datetime, re, uuid, requests, functools, uvicorn, json
+from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Literal
 
 load_dotenv()
 API_TOKEN = os.getenv("API_TOKEN")
@@ -8,8 +11,8 @@ DB_FILENAME = os.getenv("DB_FILE")
 SCHEMA_FILENAME = os.getenv("SCHEMA_FILE")
 BACKEND_URL = os.getenv("BACKEND_URL")
 
+fastapi_app = FastAPI()
 bot = tb.TeleBot(API_TOKEN)
-
 
 # ======================== I18N ========================
 i18n = {
@@ -36,6 +39,9 @@ i18n = {
         "google_word": ("Google", "google"),
         "ask_otp": "Send me the one-time password",
         "incorrect_otp": f"Seems like the one-time password is not correct. Maybe it's expired. You can renew it on <code>{os.getenv("FRONTEND_URL")+'/one-time-password/renew'}</code>",
+        "await_review": "Wait until the owner of this account reviews your request.",
+        "review_accept": "The user has accepted your login request.",
+        "review_deny": 'The user has rejected your login request. Type "/start" to try again.',
 
         # Main menu
         "choose_action": "Choose an action:",
@@ -80,7 +86,7 @@ i18n = {
         "ask_pay_date": 'Type in the date of payment following the pattern: dd.mm.yyyy (or just type "today")',
 
         # Profile
-        "your_profile": "Here's your profile:\nfamily id: {family}",
+        "your_profile": "Here's your profile:\n",
 
         # User stats
         "no_transactions": "📭 No transactions yet. Go spend or earn something.",
@@ -127,6 +133,9 @@ i18n = {
         "google_word": ("Google", "google"),
         "ask_otp": "Надішліть мені свій одноразовий пароль",
         "incorrect_otp": f"Схоже, що одноразовий пароль невірний. Можливо термін дії закінчився. Ви можете оновити його на <code>{os.getenv("FRONTEND_URL")+"/one-time-assword/renew"}</code>",
+        "await_review": "Зачекайте поки власник цього аккаунту передивиться ваш запит.",
+        "review_accept": "Користувач прийняв ваш запит на вхід.",
+        "review_deny": 'Користувач відхилив ваш запит на вхід. Напишіть "/start" щоб спробувати знову',
 
         # Main menu
         "choose_action": "Виберіть дію:",
@@ -171,7 +180,7 @@ i18n = {
         "ask_pay_date": 'Напишіть дату нарахування за цим шаблоном: дд.мм.рррр (або просто напишіть "сьогодні")',
 
         # Profile
-        "your_profile": "Ось ваш профіль:\nfamily id: {family}",
+        "your_profile": "Ось ваш профіль:\n",
 
         # User stats
         "no_transactions": "📭 Ще не немає транзакцій. Йдіть витратьте або заробіть щось.",
@@ -244,26 +253,6 @@ def t(lang, key, **fmt):
     return s.format(**fmt) if fmt else s
 
 
-# ======================== DB ========================
-def init_db():
-    conn = sqlite3.connect(
-        DB_FILENAME,
-        detect_types=sqlite3.PARSE_DECLTYPES,
-        timeout=5
-    )
-    conn.row_factory = sqlite3.Row
-    with open(SCHEMA_FILENAME, "r") as f:
-        sql_script = f.read()
-    conn.executescript(sql_script)
-    conn.commit()
-    conn.close()
-
-def get_db():
-    db = sqlite3.connect(DB_FILENAME, detect_types=sqlite3.PARSE_DECLTYPES)
-    db.row_factory = sqlite3.Row
-    return db
-
-
 # ======================== HELPERS ========================
 def go_back_btn(lang, callback_data):
     return tb.types.InlineKeyboardButton(
@@ -298,6 +287,23 @@ def format_date(created, lang):
         return dt.strftime("%d %b %H:%M")
     except:
         return created[:16]
+
+# ======================== FASTAPI ========================
+class RequestResult(BaseModel):
+    chat_id: int
+    lang: Literal["en", "uk"]
+    result: bool
+
+@fastapi_app.post("/review_result")
+async def revew_result(data: RequestResult):
+    def t(key, **fmt): return i18n[data.lang][key].format(**fmt) if fmt else i18n[data.lang][key]
+    if not data.result:
+        bot.send_message(data.chat_id, t("review_deny"))
+        return
+
+    bot.send_message(data.chat_id, t("review_accept"))
+    m = bot.send_message(data.chat_id, t("loading"))
+    main_menu(m, lang=data.lang)
 
 
 # ======================== BOT START ========================
@@ -443,6 +449,11 @@ def recievement_process(msg, category=None, *, lang):
             m = bot.send_message(msg.chat.id, t("invalid_amount"))
             bot.register_next_step_handler(m, get_amount)
             return
+        
+        if amount == 0:
+            m = bot.send_message(msg.chat.id, t("canceling"))
+            main_menu(m, lang=lang)
+            return
 
         user_id = msg.from_user.id
         m = bot.send_message(msg.chat.id, t("ask_rec_date"))
@@ -571,7 +582,9 @@ def show_user_data(msg, from_user, *, lang):
 
     kb = tb.types.InlineKeyboardMarkup()
     kb.row(go_back_btn(lang, "menu"))
-    profile = t("your_profile").format(family=data["family"])
+    roles = json.loads(data["roles"])
+    profile = t("your_profile")+f"ID: {data["id"]}\nE-Mail: {data["email"]}\nUsername: {data["username"]}\nRoles: {", ".join(roles)}"
+
     bot.edit_message_text(profile, msg.chat.id, msg.message_id, reply_markup=kb)
 
 def user_data(msg, from_user, *, lang):
@@ -724,11 +737,7 @@ def sync_account(msg, family_id, *, lang):
             return
 
         password = msg.text
-        result = register_local(family_id, msg.from_user.id, id, password)
-        if result == 1:
-            bot.send_message(msg.chat.id, t("something_wrong"))
-
-        login_result = login(msg.from_user.id, password, msg.from_user.username, id)
+        login_result = login(msg.from_user.id, password, msg.from_user.username, id, msg.chat.id, lang)
 
         if login_result == 401 or login_result == 404:
             bot.send_message(msg.chat.id, t("incorrect_credentials"))
@@ -736,8 +745,7 @@ def sync_account(msg, family_id, *, lang):
             local_reauth(m, False, lang=lang)
             return
 
-        m = bot.send_message(msg.chat.id, t("downloading"))
-        main_menu(m, lang=lang)
+        m = bot.send_message(msg.chat.id, t("await_review"))
 
     def get_id(msg, family_id):
         try:
@@ -755,17 +763,11 @@ def sync_account(msg, family_id, *, lang):
 def google_auth(msg, family_id, user_id, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**fmt) if fmt else i18n[lang][key] 
 
-    def get_otp(msg, family_id, user_id, *, lang):
+    def get_otp(msg, user_id, *, lang):
         otp = msg.text
         telegram_id = msg.from_user.id
 
-        register_local(family_id, telegram_id, user_id, one_time_password=otp)
-
-        if register_local == 1:
-            bot.send_message(msg.chat.id, t("something_wrong"))
-            m = bot.send_message(msg.chat.id, t("loading"))
-
-        res = login_google(telegram_id, otp, msg.from_user.username, user_id)
+        res = login_google(telegram_id, otp, msg.from_user.username, user_id, msg.chat.id, lang)
 
         if res == 404:
             bot.send_message(msg.chat.id, t("something_wrong"))
@@ -777,91 +779,37 @@ def google_auth(msg, family_id, user_id, *, lang):
             local_reauth(msg, lang=lang, send_first_m=False)
             return
 
-        m = bot.send_message(msg.chat.id, t("loading"))
-        main_menu(m, lang=lang)
+        bot.send_message(msg.chat.id, t("await_review"))
 
     m = bot.send_message(msg.chat.id, t("ask_otp"))
     bot.register_next_step_handler(m, get_otp, family_id, user_id, lang=lang)
 
 
 # ======================== DB AND REQUESTS ========================
-def register_local(family_id, telegram_id, server_uid, password=None, one_time_password=None):
-    db = get_db()
-    try:
-        telegram_user = db.execute("SELECT * FROM user WHERE telegram_id = ?", (telegram_id,)).fetchone()
-        if not telegram_user:
-            # Check if the user with this server_uid already exists so that we don't attempt to
-            # create new ones
-            user = db.execute("SELECT * FROM user WHERE server_uid = ?", (str(server_uid),)).fetchone()
-            if not user:
-                if password:
-                    db.execute(
-                        "INSERT INTO user (family_id, telegram_id, server_uid, password) VALUES (?, ?, ?, ?)",
-                        (str(family_id), telegram_id, str(server_uid), password)
-                    )
-                elif one_time_password:
-                    db.execute(
-                        "INSERT INTO user (family_id, telegram_id, server_uid, one_time_password) VALUES (?, ?, ?, ?)",
-                        (str(family_id), telegram_id, str(server_uid), one_time_password)
-                    )
-                else:
-                    raise Exception("No password nor one_time_password provided")
-
-                db.commit()
-        else:
-            if password:
-                db.execute(
-                    "UPDATE user SET server_uid = ?, password = ?, family_id = ? WHERE telegram_id = ?",
-                    (str(server_uid), password, str(family_id), str(telegram_id))
-                )
-            elif one_time_password:
-                db.execute(
-                "UPDATE user SET server_uid = ?, one_time_password = ?, family_id = ? WHERE telegram_id = ?",
-                    (str(server_uid), one_time_password, str(family_id), str(telegram_id))
-                )
-            else:
-                raise Exception("No password nor one_time_password provided")
-
-            db.commit()
-    except Exception as e:
-        print(e)
-        db.close()
-        return 1
-    db.close()
-    return 0
-
-def login(telegram_id, password, t_username, id):
+def login(telegram_id, password, t_username, id, chat_id, lang):
     res = fetch("/auth/bot/login", {
         "telegramId": telegram_id,
         "telegramUsername": t_username,
         "userId": str(id),
-        "password": password
+        "password": password,
+        "chatId": chat_id,
+        "lang": lang
     })
 
-    return res
+    return res.status_code
 
-def save_jwt(access, refresh, telegram_id):
-    db = get_db()
-    try:
-        db.execute("UPDATE user SET access = ?, refresh = ? WHERE telegram_id = ?", (access, refresh, telegram_id))
-        db.commit()
-    except Exception as e:
-        print(e)
-        db.close()
-        return 1
-    return 0
 
-def login_google(telegram_id, otp, telegram_username, user_id):
+def login_google(telegram_id, otp, telegram_username, user_id, chat_id, lang):
     res = fetch("/auth/bot/google", {
         "oneTimePassword": otp,
         "telegramId": telegram_id,
         "telegramUsername": telegram_username,
-        "userId": user_id
-    }).json()
+        "userId": str(user_id),
+        "chatId": str(chat_id),
+        "lang": lang
+    })
 
-    if "statusCode" in res.keys(): return res["statusCode"]
-
-    return res
+    return res.status_code
 
 def get_family_data(telegram_id):
     res = fetch(
@@ -878,8 +826,7 @@ def payment_process_db(amount, date, telegram_id, category):
         "category": category,
     })
     
-    if res.status_code != 200: 
-        return False
+    return res.status_code == 201
 
 def recievement_process_db(recieved_amount, recieved_date, telegram_id, category):
     res = fetch("/transaction/new", {
@@ -894,29 +841,14 @@ def recievement_process_db(recieved_amount, recieved_date, telegram_id, category
     return "success"
 
 def get_user_data(telegram_id):
-    res = fetch("/auth/bot/profile?telegram_id=f{telegram_id}", {}, "get")
-    content = res.json()
-    if type(content) == "object":
+    res = fetch(f"/auth/bot/profile?telegram_id={telegram_id}", {}, "get").json()
+    if type(res) == "object":
         return 1
 
-    return content
+    return res
 
 def get_user_transactions(telegram_id):
-    db = get_db()
-    server_uid = None
-    try:
-        server_uid = db.execute(
-            "SELECT server_uid FROM user WHERE telegram_id = ?",
-            (telegram_id,)
-        ).fetchone()["server_uid"]
-    except Exception as e:
-        print(e)
-        return 1
-    if server_uid is None:
-        return 404
-
-    db.close()
-    return fetch("/transaction/get_user_transactions", {}, telegram_id, "get")
+    return fetch(f"/transaction/bot/get_user_transactions?telegram_id={telegram_id}", {}, "get")
 
 def fetch(url, data, method="post"):
     if method == "post":
@@ -939,4 +871,11 @@ def fetch(url, data, method="post"):
     return res
 
 
-bot.infinity_polling()
+import threading
+
+def run_api():
+    uvicorn.run(fastapi_app, host="127.0.0.1", port=8000)
+
+if __name__ == "__main__":
+    threading.Thread(target=run_api, daemon=True).start()
+    bot.infinity_polling()

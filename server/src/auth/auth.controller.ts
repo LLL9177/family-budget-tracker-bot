@@ -7,7 +7,7 @@ import {
   Res,
   UseGuards,
   ValidationPipe,
-  Query
+  Query,
 } from '@nestjs/common';
 import { UserDto } from 'src/dtos/user.dto';
 import { AuthService } from './services/Auth.service';
@@ -112,6 +112,12 @@ export class AuthController {
   @UseGuards(BotGuard)
   @Get('/bot/profile')
   async botProfile(@Query() dto: BotProfileDto) {
-    return await this.authService.botGetProfile(dto.telegram_id)
+    return await this.authService.botGetProfile(dto.telegram_id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/telegram/logout')
+  async telegramLogout(@Req() req: { user: { id: string } }) {
+    await this.authService.telegramLogout(req.user.id);
   }
 }

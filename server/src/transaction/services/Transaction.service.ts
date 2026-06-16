@@ -21,6 +21,9 @@ interface ITransactionService {
   botGetFamilyTransactions(
     telegramId: bigint,
   ): Promise<TransactionEntity[] | null>;
+  botGetUserTransactions(
+    telegramId: bigint,
+  ): Promise<TransactionEntity[] | null>;
 }
 
 @Injectable()
@@ -110,5 +113,14 @@ export class TransactionService implements ITransactionService {
       },
       relations: { user: true },
     });
+  }
+
+  async botGetUserTransactions(
+    telegramId: bigint,
+  ): Promise<TransactionEntity[] | null> {
+    const user = await this.userService.findByTelegramId(telegramId);
+    if (!user) throw new NotFoundException('User not found');
+
+    return await this.transactionRepository.findBy({ user });
   }
 }

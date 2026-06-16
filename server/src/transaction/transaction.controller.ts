@@ -95,4 +95,10 @@ export class TransactionController {
   async monthlySummary(@Body(new ValidationPipe()) body: SummaryDto) {
     return await this.summaryService.sum(body);
   }
+
+  @UseGuards(BotGuard)
+  @Get('bot/get_user_transactions')
+  async botGetUserTransactions(@Query('telegram_id') telegramId: bigint) {
+    return await this.transactionService.botGetUserTransactions(telegramId);
+  }
 }
