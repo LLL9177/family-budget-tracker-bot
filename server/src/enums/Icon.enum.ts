@@ -4,4 +4,5 @@ export enum IconEnum {
   KICKED = 'KICKED',
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED',
+  AUTH_REQUEST = 'AUTH_REQUEST',
 }

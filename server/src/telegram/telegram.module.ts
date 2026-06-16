@@ -5,12 +5,14 @@ import { TelegramService } from './services/Telegram.service';
 import { UserModule } from '../user/user.module';
 import { TelegramController } from './telegram.controller';
 import { AuthModule } from '../auth/auth.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([TelegramEntity]),
     UserModule,
     forwardRef(() => AuthModule),
+    NotificationModule,
   ],
   providers: [TelegramService],
   exports: [TelegramService],

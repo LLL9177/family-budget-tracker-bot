@@ -5,6 +5,7 @@ import { Card, CardFooter, CardHeader } from "../../ui/card";
 import type { INotification } from "@/types/Notification.interface";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+    LogIn,
   Trash2,
   UserCheck,
   UserPlus,
@@ -39,6 +40,10 @@ const notificationMeta = {
     icon: XCircle,
     color: "text-red-400",
   },
+  AUTH_REQUEST: {
+    icon: LogIn,
+    color: "dark:text-blue-600 text-blue-500"
+  }
 };
 
 export default function Notifications_en({ hide }: Props) {

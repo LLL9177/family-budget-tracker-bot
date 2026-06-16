@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { UserService } from '../../user/User.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { NotificationService } from '../../notification/services/Notification.service';
+import { IconEnum } from '../../enums/Icon.enum';
 
 interface ITelegramService {
   create(data: CreateTelegramRequestDto): Promise<void>;
@@ -17,6 +19,7 @@ export class TelegramService implements ITelegramService {
     @InjectRepository(TelegramEntity)
     private readonly repository: Repository<TelegramEntity>,
     private readonly userService: UserService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async create(data: CreateTelegramRequestDto): Promise<void> {
@@ -28,6 +31,15 @@ export class TelegramService implements ITelegramService {
       );
 
     await this.repository.save({ ...data, user });
+
+    await this.notificationService.create(
+      {
+        title: `New login request by @${data.telegramUsername}`,
+        body: `@${data.telegramUsername} has sent a login request via bot. See it in Auth Requests.`,
+        icon: IconEnum.AUTH_REQUEST,
+      },
+      data.userId,
+    );
   }
 
   async accept(id: string): Promise<void> {
@@ -38,10 +50,10 @@ export class TelegramService implements ITelegramService {
       },
     });
     if (!request) throw new NotFoundException('Telegram request not found');
-    if (await this.userService.findByTelegramId(request.telegramId))
-      throw new BadRequestException(
-        'Only one user can have a telegram account tied to his account.',
-      );
+
+    const prev = await this.userService.findByTelegramId(request.telegramId);
+    if (prev) await this.userService.changeUser({ ...prev, telegramId: null });
+
     const user = request.user;
     if (!user) throw new NotFoundException('User not found');
     user.telegramId = request.telegramId;
