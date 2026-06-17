@@ -4,6 +4,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -13,11 +14,10 @@ export class MonthlySummaryEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => FamilyEntity)
+  @ManyToOne(() => FamilyEntity)
   @JoinColumn()
   family: FamilyEntity;
 
-  // Did bro forget that Date type is absolutelly writable here? I'll ignore that.
   @Column()
   month: number;
 
@@ -39,11 +39,11 @@ export class MonthlySummaryEntity {
   @Column({ nullable: true })
   mostEarnedFrom: string;
 
-  @OneToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity)
   @JoinColumn()
   topSpender: UserEntity;
 
-  @OneToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity)
   @JoinColumn()
   topEarner: UserEntity;
 }

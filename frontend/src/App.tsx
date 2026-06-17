@@ -18,6 +18,7 @@ import type { ITransactionWithDate } from "./types/TransactionWithDate.interface
 import { FamilyContext } from "./contexts/FamilyContext";
 import type { IFamily } from "./types/Family.interface";
 import User_en from "./components/en/user/user";
+import Landing from "./components/landing";
 
 export function App() {
   const [access, setAccess] = useState("");
@@ -32,6 +33,7 @@ export function App() {
         <FamilyContext value={{ family, setFamily }}>
           <AuthBootstrap />
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/en" element={<Main_en />} />
             <Route path="/uk" element={<Main_uk />} />
             <Route path="/en/login" element={<Login_en />} />

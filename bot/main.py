@@ -450,7 +450,7 @@ def recievement_process(msg, category=None, *, lang):
             bot.register_next_step_handler(m, get_amount)
             return
         
-        if amount == 0:
+        if amount <= 0:
             m = bot.send_message(msg.chat.id, t("canceling"))
             main_menu(m, lang=lang)
             return
@@ -531,7 +531,7 @@ def payment_process(msg, category=None, *, lang):
             bot.register_next_step_handler(m, get_amount)
             return
 
-        if amount == 0:
+        if amount <= 0:
             bot.send_message(msg.chat.id, t("canceling"))
             m = bot.send_message(msg.chat.id, t("loading"))
             main_menu(m, lang=lang)

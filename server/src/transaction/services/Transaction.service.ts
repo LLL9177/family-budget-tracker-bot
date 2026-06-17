@@ -45,7 +45,7 @@ export class TransactionService implements ITransactionService {
     const data = {
       amount: transaction.amount,
       category: transaction.category,
-      cretedAt: transaction.createdAt,
+      createdAt: transaction.createdAt,
       familyId: user.family.id,
       user,
     };

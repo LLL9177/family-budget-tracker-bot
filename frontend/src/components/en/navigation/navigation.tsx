@@ -61,18 +61,18 @@ function FixedAnchor({
 
 export default function Navigation_en({ exclude }: { exclude: string }) {
   const ITEMS = [
-    "Family Page",
-    "Transactions",
+    "Create Family Page",
     "Renew OTP Page",
-    "Register Page",
+    "Family Page",
     "Users",
-    "Login Page",
+    "Transactions",
+    "Register Page",
     "Connect Family Page",
     "Auth Requests",
-    "Notifications",
+    "Login Page",
     "Profile Page",
+    "Notifications",
     "Main Page",
-    "Create Family Page",
   ];
 
   const [isOpen, setIsOpen] = useState(false);
@@ -219,7 +219,7 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
           <AnimatePresence mode="popLayout">
             {isOpen &&
               ITEMS.map((item, i) => {
-                const radius = 255;
+                const radius = 230;
                 const angle = (i / ITEMS.length) * Math.PI * 2;
                 const x = position.x + Math.cos(angle) * radius;
                 const y = position.y + Math.sin(angle) * radius;

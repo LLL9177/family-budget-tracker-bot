@@ -6,9 +6,7 @@ import { Between, Repository } from 'typeorm';
 import { MonthlySummaryEntity } from '../entities/MonthlySummary.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { endOfMonth, startOfMonth } from 'date-fns';
-import { FamilyService } from 'src/family/services/Family.service';
-import { UserService } from 'src/user/User.service';
-import { UserEntity } from 'src/user/entities/User.entity';
+import { FamilyService } from '../../family/services/Family.service';
 
 interface ISummaryService {
   sum(data: SummaryDto): Promise<IMonthlySummary>;
@@ -48,6 +46,9 @@ export class SummaryService implements ISummaryService {
           endOfMonth(new Date(data.year, data.month - 1)),
         ),
       },
+      relations: {
+        user: true,
+      },
     });
 
     if (transactions.length == 0)
@@ -59,27 +60,33 @@ export class SummaryService implements ISummaryService {
     let totalEarned = 0;
     let pnl = 0;
 
-    const spenderMap = new Map<UserEntity, number>();
-    const earnerMap = new Map<UserEntity, number>();
+    const spenderMap = new Map<string, number>();
+    const earnerMap = new Map<string, number>();
     const categorySpentMap = new Map<string, number>();
     const categoryEarnedMap = new Map<string, number>();
 
     for (const t of transactions) {
+      const userId = t.user.id;
+
       pnl += t.amount;
 
       if (t.amount < 0) {
-        totalSpent += t.amount;
-        spenderMap.set(t.user, (spenderMap.get(t.user) || 0) + t.amount);
+        const spent = Math.abs(t.amount);
+        totalSpent += spent;
+
+        spenderMap.set(userId, (spenderMap.get(userId) || 0) + spent);
         categorySpentMap.set(
           t.category,
-          (categorySpentMap.get(t.category) || 0) + t.amount,
+          (categorySpentMap.get(t.category) || 0) + spent,
         );
       } else {
-        totalEarned += t.amount;
-        earnerMap.set(t.user, (earnerMap.get(t.user) || 0) + t.amount);
+        const earned = t.amount;
+        totalEarned += earned;
+
+        earnerMap.set(userId, (earnerMap.get(userId) || 0) + earned);
         categoryEarnedMap.set(
           t.category,
-          (categoryEarnedMap.get(t.category) || 0) + t.amount,
+          (categoryEarnedMap.get(t.category) || 0) + earned,
         );
       }
     }
@@ -93,9 +100,7 @@ export class SummaryService implements ISummaryService {
     )[0]?.[0];
 
     const topSpender = spenderMap.size
-      ? [...spenderMap.entries()].sort(
-          (a, b) => Math.abs(b[1]) - Math.abs(a[1]),
-        )[0][0]
+      ? [...spenderMap.entries()].sort((a, b) => b[1] - a[1])[0][0]
       : undefined;
 
     const topEarner = earnerMap.size
@@ -109,12 +114,10 @@ export class SummaryService implements ISummaryService {
       totalEarned,
       mostSpentOn,
       mostEarnedFrom,
-      topSpender,
-      topEarner,
+      topSpender: family.members.find((user) => user.id == topSpender),
+      topEarner: family.members.find((user) => user.id == topEarner),
       pnl,
     };
-
-    console.log({ ...ret, family, month: data.month, year: data.year });
 
     await this.summaryRepository.insert({
       ...ret,
