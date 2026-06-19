@@ -18,7 +18,7 @@ import type { ITransactionWithDate } from "./types/TransactionWithDate.interface
 import { FamilyContext } from "./contexts/FamilyContext";
 import type { IFamily } from "./types/Family.interface";
 import User_en from "./components/en/user/user";
-import Landing from "./components/landing";
+import Landing from "./components/landing/landing";
 
 export function App() {
   const [access, setAccess] = useState("");
