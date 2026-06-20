@@ -22,6 +22,7 @@ import { useState } from "react";
 import { useTheme } from "@/components/theme-provider";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const chartConfig = {
   PnL: {
@@ -32,9 +33,10 @@ const chartConfig = {
 
 type Props = {
   data: ITransactionWithDate[] | ITransaction[];
+  className?: string;
 };
 
-export default function MainChart_en({ data }: Props) {
+export default function MainChart_en({ data, className }: Props) {
   const [displayMode, setDisplayMode] = useState("bars");
   const { theme, resolvedTheme, systemTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
@@ -99,25 +101,19 @@ export default function MainChart_en({ data }: Props) {
   }
 
   return (
-    <div className="flex w-full items-center justify-center">
-      <div
-        className={`h-190 w-350 rounded-[30px] border border-[rgb(100,100,100)] ${
-          currentTheme === "dark"
-            ? "bg-gradient-to-t from-primary/5 to-card"
-            : "bg-gradient-to-t from-primary/5 to-white"
-        } bg-card p-10`}
-      >
-        <div className="flex space-x-[54%] pr-10 pl-10">
+    <div className={cn("flex w-full items-center justify-between", className)}>
+      <div className="h-[match-content] lg:h-190 lg:w-350 w-full rounded-[30px] border border-[rgb(100,100,100)] bg-card p-10">
+        <div className="flex lg:flex-row flex-col lg:space-x-[54%] lg:px-10 lg:gap-0 gap-4">
           <div>
-            <h2 className="mb-2 text-xl font-bold">PnL Of Current Month</h2>
+            <h2 className="mb-2 lg:text-xl text-[15px] font-bold">PnL Of Current Month</h2>
             <span className="text-[rgb(100,100,100)]">
               This month's difference in balance
             </span>
           </div>
           <div className="flex pb-10">
-            <div className="mr-10 flex space-x-[10%]">
+            <div className="mr-10 flex space-x-[10%] h-10">
               <button
-                className={`cursor-pointer rounded border-[2px] pr-1 pl-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${
+                className={`cursor-pointer rounded border-[2px] px-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${
                   displayMode == "line" ? "border-[rgb(100,100,100)]" : ""
                 } `}
                 onClick={() => {
@@ -127,7 +123,7 @@ export default function MainChart_en({ data }: Props) {
                 <LineChartIcon />
               </button>
               <button
-                className={`cursor-pointer rounded border-[2px] pr-1 pl-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${
+                className={`cursor-pointer rounded border-[2px] px-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${
                   displayMode == "bars" ? "border-[rgb(100,100,100)]" : ""
                 } `}
                 onClick={() => {
@@ -180,7 +176,7 @@ export default function MainChart_en({ data }: Props) {
         </div>
         <ChartContainer
           config={chartConfig}
-          className="max-h-150 w-full rounded-xl border-1 bg-[rgba(150,150,150,0.1)] p-10 pt-15"
+          className="max-h-150 w-full rounded-xl border-1 bg-[rgba(150,150,150,0.1)] lg:p-10 lg:pt-15"
         >
           {displayMode == "bars" ? (
             <BarChart accessibilityLayer data={chartData}>
@@ -190,11 +186,7 @@ export default function MainChart_en({ data }: Props) {
                 tickLine={false}
                 tickMargin={10}
                 axisLine={true}
-                interval={
-                  chartData.length > 30
-                    ? Math.floor((chartData.length - 30) / 2)
-                    : 0
-                }
+                interval="preserveStartEnd"
               />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
@@ -208,11 +200,7 @@ export default function MainChart_en({ data }: Props) {
                 tickLine={false}
                 tickMargin={10}
                 axisLine={true}
-                interval={
-                  chartData.length > 30
-                    ? Math.floor((chartData.length - 30) / 2)
-                    : 0
-                }
+                interval="preserveStartEnd"
               />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />

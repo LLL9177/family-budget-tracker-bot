@@ -263,12 +263,7 @@ export default function Main_en() {
   }, [auth.access, navigate, setFamily, setTransactions]);
 
   return (
-    <div
-      className={
-        "flex h-full w-[100vw] flex-col items-center justify-center bg-cover bg-fixed bg-center" +
-        `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
-      }
-    >
+    <div className="flex h-full w-[100vw] flex-col items-center justify-center bg-[url('/main-background-light.jpg')] bg-cover bg-fixed bg-center dark:bg-[url('/main-background.png')]">
       <Navigation_en exclude="Main Page" />
       {familyId == "" || !familyId ? (
         <div className="flex h-[100vh] flex-col items-center justify-center">
@@ -295,8 +290,8 @@ export default function Main_en() {
         </div>
       ) : (
         <div className="h-full w-[100vw] flex-col items-center justify-center gap-3">
-          <div className="flex h-full w-[100vw] items-center justify-center gap-3">
-            <div className="h-[100vh] w-125">
+          <div className="flex h-full w-[100vw] flex-col items-center justify-center lg:flex-row gap-3 lg:mb-0 mb-10">
+            <div className="flex h-screen lg:w-125 w-screen lg:px-0 px-4 flex-col lg:mt-0 -mt-15">
               <MonthComparison_en
                 data={{
                   prev: prevMonth as IMonthlySummary | undefined,
@@ -316,9 +311,12 @@ export default function Main_en() {
                 familyId={familyId}
                 captionText=""
               />
-              <FamilyId_en familyId={familyId} />
+              <FamilyId_en
+                familyId={familyId}
+                className="order-first lg:order-last"
+              />
             </div>
-            <div className="flex h-[100vh] w-[72vw] flex-col items-center justify-center gap-3">
+            <div className="order-first flex h-[100vh] lg:w-[72vw] w-[90%] flex-col items-center justify-center gap-3 lg:order-last">
               <SectionCards_en
                 data={{
                   ...familyData,
@@ -332,10 +330,13 @@ export default function Main_en() {
                   biggestSpender: familyData.topSpender.spender,
                 }}
               />
-              <MainChart_en data={transactions as ITransactionWithDate[]} />
+              <MainChart_en
+                data={transactions as ITransactionWithDate[]}
+                className="order-first lg:order-last"
+              />
             </div>
           </div>
-          <div className="mb-5 flex w-screen items-start justify-center gap-5 overflow-x-scroll">
+          <div className="mb-5 flex w-screen flex-col items-center justify-center gap-5 overflow-x-scroll lg:flex-row lg:items-start">
             <SpenderLeaderboard_en topSpenders={topSpenders} />
             <EarnerLeaderboard_en topEarners={topEarners} />
             <EarnerCategoryLeaderboard_en topEarnerCategories={topEarnedFrom} />

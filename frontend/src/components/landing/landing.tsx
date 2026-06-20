@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Button } from "../ui/button";
 import LanguageSelection from "./language-selection";
 import Hero from "./hero";
 import Info from "./info";
 import OtherInfo from "./other-info";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "@/contexts/AuthContext";
 
 const i18n = {
   en: {
@@ -22,6 +23,9 @@ export default function Landing() {
     localStorage.getItem("lang")
   );
   const navigate = useNavigate();
+  const auth = useContext(AuthContext);
+
+  if (auth.access) navigate(`/${lang}/`);
 
   return (
     <div className="relative min-h-screen w-screen overflow-x-hidden">

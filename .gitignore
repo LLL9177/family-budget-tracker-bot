@@ -5,3 +5,4 @@
 /frontend/.env
 /google-client-secret.json
 /changelog
+/package-lock.json

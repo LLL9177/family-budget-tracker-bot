@@ -124,7 +124,7 @@ family-budget-tracker-bot/
 2. Create a `.env` file in the frontend directory (copy from `.env.example` if available):
 
    ```
-   VITE_API_URL=http://localhost:3000
+   VITE_BACKEND_URL=http://localhost:3000
    VITE_GOOGLE_CLIENT_ID=your_google_client_id
    ```
 

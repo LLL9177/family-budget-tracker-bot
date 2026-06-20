@@ -27,8 +27,8 @@ export function SectionCards_en({ data }: Props) {
   }
 
   return (
-    <div className="flex w-full flex-row gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs @xl/main:flex-row @5xl/main:flex-row dark:*:data-[slot=card]:bg-card">
-      <Card className="@container/card h-full w-full">
+    <div className="flex w-screen flex-row gap-4 overflow-x-auto px-6 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:w-full lg:px-0 @xl/main:flex-row @5xl/main:flex-row dark:*:data-[slot=card]:bg-card">
+      <Card className="@container/card h-full w-[89.5vw] shrink-0 lg:w-full lg:shrink">
         <CardHeader>
           <CardDescription>PnL</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -44,7 +44,7 @@ export function SectionCards_en({ data }: Props) {
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card h-full w-full">
+      <Card className="@container/card h-full w-[89.5vw] shrink-0 lg:w-full lg:shrink">
         <CardHeader>
           <CardDescription>Biggest Spender</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -60,7 +60,7 @@ export function SectionCards_en({ data }: Props) {
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card h-full w-full">
+      <Card className="@container/card h-full w-[89.5vw] shrink-0 lg:w-full lg:shrink">
         <CardHeader>
           <CardDescription>Biggest Earner</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -76,7 +76,7 @@ export function SectionCards_en({ data }: Props) {
           </div>
         </CardFooter>
       </Card>
-      <Card className="@container/card h-full w-full">
+      <Card className="@container/card h-full w-[89.5vw] shrink-0 lg:w-full lg:shrink">
         <CardHeader>
           <CardDescription>Most Spent On</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">

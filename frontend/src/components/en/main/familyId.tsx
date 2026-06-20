@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 type Props = {
   familyId: string;
+  className?: string;
 };
 
-export default function FamilyId_en({ familyId }: Props) {
+export default function FamilyId_en({ familyId, className }: Props) {
   const familyIdRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -30,14 +32,19 @@ export default function FamilyId_en({ familyId }: Props) {
   }, [familyIdRef, familyId]);
 
   return (
-    <div className="mt-2 flex h-[12vh] flex-col items-center justify-around rounded-xl bg-card bg-gradient-to-t from-primary/5 to-card">
+    <div
+      className={cn(
+        "mt-2 flex lg:h-[12vh] h-50 flex-col items-center justify-around rounded-xl bg-card",
+        className
+      )}
+    >
       <div>
         <Button onClick={() => navigate("family?id=" + familyId)}>
           Open Family
         </Button>
       </div>
       <div
-        className="text-3xl font-bold"
+        className="lg:text-3xl text-2xl font-bold"
         id="family-id-value"
         ref={familyIdRef}
       >
