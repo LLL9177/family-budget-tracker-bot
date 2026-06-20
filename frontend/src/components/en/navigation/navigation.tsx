@@ -1,8 +1,6 @@
-// OH NO IT WAS WRITTEN BY AI!!!??
-// What can you do about it?
 "use client";
 
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useContext, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -15,6 +13,7 @@ import { AuthContext } from "@/contexts/AuthContext";
 import TelegramRequests_en from "./telegram-request";
 
 const MARGIN = 40;
+const MOBILE_QUERY = "(max-width: 640px)";
 
 function getNearestCorner(x: number, y: number) {
   const corners = [
@@ -32,7 +31,20 @@ function getNearestCorner(x: number, y: number) {
   );
 }
 
-// Positions the anchor point, children handle their own centering
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia(MOBILE_QUERY);
+    setIsMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
+  return isMobile;
+}
+
 function FixedAnchor({
   x,
   y,
@@ -74,6 +86,8 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
     "Notifications",
     "Main Page",
   ];
+
+  const isMobile = useIsMobile();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -125,6 +139,11 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
   const toggleMenu = () => {
     if (didDragRef.current) {
       didDragRef.current = false;
+      return;
+    }
+
+    if (isMobile) {
+      setIsOpen((v) => !v);
       return;
     }
 
@@ -180,16 +199,35 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
     }
   }
 
+  const growUp = cornerPositionRef.current.y > window.innerHeight / 2;
+  const growLeft = cornerPositionRef.current.x > window.innerWidth / 2;
+
   return (
     <>
       {family && (
         <>
-          {/* Main button — wrapper handles position, Framer only handles scale */}
+          {/* Backdrop — mobile only */}
+          {isMobile && (
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  className="fixed inset-0 z-10 bg-black/30 backdrop-blur-sm dark:bg-black/50"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={toggleMenu}
+                />
+              )}
+            </AnimatePresence>
+          )}
+
+          {/* Main button */}
           <FixedAnchor
             x={position.x}
             y={position.y}
             className={
-              isDragging ? "z-20" : "z-20 transition-[left,top] duration-300"
+              isDragging ? "z-30" : "z-30 transition-[left,top] duration-300"
             }
           >
             <motion.button
@@ -200,7 +238,11 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
                 setIsDragging(true);
               }}
               onClick={toggleMenu}
-              animate={{ scale: isOpen ? 2 : 1 }}
+              animate={
+                isMobile
+                  ? { rotate: isOpen ? 90 : 0 }
+                  : { scale: isOpen ? 2 : 1 }
+              }
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               className={cn(
                 "rounded-full bg-black p-3 text-white dark:bg-white dark:text-black",
@@ -211,57 +253,107 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
               )}
               hidden={openedItem ? true : false}
             >
-              <Menu />
+              {isMobile && isOpen ? <X /> : <Menu />}
             </motion.button>
           </FixedAnchor>
 
-          {/* Menu items — wrapper animates position, Framer animates scale+opacity */}
-          <AnimatePresence mode="popLayout">
-            {isOpen &&
-              ITEMS.map((item, i) => {
-                const radius = 230;
-                const angle = (i / ITEMS.length) * Math.PI * 2;
-                const x = position.x + Math.cos(angle) * radius;
-                const y = position.y + Math.sin(angle) * radius;
-
-                return (
-                  <motion.div
-                    key={item}
-                    className="fixed z-20"
-                    style={{ transform: "translate(-50%, -50%)" }}
-                    initial={{ left: position.x, top: position.y }}
-                    animate={{ left: x, top: y }}
-                    exit={{ left: position.x, top: position.y }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 260,
-                      damping: 22,
-                      delay: i * 0.04,
-                    }}
-                  >
+          {/* MOBILE: column card menu */}
+          {isMobile && (
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  className={cn(
+                    "fixed z-20 flex max-h-[70vh] w-[min(80vw,280px)] flex-col gap-1 overflow-y-auto rounded-2xl border bg-white p-2 shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:bg-black dark:shadow-[0_8px_30px_rgba(255,255,255,0.1)]",
+                    growLeft ? "items-end" : "items-start"
+                  )}
+                  style={{
+                    left: growLeft ? undefined : position.x,
+                    right: growLeft
+                      ? window.innerWidth - position.x
+                      : undefined,
+                    top: growUp ? undefined : position.y + 50,
+                    bottom: growUp
+                      ? window.innerHeight - position.y + 50
+                      : undefined,
+                  }}
+                  initial={{ opacity: 0, scale: 0.9, y: growUp ? 10 : -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: growUp ? 10 : -10 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 26 }}
+                >
+                  {ITEMS.map((item, i) => (
                     <motion.button
-                      className="cursor-pointer rounded-full border bg-background px-4 py-2 shadow-[0_0_10px_0_rgba(0,0,0,0.1)] hover:bg-[rgb(240,240,240)] dark:shadow-[0_0_10px_0_rgba(255,255,255,0.1)] dark:hover:bg-[rgb(30,30,30)]"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
+                      key={item}
+                      className="w-full cursor-pointer rounded-xl px-4 py-2.5 text-left text-sm hover:bg-[rgb(240,240,240)] dark:hover:bg-[rgb(30,30,30)]"
+                      initial={{ opacity: 0, x: growLeft ? 12 : -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      onClick={() => {
+                        navigateTo(item);
+                        setIsOpen(false);
+                        setOpenedItem(item);
+                      }}
+                    >
+                      {item}
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
+
+          {/* DESKTOP: original radial menu, untouched */}
+          {!isMobile && (
+            <AnimatePresence mode="popLayout">
+              {isOpen &&
+                ITEMS.map((item, i) => {
+                  const radius = 230;
+                  const angle = (i / ITEMS.length) * Math.PI * 2;
+                  const x = position.x + Math.cos(angle) * radius;
+                  const y = position.y + Math.sin(angle) * radius;
+
+                  return (
+                    <motion.div
+                      key={item}
+                      className="fixed z-20"
+                      style={{ transform: "translate(-50%, -50%)" }}
+                      initial={{ left: position.x, top: position.y }}
+                      animate={{ left: x, top: y }}
+                      exit={{ left: position.x, top: position.y }}
                       transition={{
                         type: "spring",
                         stiffness: 260,
                         damping: 22,
                         delay: i * 0.04,
                       }}
-                      onClick={() => {
-                        navigateTo(item);
-                        setIsOpen(false);
-                        setPosition(cornerPositionRef.current);
-                        setOpenedItem(item);
-                      }}
                     >
-                      {item}
-                    </motion.button>
-                  </motion.div>
-                );
-              })}
+                      <motion.button
+                        className="cursor-pointer rounded-full border bg-background px-4 py-2 shadow-[0_0_10px_0_rgba(0,0,0,0.1)] hover:bg-[rgb(240,240,240)] dark:shadow-[0_0_10px_0_rgba(255,255,255,0.1)] dark:hover:bg-[rgb(30,30,30)]"
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 260,
+                          damping: 22,
+                          delay: i * 0.04,
+                        }}
+                        onClick={() => {
+                          navigateTo(item);
+                          setIsOpen(false);
+                          setPosition(cornerPositionRef.current);
+                          setOpenedItem(item);
+                        }}
+                      >
+                        {item}
+                      </motion.button>
+                    </motion.div>
+                  );
+                })}
+            </AnimatePresence>
+          )}
+
+          <AnimatePresence>
             {openedItem == "Notifications" ? (
               <Notifications_en hide={() => setOpenedItem(null)} />
             ) : openedItem == "Transactions" ? (
