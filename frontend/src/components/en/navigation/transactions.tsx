@@ -15,6 +15,7 @@ import {
 } from "../../ui/combobox";
 import { TransactionsContext } from "@/contexts/TransactionsContext";
 import { FamilyContext } from "@/contexts/FamilyContext";
+import useIsMobile from "@/hooks/useIsMobile";
 
 type Props = {
   hide: () => void;
@@ -27,6 +28,7 @@ export default function Transactions_en({ hide }: Props) {
   const [filterBy, setFilterBy] = useState<string | null>(null);
   const { transactions, setTransactions } = useContext(TransactionsContext);
   const { family } = useContext(FamilyContext);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     async function fetchTransactions() {
@@ -143,7 +145,7 @@ export default function Transactions_en({ hide }: Props) {
         <>
           <AnimatePresence mode="popLayout">
             <div
-              className="fixed top-0 z-11 flex h-screen w-screen items-center justify-center gap-5 bg-[rgba(0,0,0,0.5)] backdrop-blur-sm"
+              className="fixed top-0 z-11 flex h-screen w-screen flex-col items-center justify-center gap-5 bg-[rgba(0,0,0,0.5)] backdrop-blur-sm lg:flex-row"
               onClick={() => hide()}
             >
               {transaction && (
@@ -152,12 +154,14 @@ export default function Transactions_en({ hide }: Props) {
                   initial={{
                     opacity: 0,
                     scale: 0.6,
-                    x: 150,
+                    x: isMobile ? 0 : 150,
+                    y: isMobile ? 150 : 0,
                   }}
                   animate={{
                     opacity: 1,
                     scale: 1,
                     x: 0,
+                    y: 0,
                   }}
                   transition={{
                     type: "spring",
@@ -167,11 +171,12 @@ export default function Transactions_en({ hide }: Props) {
                   exit={{
                     opacity: 0,
                     scale: 0.6,
-                    x: 150,
+                    x: isMobile ? 0 : 150,
+                    y: isMobile ? 150 : 0,
                   }}
                 >
                   <Card
-                    className="min-h-40 w-120 flex-row justify-between rounded-3xl p-4 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
+                    className="min-h-40 w-[90vw] flex-row justify-between rounded-3xl p-4 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] lg:w-120 dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex flex-col gap-2">
@@ -212,7 +217,7 @@ export default function Transactions_en({ hide }: Props) {
                 }}
               >
                 <Card
-                  className="max-h-200 w-150 overflow-y-scroll rounded-3xl p-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] select-none dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
+                  className="max-h-100 w-[90vw] overflow-y-scroll rounded-3xl p-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] select-none lg:max-h-200 lg:w-150 dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {transactions && transactions.length > 0 ? (

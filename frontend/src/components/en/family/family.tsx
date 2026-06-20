@@ -55,7 +55,6 @@ function parseJwt<T>(token: string): T | null {
 export default function Family_en() {
   const auth = useContext(AuthContext);
 
-  // const [familyContext.family, familyContext.setFamily] = useState<IFamily>();
   const familyContext = useContext(FamilyContext);
 
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -400,7 +399,7 @@ export default function Family_en() {
                 {/* Avatar Overlay */}
                 {isOwner && (
                   <>
-                    <div className="absolute inset-0 flex items-center justify-center rounded-[28px] bg-black/60 opacity-0 transition-all duration-300 group-hover/avatar:opacity-100">
+                    <div className="absolute w-36 lg:w-auto inset-0 flex items-center justify-center rounded-[28px] bg-black/60 opacity-0 transition-all duration-300 group-hover/avatar:opacity-100">
                       {uploadingAvatar ? (
                         <Loader2 className="h-8 w-8 animate-spin text-white" />
                       ) : (

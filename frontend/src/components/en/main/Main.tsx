@@ -266,9 +266,9 @@ export default function Main_en() {
     <div className="flex h-full w-[100vw] flex-col items-center justify-center bg-[url('/main-background-light.jpg')] bg-cover bg-fixed bg-center dark:bg-[url('/main-background.png')]">
       <Navigation_en exclude="Main Page" />
       {familyId == "" || !familyId ? (
-        <div className="flex h-[100vh] flex-col items-center justify-center">
+        <div className="flex h-screen flex-col items-center justify-center">
           <h1 className="mb-5 text-2xl font-bold">Whoops!</h1>
-          <p className="mb-3 w-150 text-center">
+          <p className="mb-3 lg:w-150 w-100 text-center">
             Seems like your account doesn't have Family ID connected. To access
             this page properly, first connect Family ID, or create your own
             family.

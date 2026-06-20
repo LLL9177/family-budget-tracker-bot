@@ -11,9 +11,9 @@ import { FamilyContext } from "@/contexts/FamilyContext";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/contexts/AuthContext";
 import TelegramRequests_en from "./telegram-request";
+import useIsMobile from "@/hooks/useIsMobile";
 
 const MARGIN = 40;
-const MOBILE_QUERY = "(max-width: 640px)";
 
 function getNearestCorner(x: number, y: number) {
   const corners = [
@@ -29,20 +29,6 @@ function getNearestCorner(x: number, y: number) {
       ? corner
       : closest
   );
-}
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mql = window.matchMedia(MOBILE_QUERY);
-    setIsMobile(mql.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener("change", handler);
-    return () => mql.removeEventListener("change", handler);
-  }, []);
-
-  return isMobile;
 }
 
 function FixedAnchor({

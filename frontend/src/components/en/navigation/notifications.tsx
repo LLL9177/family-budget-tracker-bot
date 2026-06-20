@@ -5,7 +5,7 @@ import { Card, CardFooter, CardHeader } from "../../ui/card";
 import type { INotification } from "@/types/Notification.interface";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    LogIn,
+  LogIn,
   Trash2,
   UserCheck,
   UserPlus,
@@ -14,6 +14,7 @@ import {
   XCircle,
 } from "lucide-react";
 import type { IconEnum } from "@/enums/IconEnum";
+import useIsMobile from "@/hooks/useIsMobile";
 
 type Props = {
   hide: () => void;
@@ -42,8 +43,8 @@ const notificationMeta = {
   },
   AUTH_REQUEST: {
     icon: LogIn,
-    color: "dark:text-blue-600 text-blue-500"
-  }
+    color: "dark:text-blue-600 text-blue-500",
+  },
 };
 
 export default function Notifications_en({ hide }: Props) {
@@ -51,6 +52,7 @@ export default function Notifications_en({ hide }: Props) {
   const auth = useContext(AuthContext);
   const [notification, setNotification] = useState<INotification | null>(); // currently viewing
   const notificationRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     async function fetchData() {
@@ -79,8 +81,6 @@ export default function Notifications_en({ hide }: Props) {
 
     fetchData();
   }, [auth]);
-
-  console.log(user)
 
   function openNotification(n: INotification) {
     if (!notification) {
@@ -200,7 +200,7 @@ export default function Notifications_en({ hide }: Props) {
             }}
           >
             <div
-              className="top-0 flex h-screen w-screen items-center justify-center gap-5 bg-[rgba(0,0,0,0.5)] backdrop-blur-sm"
+              className="top-0 flex h-screen w-screen flex-col items-center justify-center gap-5 bg-[rgba(0,0,0,0.5)] backdrop-blur-sm lg:flex-row"
               onClick={() => hide()}
             >
               {notification && (
@@ -209,12 +209,14 @@ export default function Notifications_en({ hide }: Props) {
                   initial={{
                     opacity: 0,
                     scale: 0.6,
-                    x: 150,
+                    x: isMobile ? 0 : 150,
+                    y: isMobile ? 150 : 0,
                   }}
                   animate={{
                     opacity: 1,
                     scale: 1,
                     x: 0,
+                    y: 0,
                   }}
                   transition={{
                     type: "spring",
@@ -229,7 +231,7 @@ export default function Notifications_en({ hide }: Props) {
                 >
                   <Card
                     ref={notificationRef}
-                    className="w-150 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
+                    className="w-[90vw] shadow-[0_0_40px_0_rgba(255,255,255,0.3)] lg:w-150 dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <CardHeader className="text-2xl font-bold">
@@ -259,7 +261,7 @@ export default function Notifications_en({ hide }: Props) {
                 }}
               >
                 <Card
-                  className="max-h-200 w-150 gap-2 overflow-y-scroll rounded-3xl bg-card p-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
+                  className="max-h-100 w-[90vw] gap-2 overflow-y-scroll rounded-3xl bg-card p-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] lg:max-h-200 lg:w-150 dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {user.notifications.length === 0 ? (

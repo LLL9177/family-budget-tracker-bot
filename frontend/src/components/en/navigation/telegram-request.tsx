@@ -152,14 +152,14 @@ export default function TelegramRequests_en({ hide }: Props) {
                 }}
               >
                 <Card
-                  className="max-h-200 w-150 gap-7 overflow-y-scroll rounded-3xl p-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] select-none dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
+                  className="lg:max-h-200 max-h-180 lg:w-150 w-[90vw] gap-7 overflow-y-scroll rounded-3xl p-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] select-none dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex flex-col items-center gap-3 pt-3">
-                    <h1 className="text-3xl font-semibold">
+                    <h1 className="lg:text-3xl text-2xl font-semibold">
                       Telegram Login Requests
                     </h1>
-                    <p className="text-center text-lg">
+                    <p className="text-center lg:text-lg">
                       They are, the requests sent from the bot when someone
                       tries to login with your account in our bot.
                     </p>
@@ -209,7 +209,7 @@ export default function TelegramRequests_en({ hide }: Props) {
                 </Card>
               </motion.div>
             ) : (
-              <Card className="flex w-150 items-center justify-center overflow-y-scroll rounded-3xl p-5 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] select-none dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]">
+              <Card className="flex lg:w-150 w-[90vw] items-center justify-center overflow-y-scroll rounded-3xl p-5 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] select-none dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]">
                 <h1 className="text-3xl">No requests</h1>
                 <p className="text-center text-lg text-gray-500">
                   You will see them when somebody tries to login to your account

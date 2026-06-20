@@ -68,8 +68,8 @@ export default function ConnectFamily_en() {
       }
     >
       <Navigation_en exclude="Connect Family Page" />
-      <Card className="flex h-[15%] w-[40%] flex-row items-center justify-around">
-        <h1 className="text-2xl font-semibold">Connect To A Family</h1>
+      <Card className="flex h-[15%] lg:w-[40%] w-[90%] flex-row items-center justify-around lg:p-0 px-5">
+        <h1 className="lg:text-2xl text-xl font-semibold">Connect To A Family</h1>
 
         <form className="flex items-center justify-center gap-2">
           <Input

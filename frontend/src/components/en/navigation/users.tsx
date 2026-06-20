@@ -35,7 +35,7 @@ export default function Users_en({ hide }: Props) {
           <AnimatePresence mode="popLayout">
             <motion.div layout>
               <Card
-                className="max-h-200 w-150 overflow-y-scroll rounded-3xl p-2 select-none gap-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
+                className="max-h-200 lg:w-150 w-[90vw] overflow-y-scroll rounded-3xl p-2 select-none gap-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
                 onClick={(e) => e.stopPropagation()}
               >
                 {family.members.map((user) => (
