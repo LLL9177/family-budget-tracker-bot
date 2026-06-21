@@ -71,6 +71,7 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
     "Profile Page",
     "Notifications",
     "Main Page",
+    "Switch Language",
   ];
 
   const isMobile = useIsMobile();
@@ -185,6 +186,19 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
     }
   }
 
+  function handleItemClick(item: string) {
+    console.log("aa");
+    if (item == "Switch Language") {
+      const lang = localStorage.getItem("lang");
+      console.log(lang);
+      localStorage.setItem("lang", lang == "en" ? "uk" : "en");
+      window.location.href = window.location.href;
+      return;
+    }
+
+    navigateTo(item);
+  }
+
   const growUp = cornerPositionRef.current.y > window.innerHeight / 2;
   const growLeft = cornerPositionRef.current.x > window.innerWidth / 2;
 
@@ -275,7 +289,7 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.03 }}
                       onClick={() => {
-                        navigateTo(item);
+                        handleItemClick(item);
                         setIsOpen(false);
                         setOpenedItem(item);
                       }}
@@ -325,7 +339,7 @@ export default function Navigation_en({ exclude }: { exclude: string }) {
                           delay: i * 0.04,
                         }}
                         onClick={() => {
-                          navigateTo(item);
+                          handleItemClick(item);
                           setIsOpen(false);
                           setPosition(cornerPositionRef.current);
                           setOpenedItem(item);
