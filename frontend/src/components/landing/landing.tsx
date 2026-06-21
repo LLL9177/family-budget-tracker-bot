@@ -25,7 +25,7 @@ export default function Landing() {
   const navigate = useNavigate();
   const auth = useContext(AuthContext);
 
-  if (auth.access) navigate(`/${lang}/`);
+  if (auth.access) navigate(`/dashboard`);
 
   return (
     <div className="relative min-h-screen w-screen overflow-x-hidden">
@@ -37,14 +37,14 @@ export default function Landing() {
         <div className="flex rounded-full border backdrop-blur-lg">
           <Button
             className="h-10 cursor-pointer rounded-full px-3 text-lg"
-            onClick={() => navigate(`/${lang}/register`)}
+            onClick={() => navigate(`/register`)}
           >
             {i18n[lang ?? "en"].register}
           </Button>
           <Button
             variant={"link"}
             className="h-10 cursor-pointer text-lg text-foreground"
-            onClick={() => navigate(`/${lang}/login`)}
+            onClick={() => navigate(`/login`)}
           >
             {i18n[lang ?? "en"].login}
           </Button>

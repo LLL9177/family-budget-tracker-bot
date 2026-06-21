@@ -1,12 +1,13 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTelegramRequestDto } from '../../dtos/CreateTelegramRequest.dto';
 import { TelegramEntity } from '../entities/Telegram.entity';
-import { Repository } from 'typeorm';
+import { LessThanOrEqual, Repository } from 'typeorm';
 import { UserService } from '../../user/User.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { NotificationService } from '../../notification/services/Notification.service';
 import { IconEnum } from '../../enums/Icon.enum';
+import { NotificationKeyEnum } from '../../enums/NotificationKey.enum';
 
 interface ITelegramService {
   create(data: CreateTelegramRequestDto): Promise<void>;
@@ -30,12 +31,18 @@ export class TelegramService implements ITelegramService {
         'Not allowed to create more than 1 request',
       );
 
-    await this.repository.save({ ...data, user });
+    await this.repository.save({
+      ...data,
+      user,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
 
     await this.notificationService.create(
       {
-        title: `New login request by @${data.telegramUsername}`,
-        body: `@${data.telegramUsername} has sent a login request via bot. See it in Auth Requests.`,
+        key: NotificationKeyEnum.LOGIN_REQUEST,
+        meta: {
+          telegramUsername: data.telegramUsername,
+        },
         icon: IconEnum.AUTH_REQUEST,
       },
       data.userId,
@@ -91,10 +98,16 @@ export class TelegramService implements ITelegramService {
     });
   }
 
-  @Cron(CronExpression.EVERY_WEEK)
-  private telegamReqTimeout() {
-    const requests = this.repository.find({
-      where: {},
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  private async telegamReqTimeout() {
+    const requests = await this.repository.find({
+      where: {
+        expiresAt: LessThanOrEqual(new Date()),
+      },
     });
+
+    for (const req of requests) {
+      await this.repository.delete(req.id);
+    }
   }
 }

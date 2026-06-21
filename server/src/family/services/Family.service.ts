@@ -17,6 +17,7 @@ import { IJwtPayload } from '../../types/IJwtPayload.interface';
 import { CreateFamilyDto } from '../../dtos/createFamily.dto';
 import { NotificationService } from '../../notification/services/Notification.service';
 import { IconEnum } from '../../enums/Icon.enum';
+import { NotificationKeyEnum } from '../../enums/NotificationKey.enum';
 
 interface IFamilyService {
   create(data: CreateFamilyDto, user: IJwtPayload): Promise<void>;
@@ -159,8 +160,10 @@ export class FamilyService implements IFamilyService {
 
     await this.notificationService.create(
       {
-        title: `You've been kicked out of ${family.name}`,
-        body: '',
+        key: NotificationKeyEnum.YOURE_KICKED,
+        meta: {
+          familyName: family.name,
+        },
         icon: IconEnum.KICKED,
       },
       memberId,
@@ -170,8 +173,10 @@ export class FamilyService implements IFamilyService {
       if (user.id == owner.id) continue;
       await this.notificationService.create(
         {
-          title: `Say bye-bye to ${member.username}`,
-          body: `${member.username} has been kicked out of the family`,
+          key: NotificationKeyEnum.USER_KICKED,
+          meta: {
+            username: member.username,
+          },
           icon: IconEnum.KICKED,
         },
         user.id,
@@ -199,8 +204,10 @@ export class FamilyService implements IFamilyService {
 
     await this.notificationService.create(
       {
-        title: 'User tries to join your family',
-        body: `User ${user.username} has sent a request to join your family. Open the family page to review it.`,
+        key: NotificationKeyEnum.JOIN_REQUEST,
+        meta: {
+          username: user.username,
+        },
         icon: IconEnum.JOIN_REQUEST,
       },
       family.owner.id,
@@ -239,12 +246,14 @@ export class FamilyService implements IFamilyService {
     family.joinRequests.splice(i, 1);
     user.requestingToJoinFamily = null;
 
-    // someone's gotta patch these message texts at some point
     await this.userService.changeUser(user);
     await this.notificationService.create(
       {
-        title: `Welcome to ${family.name}!`,
-        body: `The family owner, ${family.owner.username}, has accepted your join request. Have a productive time!`,
+        key: NotificationKeyEnum.JOIN_ACCEPTED,
+        meta: {
+          familyName: family.name,
+          familyOwnerUsername: family.owner.username,
+        },
         icon: IconEnum.ACCEPTED,
       },
       userId,
@@ -254,8 +263,10 @@ export class FamilyService implements IFamilyService {
       if (member.id == family.owner.id) continue;
       await this.notificationService.create(
         {
-          title: 'Say hello to your new family member!',
-          body: `${user.username} has joined the family.`,
+          key: NotificationKeyEnum.USER_JOINED,
+          meta: {
+            username: user.username,
+          },
           icon: IconEnum.JOINED,
         },
         member.id,
@@ -322,8 +333,7 @@ export class FamilyService implements IFamilyService {
     await this.userService.changeUser(user);
     await this.notificationService.create(
       {
-        title: 'You have been rejected to join the family :(',
-        body: 'The owner has rejected your join request.',
+        key: NotificationKeyEnum.JOIN_REJECTED,
         icon: IconEnum.REJECTED,
       },
       userId,

@@ -74,14 +74,14 @@ export default function OtherInfo({ lang }: { lang: "en" | "uk" }) {
           <div className="grid gap-3 sm:grid-cols-2">
             <Button
               className="cursor-pointer rounded-full bg-white/95 text-slate-900"
-              onClick={() => navigate(`/${lang}/connect_family`)}
+              onClick={() => navigate(`/connect_family`)}
             >
               {i18n[lang].instantSync}
             </Button>
             <Button
               variant="outline"
               className="cursor-pointer rounded-full border-white/20 bg-white/2 text-white hover:border-white"
-              onClick={() => navigate(`/${lang}/create_family`)}
+              onClick={() => navigate(`/create_family`)}
             >
               {i18n[lang].createNew}
             </Button>

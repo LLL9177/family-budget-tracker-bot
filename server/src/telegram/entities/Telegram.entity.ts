@@ -20,4 +20,7 @@ export class TelegramEntity {
 
   @Column()
   lang: 'en' | 'uk';
+
+  @Column({ type: 'date' })
+  expiresAt: Date;
 }

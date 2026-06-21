@@ -25,11 +25,6 @@ export class NotificationService implements INotificationService {
   ) {}
 
   async create(data: INotification, userId: string): Promise<void> {
-    if (data.title.length > 80)
-      throw new BadRequestException('Title is too big');
-    if (data.body.length > 400)
-      throw new BadRequestException('Body is too big');
-
     const user = await this.userService.findById(userId);
     if (!user) throw new NotFoundException('User not found');
 

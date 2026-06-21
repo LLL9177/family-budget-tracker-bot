@@ -50,7 +50,7 @@ export default function Hero({ lang }: Props) {
         <div className="flex flex-col gap-3 lg:flex-row">
           <Button
             className="cursor-pointer rounded-full px-6 py-3 text-base"
-            onClick={() => navigate(`/${lang}/register`)}
+            onClick={() => navigate(`/register`)}
           >
             {t.startFree}
           </Button>
@@ -58,7 +58,7 @@ export default function Hero({ lang }: Props) {
           <Button
             variant={"link"}
             className="cursor-pointer rounded-full px-6 py-3 text-base dark:text-white"
-            onClick={() => navigate(`/${lang}/login`)}
+            onClick={() => navigate(`/login`)}
           >
             {t.login}
           </Button>
