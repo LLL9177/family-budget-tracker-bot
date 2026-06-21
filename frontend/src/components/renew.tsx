@@ -58,7 +58,7 @@ export default function Renew() {
   }, [auth]);
   return (
     <div>
-      <Navigation exclude="Renew OTP Page" />
+      <Navigation exclude="renewOtp" />
       <AlertDialog open={otp !== ""}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -71,7 +71,7 @@ export default function Renew() {
           <AlertDialogFooter>
             <AlertDialogAction
               className="bg-white !text-black"
-              onClick={() => navigate("/en")}
+              onClick={() => navigate("/dashboard")}
             >
               OK
             </AlertDialogAction>

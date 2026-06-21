@@ -71,7 +71,7 @@ export default function CreateFamily_en() {
         `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
       }
     >
-      <Navigation exclude="Create Family Page" />
+      <Navigation exclude="createFamily" />
       <Card className="w-100">
         <CardHeader>
           <CardTitle>{t.createFamily}</CardTitle>

@@ -87,7 +87,7 @@ export default function ConnectFamily() {
         `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
       }
     >
-      <Navigation exclude="Connect Family Page" />
+      <Navigation exclude="connectFamily" />
       <Card className="flex h-[15%] w-[90%] flex-row items-center justify-around px-5 lg:w-[40%] lg:p-0">
         <h1 className="text-xl font-semibold lg:text-2xl">
           {t.connectToFamily}

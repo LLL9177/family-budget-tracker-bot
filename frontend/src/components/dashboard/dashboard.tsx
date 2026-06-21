@@ -238,7 +238,7 @@ export default function Dashboard() {
           }
         ).then((res) => res.json());
         if (data.message) {
-          if (data.statusCode == 401) navigate("/en/login");
+          if (data.statusCode == 401) navigate("/login");
         }
 
         setFamilyId(data.family.id);
@@ -290,20 +290,20 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-full w-[100vw] flex-col items-center justify-center bg-[url('/main-background-light.jpg')] bg-cover bg-fixed bg-center dark:bg-[url('/main-background.png')]">
-      <Navigation exclude="Main Page" />
+      <Navigation exclude="dashboard" />
       {familyId == "" || !familyId ? (
         <div className="flex h-screen flex-col items-center justify-center">
           <h1 className="mb-5 text-2xl font-bold">{t.whoops}</h1>
           <p className="mb-3 w-100 text-center lg:w-150">{t.noFamilyMessage}</p>
           <div>
             <Button
-              onClick={() => navigate("/en/connect_family")}
+              onClick={() => navigate("/connect_family")}
               className="ease transition duration-200 hover:border-3 hover:border-[rgba(255,255,255,0.35)]"
             >
               {t.connectFamily}
             </Button>
             <Button
-              onClick={() => navigate("/en/create_family")}
+              onClick={() => navigate("/create_family")}
               className="ease ml-3 transition duration-200 hover:border-3 hover:border-[rgba(255,255,255,0.35)]"
             >
               {t.createFamily}

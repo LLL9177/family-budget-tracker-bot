@@ -132,7 +132,7 @@ export default function Login() {
         `${currentTheme === "dark" ? " bg-[url('/main-background.png')]" : " bg-[url('/main-background-light.jpg')]"}`
       }
     >
-      <Navigation exclude="Login Page" />
+      <Navigation exclude="login" />
       <form>
         <Card className="w-100">
           <CardHeader>

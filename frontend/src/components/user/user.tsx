@@ -114,14 +114,12 @@ export default function User_en() {
             },
           }
         );
-        console.log(res);
         const data = await res.json();
 
         data.forEach(
           (transaction: ITransaction) =>
             (transaction.createdAt = new Date(transaction.createdAt))
         );
-        console.log(data);
 
         setTransactions(data);
       } catch (err) {
@@ -184,7 +182,7 @@ export default function User_en() {
 
   return (
     <div className="min-h-screen">
-      <Navigation exclude="Profile Page" />
+      <Navigation exclude="profile" />
       <input
         id="avatar-upload"
         type="file"
@@ -270,7 +268,7 @@ export default function User_en() {
 
             <div
               className="cursor-pointer rounded-2xl border border-white/10 bg-white/5 p-6 transition hover:border-white/20 hover:bg-white/10"
-              onClick={() => navigate(`/en/family?id=${user?.family.id}`)}
+              onClick={() => navigate(`/family?id=${user?.family.id}`)}
             >
               <h2 className="mb-2 text-sm text-zinc-400">{t.family}</h2>
               <p>{user?.family?.name ?? "None"}</p>

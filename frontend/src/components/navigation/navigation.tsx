@@ -125,7 +125,7 @@ export default function Navigation({ exclude }: { exclude: string }) {
   const navigate = useNavigate();
   const auth = useContext(AuthContext);
 
-  const { family } = useContext(FamilyContext);
+  const { family, setFamily } = useContext(FamilyContext);
 
   const itemIndex = ITEMS.findIndex((item) => item == exclude);
   if (itemIndex > -1) {
@@ -162,6 +162,31 @@ export default function Navigation({ exclude }: { exclude: string }) {
       window.removeEventListener("mouseup", handleUp);
     };
   }, []);
+
+  useEffect(() => {
+    if (family) return;
+    async function fetchData() {
+      try {
+        const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/auth/profile", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: auth.access ? `Bearer ${auth.access}` : "",
+          },
+        });
+
+        if (!res.ok) throw new Error(res.statusText);
+
+        const data = await res.json();
+        setFamily(data.family);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    fetchData();
+  }, [auth.access, family, setFamily]);
 
   const toggleMenu = () => {
     if (didDragRef.current) {
@@ -240,6 +265,8 @@ export default function Navigation({ exclude }: { exclude: string }) {
 
   const growUp = cornerPositionRef.current.y > window.innerHeight / 2;
   const growLeft = cornerPositionRef.current.x > window.innerWidth / 2;
+
+  console.log(family);
 
   return (
     <>

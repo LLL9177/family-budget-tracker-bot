@@ -147,7 +147,7 @@ export default function Register() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-10 bg-[#1a191f]">
-      <Navigation exclude="Register Page" />
+      <Navigation exclude="register" />
       <form>
         <Card className="w-100">
           <CardHeader>

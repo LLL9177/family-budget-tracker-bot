@@ -397,7 +397,7 @@ export default function Family() {
         </>
       )}
 
-      <Navigation exclude="Family Page" />
+      <Navigation exclude="family" />
 
       <div className="mx-auto max-w-7xl space-y-6">
         {/* HIDDEN INPUTS */}
@@ -518,7 +518,7 @@ export default function Family() {
                 <div
                   className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-xl select-none"
                   onClick={() =>
-                    navigate("/en/user?id=" + familyContext.family.owner.id)
+                    navigate("/user?id=" + familyContext.family.owner.id)
                   }
                 >
                   <Avatar className="h-12 w-12">
@@ -613,7 +613,7 @@ export default function Family() {
                   <Card
                     key={member.id}
                     className="group cursor-pointer rounded-3xl border bg-muted/40 transition-all duration-300 select-none hover:-translate-y-1 hover:shadow-xl"
-                    onClick={() => navigate("/en/user?id=" + member.id)}
+                    onClick={() => navigate("/user?id=" + member.id)}
                   >
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between">
