@@ -1,5 +1,4 @@
 import { AuthContext } from "@/contexts/AuthContext";
-import type { IFamily } from "@/types/Family.interface";
 import { RolesEnum } from "@/enums/RolesEnum";
 import { useContext, useEffect, useRef, useState } from "react";
 
@@ -178,17 +177,14 @@ export default function Family() {
       const formData = new FormData();
       formData.append("avatar", file);
 
-      const updatedFamily = await fetch(
-        import.meta.env.VITE_BACKEND_URL + "/family/avatar",
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            Authorization: auth.access ? `Bearer ${auth.access}` : "",
-          },
-          body: formData,
-        }
-      );
+      await fetch(import.meta.env.VITE_BACKEND_URL + "/family/avatar", {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          Authorization: auth.access ? `Bearer ${auth.access}` : "",
+        },
+        body: formData,
+      });
 
       const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/family", {
         method: "GET",
@@ -199,7 +195,7 @@ export default function Family() {
         },
       });
 
-      if (!res.ok) throw new Error(res.error);
+      if (!res.ok) throw new Error(res.statusText);
       familyContext.setFamily(await res.json());
     } catch (err) {
       console.error(err);
@@ -237,7 +233,7 @@ export default function Family() {
         },
       });
 
-      if (!res.ok) throw new Error(res.error);
+      if (!res.ok) throw new Error(res.statusText);
       familyContext.setFamily(await res.json());
     } catch (err) {
       console.error(err);
@@ -303,7 +299,7 @@ export default function Family() {
           },
         });
 
-        if (!res.ok) throw new Error(res.error);
+        if (!res.ok) throw new Error(res.statusText);
         familyContext.setFamily(await res.json());
       } catch (err) {
         console.error(err);
@@ -338,7 +334,7 @@ export default function Family() {
           },
         });
 
-        if (!res.ok) throw new Error(res.error);
+        if (!res.ok) throw new Error(res.statusText);
         familyContext.setFamily(await res.json());
       } catch (err) {
         console.error(err);
@@ -373,7 +369,7 @@ export default function Family() {
           },
         });
 
-        if (!res.ok) throw new Error(res.error);
+        if (!res.ok) throw new Error(res.statusText);
         familyContext.setFamily(await res.json());
       } catch (err) {
         console.error(err);
@@ -518,6 +514,7 @@ export default function Family() {
                 <div
                   className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-xl select-none"
                   onClick={() =>
+                    familyContext.family &&
                     navigate("/user?id=" + familyContext.family.owner.id)
                   }
                 >
@@ -634,9 +631,10 @@ export default function Family() {
                                 {member.username}
                               </h3>
 
-                              {member.id === familyContext.family.owner.id && (
-                                <Crown className="h-4 w-4 text-yellow-500" />
-                              )}
+                              {familyContext.family &&
+                                member.id === familyContext.family.owner.id && (
+                                  <Crown className="h-4 w-4 text-yellow-500" />
+                                )}
                             </div>
 
                             <p className="text-sm text-muted-foreground">
@@ -647,6 +645,7 @@ export default function Family() {
 
                         <div className="flex items-center gap-2">
                           {isOwner &&
+                            familyContext.family &&
                             member.id !== familyContext.family.owner.id && (
                               <Button
                                 size="icon"

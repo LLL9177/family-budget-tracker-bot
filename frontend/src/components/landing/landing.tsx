@@ -19,9 +19,10 @@ const i18n = {
 };
 
 export default function Landing() {
-  const [lang, setLang] = useState<"en" | "uk" | null>(() =>
-    localStorage.getItem("lang")
-  );
+  const [lang, setLang] = useState<"en" | "uk" | null>(() => {
+    const saved = localStorage.getItem("lang");
+    return saved === "en" || saved === "uk" ? saved : null;
+  });
   const navigate = useNavigate();
   const auth = useContext(AuthContext);
 

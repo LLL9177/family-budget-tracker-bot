@@ -6,7 +6,6 @@ import type { IUserData } from "@/types/UserData.interface";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./../ui/avatar";
 import { Badge } from "./../ui/badge";
-import type { RolesEnum } from "@/enums/RolesEnum";
 import type { ITransaction } from "@/types/Transaction.interface";
 import type { ITransactionWithDate } from "@/types/TransactionWithDate.interface";
 import { TransactionsContext } from "@/contexts/TransactionsContext";
@@ -35,7 +34,7 @@ export default function Users({ hide }: Props) {
           <AnimatePresence mode="popLayout">
             <motion.div layout>
               <Card
-                className="max-h-200 lg:w-150 w-[90vw] overflow-y-scroll rounded-3xl p-2 select-none gap-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
+                className="max-h-200 w-[90vw] gap-2 overflow-y-scroll rounded-3xl p-2 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] select-none lg:w-150 dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
                 onClick={(e) => e.stopPropagation()}
               >
                 {family.members.map((user) => (
@@ -71,7 +70,11 @@ export default function Users({ hide }: Props) {
                         </Avatar>
                         {user.username}
                         <div className="flex gap-2 pr-2">
-                          {JSON.parse(user.roles).map((role: RolesEnum) => (
+                          {(
+                            JSON.parse(
+                              user.roles as unknown as string
+                            ) as string[]
+                          ).map((role) => (
                             <Badge key={role}>{role}</Badge>
                           ))}
                         </div>
@@ -108,7 +111,14 @@ function GetUserDelta({ u, transactions }: GetUserDeltaProps) {
   );
 
   return (
-    <span className={"mr-2 " + (sum > 0 ? "dark:text-green-300 text-green-400" : "dark:text-red-300 text-red-400")}>
+    <span
+      className={
+        "mr-2 " +
+        (sum > 0
+          ? "text-green-400 dark:text-green-300"
+          : "text-red-400 dark:text-red-300")
+      }
+    >
       {sum}
     </span>
   );

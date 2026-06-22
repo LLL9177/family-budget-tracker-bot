@@ -90,7 +90,7 @@ export default function Register() {
   const t = i18n[localStorage.getItem("lang") == "en" ? "en" : "uk"];
 
   useEffect(() => {
-    if (generatedPassword == null) navigate("/en");
+    if (generatedPassword == null) navigate("/dashboard");
   }, [generatedPassword, navigate]);
 
   async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
@@ -141,20 +141,20 @@ export default function Register() {
       }, 6000);
     } else {
       auth.setAccess(data.access_token.access);
-      navigate("/en");
+      navigate("/dashboard");
     }
   }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-10 bg-[#1a191f]">
       <Navigation exclude="register" />
-      <form>
-        <Card className="w-100">
+      <form className="flex items-center justify-center">
+        <Card className="w-[90%] lg:w-100">
           <CardHeader>
             <CardTitle>{t.title}</CardTitle>
             <CardDescription>{t.description}</CardDescription>
             <CardAction>
-              <Link to="/en/login">{t.loginInstead}</Link>
+              <Link to="/login">{t.loginInstead}</Link>
             </CardAction>
           </CardHeader>
           <CardContent className="flex flex-col gap-5">
@@ -249,7 +249,7 @@ export default function Register() {
             <AlertDialogAction
               className="bg-white !text-black"
               onClick={() => {
-                navigate("/en");
+                navigate("/dashboard");
               }}
             >
               OK

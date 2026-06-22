@@ -167,14 +167,17 @@ export default function Navigation({ exclude }: { exclude: string }) {
     if (family) return;
     async function fetchData() {
       try {
-        const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/auth/profile", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: auth.access ? `Bearer ${auth.access}` : "",
-          },
-        });
+        const res = await fetch(
+          import.meta.env.VITE_BACKEND_URL + "/auth/profile",
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: auth.access ? `Bearer ${auth.access}` : "",
+            },
+          }
+        );
 
         if (!res.ok) throw new Error(res.statusText);
 
@@ -348,7 +351,7 @@ export default function Navigation({ exclude }: { exclude: string }) {
                   transition={{ type: "spring", stiffness: 300, damping: 26 }}
                 >
                   {ITEMS.map((key, i) => {
-                    const item = t.items[key];
+                    const item = t.items[key as keyof typeof t.items];
                     return (
                       <motion.button
                         key={item}
@@ -376,7 +379,7 @@ export default function Navigation({ exclude }: { exclude: string }) {
             <AnimatePresence mode="popLayout">
               {isOpen &&
                 ITEMS.map((key, i) => {
-                  const item = t.items[key];
+                  const item = t.items[key as keyof typeof t.items];
                   const radius = 250;
                   const angle = (i / ITEMS.length) * Math.PI * 2;
                   const x = position.x + Math.cos(angle) * radius;

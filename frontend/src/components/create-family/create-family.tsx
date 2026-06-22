@@ -33,8 +33,8 @@ const i18n = {
 
 export default function CreateFamily_en() {
   const [name, setName] = useState("");
-  const { theme, resolvedTheme, systemTheme } = useTheme();
-  const currentTheme = theme === "system" ? systemTheme : theme;
+  const { resolvedTheme } = useTheme();
+  const currentTheme = resolvedTheme;
   const navigate = useNavigate();
 
   const t = i18n[localStorage.getItem("lang") == "en" ? "en" : "uk"];
@@ -55,7 +55,7 @@ export default function CreateFamily_en() {
           }
         );
         if (!data.ok) throw new Error(data.statusText);
-        else navigate("/en");
+        else navigate("/dashboard");
       } catch (err) {
         console.error(err);
       }
@@ -77,7 +77,7 @@ export default function CreateFamily_en() {
           <CardTitle>{t.createFamily}</CardTitle>
           <CardDescription>{t.createFamilyDescription}</CardDescription>
           <CardAction>
-            <Link to="/en/connect_family">{t.connectInstead}</Link>
+            <Link to="/connect_family">{t.connectInstead}</Link>
           </CardAction>
         </CardHeader>
         <CardContent>

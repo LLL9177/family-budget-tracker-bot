@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { AuthContext } from "@/contexts/AuthContext";
 import React, { useContext, useState } from "react";
 import Navigation from "../navigation/navigation";
+import { useNavigate } from "react-router-dom";
 
 const i18n = {
   en: {
@@ -33,8 +34,9 @@ export default function ConnectFamily() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  const { theme, resolvedTheme, systemTheme } = useTheme();
-  const currentTheme = theme === "system" ? systemTheme : theme;
+  const { resolvedTheme } = useTheme();
+  const currentTheme = resolvedTheme;
+  const navigate = useNavigate();
 
   const t = i18n[localStorage.getItem("lang") == "en" ? "en" : "uk"];
 
@@ -56,6 +58,7 @@ export default function ConnectFamily() {
         console.error(result);
       } else {
         setMessage(t.joinRequestSent);
+        navigate("/dashboard");
       }
     } catch (err) {
       console.error(err);

@@ -80,13 +80,13 @@ export default function Login() {
     auth.setAccess,
     () => {}
   );
-  const { theme, resolvedTheme, systemTheme } = useTheme();
-  const currentTheme = theme === "system" ? systemTheme : theme;
+  const { resolvedTheme } = useTheme();
+  const currentTheme = resolvedTheme;
 
   const t = i18n[localStorage.getItem("lang") == "en" ? "en" : "uk"];
 
   useEffect(() => {
-    if (generatedPassword == null) navigate("/en");
+    if (generatedPassword == null) navigate("/dashboard");
   }, [generatedPassword, navigate]);
 
   async function handleSubmit(e: React.MouseEvent<HTMLButtonElement>) {
@@ -121,7 +121,7 @@ export default function Login() {
       }, 6000);
     } else {
       auth.setAccess(data.access_token.access);
-      navigate("/en");
+      navigate("/dashboard");
     }
   }
 
@@ -133,13 +133,13 @@ export default function Login() {
       }
     >
       <Navigation exclude="login" />
-      <form>
-        <Card className="w-100">
+      <form className="flex justify-center items-center">
+        <Card className="w-[90%] lg:w-100">
           <CardHeader>
             <CardTitle>{t.title}</CardTitle>
             <CardDescription>{t.description}</CardDescription>
             <CardAction className="cursor-pointer">
-              <Link to="/en/register">{t.registerInstead}</Link>
+              <Link to="/register">{t.registerInstead}</Link>
             </CardAction>
           </CardHeader>
           <CardContent>
@@ -214,7 +214,7 @@ export default function Login() {
             <AlertDialogAction
               className="bg-white !text-black"
               onClick={() => {
-                navigate("/en");
+                navigate("/dashboard");
               }}
             >
               OK

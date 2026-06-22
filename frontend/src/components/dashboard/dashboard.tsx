@@ -16,7 +16,6 @@ import EarnerCategoryLeaderboard from "./earnerCategoryLeaderboard";
 import SpenderCategoryLeaderboard from "./spenderCategoryLeaderboard";
 import DifferentMonthsComparison from "./differentMonthsComparison";
 import FamilyId from "./familyId";
-import { useTheme } from "@/components/theme-provider";
 import { TransactionsContext } from "@/contexts/TransactionsContext";
 import { FamilyContext } from "@/contexts/FamilyContext";
 import Navigation from "../navigation/navigation";
@@ -52,8 +51,6 @@ export default function Dashboard() {
   const [familyId, setFamilyId] = useState("");
   const { setTransactions, transactions } = useContext(TransactionsContext);
   const [prevMonth, setPrevMonth] = useState<IFetchError | IMonthlySummary>();
-  const { theme, resolvedTheme, systemTheme } = useTheme();
-  const currentTheme = theme === "system" ? systemTheme : theme;
   const { setFamily } = useContext(FamilyContext);
 
   const t = i18n[localStorage.getItem("lang") == "en" ? "en" : "uk"];

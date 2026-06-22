@@ -68,9 +68,8 @@ const i18n = {
 
 export default function MainChart({ data, className }: Props) {
   const [displayMode, setDisplayMode] = useState("bars");
-  const { theme, resolvedTheme, systemTheme } = useTheme();
-  const currentTheme = theme === "system" ? systemTheme : theme;
-
+  const { resolvedTheme } = useTheme();
+  const currentTheme = resolvedTheme;
   const [frame, setFrame] = useState("days");
   const t = i18n[localStorage.getItem("lang") == "en" ? "en" : "uk"];
 
@@ -122,14 +121,6 @@ export default function MainChart({ data, className }: Props) {
             };
           });
         })();
-
-  if (frame == "transactions") {
-    let transactionIndex = 0;
-    for (const t of chartData) {
-      transactionIndex++;
-      t.transactionIndex = String(transactionIndex);
-    }
-  }
 
   return (
     <div className={cn("flex w-full items-center justify-between", className)}>
