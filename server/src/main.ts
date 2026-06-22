@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { v2 as cloudinary } from 'cloudinary';
+import helmet from 'helmet';
 
 const cookieParser = require('cookie-parser');
 
@@ -13,6 +14,7 @@ async function bootstrap() {
     exposedHeaders: ['x-access-token', 'x-refresh-token'],
   });
   app.use(cookieParser());
+  app.use(helmet());
 
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

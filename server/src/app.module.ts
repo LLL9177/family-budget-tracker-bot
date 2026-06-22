@@ -19,6 +19,7 @@ import { NotificationModule } from './notification/notification.module';
 import { NotificationEntity } from './notification/entities/Notifitcation.entity';
 import { TelegramModule } from './telegram/telegram.module';
 import { TelegramEntity } from './telegram/entities/Telegram.entity';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -50,6 +51,14 @@ import { TelegramEntity } from './telegram/entities/Telegram.entity';
     FileModule,
     NotificationModule,
     TelegramModule,
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 10,
+        },
+      ],
+    }),
   ],
   controllers: [AuthController, FamilyController],
 })
