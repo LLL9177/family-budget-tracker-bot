@@ -1,5 +1,5 @@
-import { FamilyEntity } from 'src/family/entities/Family.entity';
-import { UserEntity } from 'src/user/entities/User.entity';
+import { FamilyEntity } from '../../family/entities/Family.entity';
+import { UserEntity } from '../../user/entities/User.entity';
 import {
   Column,
   Entity,

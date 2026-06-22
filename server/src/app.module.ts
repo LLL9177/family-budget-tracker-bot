@@ -41,7 +41,7 @@ import { TelegramEntity } from './telegram/entities/Telegram.entity';
         NotificationEntity,
         TelegramEntity,
       ],
-      synchronize: true,
+      synchronize: false,
     }),
     FamilyModule,
     TransactionModule,

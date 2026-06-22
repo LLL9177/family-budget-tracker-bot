@@ -1,5 +1,5 @@
-import { Roles } from 'src/auth/enums/Roles.enum';
-import { FamilyEntity } from 'src/family/entities/Family.entity';
+import { Roles } from '../../auth/enums/Roles.enum';
+import { FamilyEntity } from '../../family/entities/Family.entity';
 import {
   Column,
   Entity,
