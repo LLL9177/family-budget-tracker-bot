@@ -30,11 +30,7 @@ export default function FamilyId({ familyId, className }: Props) {
 
     familyIdRef.current.addEventListener("click", async () => {
       if (!familyIdRef.current) return;
-      const clipboardItemData = {
-        ["text/plain"]: familyId,
-      };
-      const clipboard = new ClipboardItem(clipboardItemData);
-      await navigator.clipboard.write([clipboard]);
+      await navigator.clipboard.writeText(familyId);
 
       familyIdRef.current.innerText = "Copied!";
       setTimeout(() => {
@@ -57,11 +53,11 @@ export default function FamilyId({ familyId, className }: Props) {
         </Button>
       </div>
       <div
-        className="text-2xl font-bold lg:text-3xl"
+        className="text-2xl font-bold lg:text-3xl truncate text-center w-[80%]"
         id="family-id-value"
         ref={familyIdRef}
       >
-        {familyId.slice(0, 25) + "..."}
+        {familyId}
       </div>
       <label htmlFor="family-id-value" className="text-gray-400">
         {t.familyId}

@@ -12,18 +12,37 @@ type Props = {
   topSpenderCategories: [string, number][] | undefined;
 };
 
+const i18n = {
+  en: {
+    caption: "Top Spender Categories",
+    position: "Position",
+    spent: "Spent",
+    categoryName: "Category",
+    noCategories: "No spender categories",
+  },
+  uk: {
+    caption: "Категорії з найбільшими витратами",
+    position: "Позиція",
+    spent: "Витрачено",
+    categoryName: "Категорія",
+    noCategories: "Немає категорій витрат",
+  },
+};
+
 export default function SpenderCategoryLeaderboard({
   topSpenderCategories,
 }: Props) {
+  const t = i18n[localStorage.getItem("lang") == "en" ? "en" : "uk"];
+
   return (
     <div className="overflox-x-scroll max-w-120 rounded-xl bg-card bg-gradient-to-t from-primary/5 to-card p-1 pb-2">
       {topSpenderCategories ? (
         <Table>
-          <TableCaption>Top Spender Categories</TableCaption>
+          <TableCaption>{t.caption}</TableCaption>
           <TableHeader>
-            <TableHead>Position</TableHead>
-            <TableHead>Spent</TableHead>
-            <TableHead>Category name</TableHead>
+            <TableHead>{t.position}</TableHead>
+            <TableHead>{t.spent}</TableHead>
+            <TableHead>{t.categoryName}</TableHead>
           </TableHeader>
           <TableBody>
             {topSpenderCategories.map((category, i) => (
@@ -36,7 +55,7 @@ export default function SpenderCategoryLeaderboard({
           </TableBody>
         </Table>
       ) : (
-        <span>NO SPENDER CATEGORIES</span>
+        <span>{t.noCategories}</span>
       )}
     </div>
   );

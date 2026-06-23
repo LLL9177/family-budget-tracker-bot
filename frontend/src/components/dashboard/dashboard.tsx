@@ -308,7 +308,7 @@ export default function Dashboard() {
           </div>
         </div>
       ) : (
-        <div className="h-full w-[100vw] flex-col items-center justify-center gap-3">
+        <div className="h-full w-[100vw] flex-col items-center justify-center">
           <div className="mb-10 flex h-full w-[100vw] flex-col items-center justify-center gap-3 lg:mb-0 lg:flex-row">
             <div className="-mt-15 flex h-screen w-screen flex-col px-4 lg:mt-0 lg:w-125 lg:px-0">
               <MonthComparison
@@ -352,7 +352,7 @@ export default function Dashboard() {
               />
             </div>
           </div>
-          <div className="mb-5 flex w-screen flex-col items-center justify-center gap-5 overflow-x-scroll lg:flex-row lg:items-start">
+          <div className="mb-5 mt-60 lg:mt-0 flex w-screen flex-col items-center justify-center gap-5 overflow-x-scroll lg:flex-row lg:items-start">
             <SpenderLeaderboard topSpenders={topSpenders} />
             <EarnerLeaderboard topEarners={topEarners} />
             <EarnerCategoryLeaderboard topEarnerCategories={topEarnedFrom} />

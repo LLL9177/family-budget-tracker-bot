@@ -12,16 +12,35 @@ type Props = {
   topSpenders: [string, number][] | undefined;
 };
 
+const i18n = {
+  en: {
+    caption: "Top Spenders",
+    position: "Position",
+    spent: "Spent",
+    username: "Username",
+    noSpenders: "No spenders",
+  },
+  uk: {
+    caption: "Найбільші витрати",
+    position: "Позиція",
+    spent: "Витрачено",
+    username: "Ім'я користувача",
+    noSpenders: "Немає витрат",
+  },
+};
+
 export default function SpenderLeaderboard({ topSpenders }: Props) {
+  const t = i18n[localStorage.getItem("lang") == "en" ? "en" : "uk"];
+
   return (
     <div className="overflox-x-auth overflox-x-scroll max-w-120 rounded-xl bg-card bg-gradient-to-t from-primary/5 to-card p-1 pb-2">
       {topSpenders ? (
         <Table>
-          <TableCaption>Top Spenders</TableCaption>
+          <TableCaption>{t.caption}</TableCaption>
           <TableHeader>
-            <TableHead>Position</TableHead>
-            <TableHead>Spent</TableHead>
-            <TableHead>Username</TableHead>
+            <TableHead>{t.position}</TableHead>
+            <TableHead>{t.spent}</TableHead>
+            <TableHead>{t.username}</TableHead>
           </TableHeader>
           <TableBody>
             {topSpenders.map((user, i) => {
@@ -36,7 +55,7 @@ export default function SpenderLeaderboard({ topSpenders }: Props) {
           </TableBody>
         </Table>
       ) : (
-        <span>NO SPENDERS</span>
+        <span>{t.noSpenders}</span>
       )}
     </div>
   );

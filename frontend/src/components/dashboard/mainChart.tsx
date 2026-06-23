@@ -124,13 +124,13 @@ export default function MainChart({ data, className }: Props) {
 
   return (
     <div className={cn("flex w-full items-center justify-between", className)}>
-      <div className="h-[match-content] w-full rounded-[30px] border border-[rgb(100,100,100)] bg-card p-10 lg:h-190 lg:w-350">
-        <div className="flex flex-col gap-4 lg:flex-row lg:gap-0 lg:space-x-[54%] lg:px-10">
+      <div className="h-[match-content] w-full rounded-[30px] border border-[rgb(100,100,100)] bg-card lg:p-10 lg:h-190 lg:w-350">
+        <div className="flex flex-col gap-4 lg:flex-row lg:gap-0 lg:space-x-[54%] px-10 pt-10 lg:pt-0 lg:px-10">
           <div>
             <h2 className="mb-2 text-[15px] font-bold lg:text-xl">{t.title}</h2>
             <span className="text-[rgb(100,100,100)]">{t.subtitle}</span>
           </div>
-          <div className="flex pb-10">
+          <div className="flex pb-10 sm:flex-row flex-col items-start sm:items-auto">
             <div className="mr-10 flex h-10 space-x-[10%]">
               <button
                 className={`cursor-pointer rounded border-[2px] px-1 hover:bg-gray-200 dark:hover:bg-[rgb(50,50,50)] ${
@@ -196,7 +196,7 @@ export default function MainChart({ data, className }: Props) {
         </div>
         <ChartContainer
           config={chartConfig}
-          className="max-h-150 w-full rounded-xl border-1 bg-[rgba(150,150,150,0.1)] lg:p-10 lg:pt-15"
+          className="max-h-150 w-full rounded-[30px] pr-10 py-3 lg:rounded-xl border-1 bg-[rgba(150,150,150,0.1)] lg:p-10 lg:pt-15"
         >
           {displayMode == "bars" ? (
             <BarChart accessibilityLayer data={chartData}>

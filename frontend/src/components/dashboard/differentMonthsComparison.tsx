@@ -20,11 +20,15 @@ const i18n = {
     month1: "Month 1",
     month2: "Month 2",
     set: "Set",
+    caption: (month1Str: string, month2Str: string) =>
+      `${month1Str} and ${month2Str} Comparison`,
   },
   uk: {
     month1: "Місяць 1",
     month2: "Місяць 2",
     set: "Встановити",
+    caption: (month1Str: string, month2Str: string) =>
+      `Порівняння ${month1Str} і ${month2Str}`,
   },
 };
 
@@ -55,7 +59,6 @@ export default function DifferentMonthsComparison({
     const [year, month] = value.split("-").map((val) => parseInt(val));
     const date: IMonthDate = { year, month };
     if (validateDate(date)) {
-      console.log(date);
       if (num == 1) setMonthOne(date);
       else setMonthTwo(date);
     }
@@ -63,7 +66,6 @@ export default function DifferentMonthsComparison({
 
   useEffect(() => {
     if (!monthOne) return;
-    console.log(familyId, "family_id");
     const getMonthOne = async function () {
       try {
         const data = await fetch(
@@ -95,7 +97,6 @@ export default function DifferentMonthsComparison({
 
   useEffect(() => {
     if (!monthTwo) return;
-    console.log(familyId, "family_id");
     const getMonthOne = async function () {
       try {
         const data = await fetch(
@@ -115,7 +116,6 @@ export default function DifferentMonthsComparison({
           }
         ).then((data) => data.json());
 
-        console.log(data);
         setMonthTwoData(data);
       } catch {
         console.log("");
@@ -131,11 +131,11 @@ export default function DifferentMonthsComparison({
   if (monthOne && monthTwo) {
     month1Str = `${monthOne.year}-${String(monthOne.month).padStart(2, "0")}`;
     month2Str = `${monthTwo.year}-${String(monthTwo.month).padStart(2, "0")}`;
-    caption = captionText ?? `${month1Str} and ${month2Str} Comparison`;
+    caption = captionText ?? t.caption(month1Str, month2Str);
   }
 
   return (
-    <div className="mt-2 h-116 w-full rounded-xl bg-card bg-gradient-to-t from-primary/5 to-card">
+    <div className="mt-2 h-116 w-[90vw] lg:w-full rounded-xl bg-card bg-gradient-to-t from-primary/5 to-card">
       <form
         className="-mb-2 flex w-full flex-col items-center gap-2 rounded-t-xl border-1 bg-[rgba(150,150,150,0.1)] p-2"
         onSubmit={(e) => {
@@ -171,7 +171,7 @@ export default function DifferentMonthsComparison({
         </div>
         <Button className="w-[95%]">{t.set}</Button>
       </form>
-      <div className="rounded-b-xl border-1 border-t-0">
+      <div className="rounded-b-xl h-88 border-1 border-t-0">
         <MonthComparison
           data={{
             prev: monthOneData,

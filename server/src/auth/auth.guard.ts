@@ -42,7 +42,7 @@ export class AuthGuard implements CanActivate {
       else
         res.cookie('refresh', tokens.refresh, {
           httpOnly: true,
-          secure: true,
+          secure: process.env.IS_PROTOCOL_SAFE == 'true',
           sameSite: 'strict',
           maxAge: 1000 * 60 * 60 * 24 * 5,
         });
