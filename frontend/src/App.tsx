@@ -16,6 +16,7 @@ import Dashboard from "./components/dashboard/dashboard";
 import Login from "./components/Login";
 import Register from "./components/register";
 import Renew from "./components/renew";
+import Tutorial from "./components/tutorial/tutorial";
 
 export function App() {
   const [access, setAccess] = useState("");
@@ -39,6 +40,7 @@ export function App() {
             <Route path="/family" element={<Family />} />
             <Route path="/create_family" element={<CreateFamily />} />
             <Route path="/user" element={<User />} />
+            <Route path="/tutorial" element={<Tutorial />} />
           </Routes>
         </FamilyContext>
       </TransactionsContext>

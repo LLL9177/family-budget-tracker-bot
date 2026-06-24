@@ -37,7 +37,7 @@ export class AuthController {
     if (result) {
       res.cookie('refresh', result.access_token.refresh, {
         httpOnly: true,
-        secure: false,
+        secure: process.env.SECURE_CONNECTION == 'true',
         sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 * 5,
       });
@@ -63,7 +63,7 @@ export class AuthController {
     if (result) {
       res.cookie('refresh', result.access_token.refresh, {
         httpOnly: true,
-        secure: false,
+        secure: process.env.SECURE_CONNECTION == 'true',
         sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 * 5,
       });
@@ -82,7 +82,7 @@ export class AuthController {
     if (result) {
       res.cookie('refresh', result.access_token.refresh, {
         httpOnly: true,
-        secure: false,
+        secure: process.env.SECURE_CONNECTION == 'true',
         sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 * 5,
       });
