@@ -62,14 +62,15 @@ export default function Navigation({ exclude }: { exclude: string }) {
     "createFamily",
     "renewOtp",
     "family",
-    "users",
     "transactions",
+    "users",
     "register",
     "connectFamily",
     "authRequests",
     "login",
     "profile",
     "dashboard",
+    "tutorial",
     "notifications",
     "switchLanguage",
   ];
@@ -90,6 +91,7 @@ export default function Navigation({ exclude }: { exclude: string }) {
         notifications: "Notifications",
         dashboard: "Dashboard",
         switchLanguage: "Switch Language",
+        tutorial: "Tutorial",
       },
     },
 
@@ -108,6 +110,7 @@ export default function Navigation({ exclude }: { exclude: string }) {
         notifications: "Сповіщення",
         dashboard: "Інфо. панель",
         switchLanguage: "Змінити мову",
+        tutorial: "Посібник"
       },
     },
   };
@@ -251,6 +254,8 @@ export default function Navigation({ exclude }: { exclude: string }) {
       navigate("/connect_family");
     } else if (item == t.items.createFamily) {
       navigate("/create_family");
+    } else if (item == t.items.tutorial) {
+      navigate("/tutorial")
     }
   }
 
@@ -268,8 +273,6 @@ export default function Navigation({ exclude }: { exclude: string }) {
 
   const growUp = cornerPositionRef.current.y > window.innerHeight / 2;
   const growLeft = cornerPositionRef.current.x > window.innerWidth / 2;
-
-  console.log(family);
 
   return (
     <>

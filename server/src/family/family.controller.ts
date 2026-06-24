@@ -83,7 +83,7 @@ export class FamilyController {
 
   @UseGuards(AuthGuard)
   @Get()
-  async getFamily(@Query() dto: GetFamilyDto) {
+  async getFamily(@Query(new ValidationPipe()) dto: GetFamilyDto) {
     return await this.familyService.getByUuid(dto.id);
   }
 

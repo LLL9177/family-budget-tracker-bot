@@ -186,7 +186,7 @@ export default function Family() {
         body: formData,
       });
 
-      const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/family", {
+      const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/family?id=" + familyId, {
         method: "GET",
         credentials: "include",
         headers: {
@@ -224,14 +224,17 @@ export default function Family() {
         body: formData,
       });
 
-      const res = await fetch(import.meta.env.VITE_BACKEND_URL + "/family", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: auth.access ? `Bearer ${auth.access}` : "",
-        },
-      });
+      const res = await fetch(
+        import.meta.env.VITE_BACKEND_URL + "/family?id=" + familyId,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: auth.access ? `Bearer ${auth.access}` : "",
+          },
+        }
+      );
 
       if (!res.ok) throw new Error(res.statusText);
       familyContext.setFamily(await res.json());

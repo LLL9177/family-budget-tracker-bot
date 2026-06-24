@@ -29,7 +29,7 @@ export default function Tutorial() {
         {/* subtle vignette / glow */}
         <div className="absolute inset-0 bg-radial from-transparent via-transparent to-black/50" />
       </div>
-      <Navigation exclude="Tutorial Page" />
+      <Navigation exclude="tutorial" />
       <SidebarProvider>
         <AppSidebar />
         <div className="flex h-full w-full flex-col items-center justify-center gap-3 py-2">
