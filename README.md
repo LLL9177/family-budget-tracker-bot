@@ -304,7 +304,6 @@ The application uses sqlite3 on the bot side for local data persistence. The sch
 ### Bot
 
 - **pyTelegramBotAPI** - Telegram bot API wrapper
-- **SQLite** - Local data persistence
 - **Python 3** - Programming language
 - **requests** - HTTP library for API calls
 
