@@ -434,19 +434,4 @@ Copyright (c) 2026 LLL9177
 
 For support, please open an issue in the repository or contact the development team.
 
-## Roadmap
-
-- [x] Web dashboard UI
-- [ ] Push notifications for transactions
-- [ ] Recurring transaction templates
-- [ ] Budget goals and alerts
-- [ ] Data export (CSV, PDF)
-- [ ] Advanced analytics and reports
-- [ ] Mobile app integration
-- [ ] Dark mode toggle in web UI
-- [ ] Transaction search and filtering
-- [ ] Family activity log
-
----
-
 **Happy budgeting! 💰**
