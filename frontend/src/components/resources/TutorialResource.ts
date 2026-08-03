@@ -209,7 +209,11 @@ export function getTutorialSection(
   isLangEn: boolean
 ): ITutorialSectionPlain {
   const sectionPlain = tutorialResource[index];
-  const data: ITutorialSectionPlain = { blocks: [] };
+  const data: ITutorialSectionPlain = {
+    id: sectionPlain.id,
+    title: sectionPlain.title(isLangEn),
+    blocks: [],
+  };
 
   if (sectionPlain.tip) data.tip = sectionPlain.tip(isLangEn);
   if (sectionPlain.description)
