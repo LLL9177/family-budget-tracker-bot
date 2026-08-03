@@ -1,6 +1,11 @@
 import { createContext } from "react";
 
-export const AuthContext = createContext({
+type AuthContextType = {
+  access: string;
+  setAccess: (value: string) => void;
+};
+
+export const AuthContext = createContext<AuthContextType>({
   access: "",
-  setAccess: (_value: string) => {},
+  setAccess: () => {},
 });

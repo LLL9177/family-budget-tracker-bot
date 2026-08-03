@@ -83,6 +83,7 @@ type Lang = "en" | "uk";
 
 export function getNotificationText(
   key: keyof typeof notificationResource,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   meta: any = {},
   lang: Lang = "en"
 ) {

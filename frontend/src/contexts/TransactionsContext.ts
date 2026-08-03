@@ -4,10 +4,10 @@ import { createContext } from "react";
 
 export const TransactionsContext = createContext({
   transactions: [],
-  setTransactions: (_value: ITransaction[] | [] | ITransactionWithDate[]) => {},
+  setTransactions: () => {},
 } as {
   transactions: [] | ITransaction[] | ITransactionWithDate[];
   setTransactions: (
-    value: ITransaction[] | [] | ITransactionWithDate[]
+    value: ITransaction[] | ITransactionWithDate[]
   ) => void;
 });

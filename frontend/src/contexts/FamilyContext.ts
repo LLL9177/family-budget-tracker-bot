@@ -3,7 +3,7 @@ import { createContext } from "react";
 
 export const FamilyContext = createContext({
   family: null,
-  setFamily: (_value: IFamily) => {},
+  setFamily: () => {},
 } as {
   family: IFamily | null;
   setFamily: (value: IFamily) => void;

@@ -1,8 +1,4 @@
 import type {
-  ITutorialBlock,
-  ITutorialBlockPlain,
-} from "@/types/TutorialBlock.interface";
-import type {
   ITutorialSection,
   ITutorialSectionPlain,
 } from "@/types/TutorialSection.interface";
