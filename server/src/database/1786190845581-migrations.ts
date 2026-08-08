@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migrations1786042867644 implements MigrationInterface {
-    name = 'Migrations1786042867644'
+export class Migrations1786190845581 implements MigrationInterface {
+    name = 'Migrations1786190845581'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "file_entity" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "url" character varying NOT NULL, "type" character varying NOT NULL, CONSTRAINT "PK_d8375e0b2592310864d2b4974b2" PRIMARY KEY ("id"))`);
@@ -9,7 +9,7 @@ export class Migrations1786042867644 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "notification_entity" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "key" character varying NOT NULL, "meta" text, "icon" character varying NOT NULL, "userId" uuid, CONSTRAINT "PK_112676de71a3a708b914daed289" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "telegram_entity" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "telegramUsername" character varying NOT NULL, "telegramId" bigint NOT NULL, "chatId" bigint NOT NULL, "lang" character varying NOT NULL, "expiresAt" date NOT NULL, "userId" uuid, CONSTRAINT "PK_cfc62e597b9eb3e905de66b1a54" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "user_entity" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "email" character varying NOT NULL, "username" character varying NOT NULL, "password" character varying, "roles" character varying NOT NULL DEFAULT '["user"]', "googleId" character varying, "telegramId" bigint, "familyId" uuid, "familyOwnedId" uuid, "requestingToJoinFamilyId" uuid, "avatarId" uuid, CONSTRAINT "UQ_fe20cfab609d81ede76a2f349c2" UNIQUE ("telegramId"), CONSTRAINT "REL_9988efe7fa1a679169473e6833" UNIQUE ("familyOwnedId"), CONSTRAINT "REL_b8ff7c4949e12585b6ba48ec67" UNIQUE ("avatarId"), CONSTRAINT "PK_b54f8ea623b17094db7667d8206" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "transaction_entity" ("id" SERIAL NOT NULL, "familyId" uuid NOT NULL, "amount" integer NOT NULL, "category" character varying NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "userId" uuid, CONSTRAINT "PK_6f9d7f02d8835ac9ef1f685a2e8" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "transaction_entity" ("id" SERIAL NOT NULL, "familyId" uuid NOT NULL, "amount" integer NOT NULL, "category" character varying NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "comment" character varying, "userId" uuid, CONSTRAINT "PK_6f9d7f02d8835ac9ef1f685a2e8" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "monthly_summary_entity" ("id" SERIAL NOT NULL, "month" integer NOT NULL, "year" integer NOT NULL, "totalSpent" integer NOT NULL, "totalEarned" integer NOT NULL, "pnl" integer NOT NULL, "mostSpentOn" character varying, "mostEarnedFrom" character varying, "familyId" uuid, "topSpenderId" uuid, "topEarnerId" uuid, CONSTRAINT "PK_ce9cfb08a665661837fb7a1f3e2" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "one_time_password_entity" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "password" character varying NOT NULL, "userId" uuid, "expiresAt" date NOT NULL, CONSTRAINT "UQ_763322dd2338efd11c78977ed40" UNIQUE ("password"), CONSTRAINT "PK_35715078c818d3cc7f39569b8a9" PRIMARY KEY ("id"))`);
         await queryRunner.query(`ALTER TABLE "family_entity" ADD CONSTRAINT "FK_d844772ca8e578ea77e0084c94a" FOREIGN KEY ("ownerId") REFERENCES "user_entity"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);

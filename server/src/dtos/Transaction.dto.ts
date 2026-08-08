@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsString, IsOptional } from 'class-validator';
 import { IsBigInt } from '../decorators/IsBigInt.decorator';
 
 export class TransactionDto {
@@ -13,4 +13,8 @@ export class TransactionDto {
 
   @IsString()
   createdAt: string;
+
+  @IsOptional()
+  @IsString()
+  comment?: string;
 }

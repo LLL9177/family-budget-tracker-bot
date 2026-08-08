@@ -26,4 +26,7 @@ export class TransactionEntity {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ nullable: true })
+  comment?: string;
 }

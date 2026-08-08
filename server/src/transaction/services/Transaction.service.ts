@@ -24,6 +24,7 @@ interface ITransactionService {
   botGetUserTransactions(
     telegramId: bigint,
   ): Promise<TransactionEntity[] | null>;
+  editComment(id: number, comment: string): Promise<void>;
 }
 
 @Injectable()
@@ -42,12 +43,17 @@ export class TransactionService implements ITransactionService {
     );
     if (!user) throw new NotFoundException('User not found');
 
+    if (transaction.comment && transaction.comment.length > 200) {
+      throw new BadRequestException('The comment is too long');
+    }
+
     const data = {
       amount: transaction.amount,
       category: transaction.category,
       createdAt: transaction.createdAt,
       familyId: user.family.id,
       user,
+      comment: transaction.comment ?? undefined,
     };
 
     await this.transactionRepository.insert(data);
@@ -122,5 +128,19 @@ export class TransactionService implements ITransactionService {
     if (!user) throw new NotFoundException('User not found');
 
     return await this.transactionRepository.findBy({ user });
+  }
+
+  async editComment(id: number, comment: string): Promise<void> {
+    if (comment.length > 200) {
+      throw new BadRequestException('The comment is too long');
+    }
+
+    const transaction = await this.findById(id);
+    if (!transaction) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    transaction.comment = comment;
+    await this.transactionRepository.save(transaction);
   }
 }
