@@ -60,7 +60,7 @@ export default function Transactions({ hide }: Props) {
       try {
         const res = await fetch(
           import.meta.env.VITE_BACKEND_URL +
-            `/transaction/get_family_transactions?family_uuid=${family.id}`,
+          `/transaction/get_family_transactions?family_uuid=${family.id}`,
           {
             method: "GET",
             credentials: "include",
@@ -113,7 +113,7 @@ export default function Transactions({ hide }: Props) {
       try {
         await fetch(
           import.meta.env.VITE_BACKEND_URL +
-            `/transaction/delete?id=${transaction.id}`,
+          `/transaction/delete?id=${transaction.id}`,
           {
             method: "POST",
             credentials: "include",
@@ -126,7 +126,7 @@ export default function Transactions({ hide }: Props) {
 
         const res = await fetch(
           import.meta.env.VITE_BACKEND_URL +
-            "/transaction/get_family_transactions",
+          "/transaction/get_family_transactions",
           {
             method: "GET",
             credentials: "include",
@@ -200,33 +200,43 @@ export default function Transactions({ hide }: Props) {
                   }}
                 >
                   <Card
-                    className="min-h-40 w-[90vw] flex-row justify-between rounded-3xl p-4 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] lg:w-120 dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
+                    className="min-h-40 w-[90vw] flex-col justify-between rounded-3xl p-4 shadow-[0_0_40px_0_rgba(255,255,255,0.3)] lg:w-120 dark:shadow-[0_0_40px_0_rgba(255,255,255,0.08)]"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="flex flex-col gap-2">
-                      <h1 className="text-3xl font-bold">
-                        {transaction.user.username}
-                      </h1>
-                      <span className="text-lg font-medium">
-                        {t.category}: {transaction.category}
-                      </span>
-                      <span className="text-lg text-gray-400">
-                        {t.submittedAt}:{" "}
-                        {new Date(transaction.createdAt).toLocaleString(
-                          "de-DE"
-                        )}
-                      </span>
+                    <div className="flex w-full justify-between">
+                      <div className="flex flex-col gap-2">
+                        <h1 className="text-3xl font-bold">
+                          {transaction.user.username}
+                        </h1>
+                        <span className="text-lg font-medium">
+                          {t.category}: {transaction.category}
+                        </span>
+                        <span className="text-lg text-gray-400">
+                          {t.submittedAt}:{" "}
+                          {new Date(transaction.createdAt).toLocaleString(
+                            "de-DE"
+                          )}
+                        </span>
+                      </div>
+                      <div
+                        className={
+                          "text-3xl font-medium " +
+                          (transaction.amount > 0
+                            ? "text-green-400 dark:text-green-300"
+                            : "text-red-400 dark:text-red-300")
+                        }
+                      >
+                        {transaction.amount}
+                      </div>
                     </div>
-                    <div
-                      className={
-                        "text-3xl font-medium " +
-                        (transaction.amount > 0
-                          ? "text-green-400 dark:text-green-300"
-                          : "text-red-400 dark:text-red-300")
-                      }
-                    >
-                      {transaction.amount}
-                    </div>
+                    {transaction.comment && (
+                      <div className="flex flex-col gap-2">
+                        <span>Comment</span>
+                        <div className="border rounded-xl p-2 bg-[#FFFFFF04]">
+                          {transaction.comment}
+                        </div>
+                      </div>
+                    )}
                   </Card>
                 </motion.div>
               )}

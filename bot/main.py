@@ -473,8 +473,10 @@ def rec_user_option(msg, *, lang):
                                                      fmt) if fmt else i18n[lang][key]
     kb = tb.types.InlineKeyboardMarkup()
     kb.row(go_back_btn(lang, "new_rec"))
-    m = bot.edit_message_text(t("ask_category_name"),
-                              msg.chat.id, msg.message_id, reply_markup=kb)
+    m = bot.edit_message_text(
+        t("ask_category_name"),
+        msg.chat.id, msg.message_id, reply_markup=kb
+    )
     bot.register_next_step_handler(m, recievement_process, lang=lang)
 
 
