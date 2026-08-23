@@ -8,6 +8,8 @@ import { OneTimePasswordEntity } from '../one-time-password/entities/OneTimePass
 import { FileEntity } from '../file/entities/File.entity';
 import { NotificationEntity } from '../notification/entities/Notifitcation.entity';
 import { TelegramEntity } from '../telegram/entities/Telegram.entity';
+import { CategoryEntity } from '../category/entities/Category.entity';
+import { GlobalCategoryEntity } from '../category/entities/GlobalCategory.entity';
 dotenv.config();
 
 export const AppDataSource = new DataSource({
@@ -26,6 +28,8 @@ export const AppDataSource = new DataSource({
     FileEntity,
     NotificationEntity,
     TelegramEntity,
+    CategoryEntity,
+    GlobalCategoryEntity,
   ],
   synchronize: false,
   migrations: [__dirname + '/*migrations.ts'],

@@ -1,3 +1,4 @@
+import { CategoryEntity } from '../../category/entities/Category.entity';
 import { FamilyEntity } from '../../family/entities/Family.entity';
 import { UserEntity } from '../../user/entities/User.entity';
 import {
@@ -8,6 +9,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { GlobalCategoryEntity } from '../../category/entities/GlobalCategory.entity';
 
 @Entity()
 export class MonthlySummaryEntity {
@@ -33,11 +35,21 @@ export class MonthlySummaryEntity {
   @Column()
   pnl: number;
 
-  @Column({ nullable: true })
-  mostSpentOn: string;
+  @JoinColumn()
+  @OneToOne(() => CategoryEntity)
+  mostSpentOn: CategoryEntity;
 
-  @Column({ nullable: true })
-  mostEarnedFrom: string;
+  @JoinColumn()
+  @OneToOne(() => GlobalCategoryEntity)
+  mostSpentOnGlobal: GlobalCategoryEntity;
+
+  @JoinColumn()
+  @OneToOne(() => CategoryEntity)
+  mostEarnedFrom: CategoryEntity;
+
+  @JoinColumn()
+  @OneToOne(() => GlobalCategoryEntity)
+  mostEarnedFromGlobal: GlobalCategoryEntity;
 
   @ManyToOne(() => UserEntity)
   @JoinColumn()

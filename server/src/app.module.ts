@@ -20,6 +20,9 @@ import { NotificationEntity } from './notification/entities/Notifitcation.entity
 import { TelegramModule } from './telegram/telegram.module';
 import { TelegramEntity } from './telegram/entities/Telegram.entity';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { CategoryModule } from './category/category.module';
+import { CategoryEntity } from './category/entities/Category.entity';
+import { GlobalCategoryEntity } from './category/entities/GlobalCategory.entity';
 
 @Module({
   imports: [
@@ -41,6 +44,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
         FileEntity,
         NotificationEntity,
         TelegramEntity,
+        CategoryEntity,
+        GlobalCategoryEntity
       ],
       synchronize: false,
     }),
@@ -59,6 +64,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
         },
       ],
     }),
+    CategoryModule,
   ],
   controllers: [AuthController, FamilyController],
 })

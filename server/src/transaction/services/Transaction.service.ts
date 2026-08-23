@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +9,10 @@ import { TransactionEntity } from '../entities/Transaction.entity';
 import { Repository } from 'typeorm';
 import { UserService } from '../../user/User.service';
 import { ITransaction } from '../../types/ITransaction.interface';
+import { CategoryService } from 'src/category/services/Category.service';
+import { GlobalCategoryService } from 'src/category/services/GlobalCategory.service';
+import { CategoryUsedInEnum } from 'src/enums/CategoryUserIn.enum';
+import { CategoryTypeEnum } from 'src/enums/CategoryType.enum';
 
 interface ITransactionService {
   create(data: ITransaction): Promise<void>;
@@ -15,7 +20,11 @@ interface ITransactionService {
   findByFamilyId(familyUuid: string): Promise<TransactionEntity[] | null>;
   findById(id: number): Promise<TransactionEntity>;
   editAmount(id: number, newAmount: number): Promise<TransactionEntity>;
-  editCategory(id: number, newCategory: string): Promise<TransactionEntity>;
+  editCategory(
+    id: number,
+    newCategory: string,
+    type: CategoryTypeEnum,
+  ): Promise<TransactionEntity>;
   delete(id: number): Promise<void>;
   find(data): Promise<TransactionEntity[]>;
   botGetFamilyTransactions(
@@ -33,11 +42,11 @@ export class TransactionService implements ITransactionService {
     @InjectRepository(TransactionEntity)
     private readonly transactionRepository: Repository<TransactionEntity>,
     private readonly userService: UserService,
+    private readonly categoryService: CategoryService,
+    private readonly globalCategoryService: GlobalCategoryService,
   ) {}
 
   async create(transaction: ITransaction): Promise<void> {
-    if (transaction.category.length > 100)
-      throw new BadRequestException('Category is too long');
     const user = await this.userService.findByTelegramId(
       transaction.telegramId,
     );
@@ -47,16 +56,41 @@ export class TransactionService implements ITransactionService {
       throw new BadRequestException('The comment is too long');
     }
 
-    const data = {
-      amount: transaction.amount,
-      category: transaction.category,
-      createdAt: transaction.createdAt,
-      familyId: user.family.id,
-      user,
-      comment: transaction.comment ?? undefined,
-    };
+    const isGlobal = await this.globalCategoryService.check(
+      transaction.category,
+    );
 
-    await this.transactionRepository.insert(data);
+    if (!isGlobal) {
+      const category = await this.categoryService.findById(
+        transaction.category,
+      );
+
+      const data = {
+        amount: transaction.amount,
+        createdAt: transaction.createdAt,
+        familyId: user.family.id,
+        user,
+        comment: transaction.comment ?? undefined,
+        category,
+      };
+
+      await this.transactionRepository.save(data);
+    } else {
+      const category = await this.globalCategoryService.findById(
+        transaction.category,
+      );
+
+      const data = {
+        amount: transaction.amount,
+        createdAt: transaction.createdAt,
+        familyId: user.family.id,
+        user,
+        comment: transaction.comment ?? undefined,
+        globalCategory: category,
+      };
+
+      await this.transactionRepository.save(data);
+    }
   }
 
   async findByUserId(id: string): Promise<TransactionEntity[]> {
@@ -91,10 +125,18 @@ export class TransactionService implements ITransactionService {
 
   async editCategory(
     id: number,
-    newCategory: string,
+    newCategory: string, // id
+    type: CategoryTypeEnum,
   ): Promise<TransactionEntity> {
     const transaction = await this.findById(id);
-    transaction.category = newCategory;
+
+    if (type == CategoryTypeEnum.LOCAL) {
+      transaction.category = await this.categoryService.findById(newCategory);
+    } else {
+      transaction.globalCategory =
+        await this.globalCategoryService.findById(newCategory);
+    }
+
     return await this.transactionRepository.save(transaction);
   }
 
@@ -117,7 +159,7 @@ export class TransactionService implements ITransactionService {
       where: {
         familyId: user.family.id,
       },
-      relations: { user: true },
+      relations: { user: true, category: true, globalCategory: true },
     });
   }
 
@@ -127,7 +169,10 @@ export class TransactionService implements ITransactionService {
     const user = await this.userService.findByTelegramId(telegramId);
     if (!user) throw new NotFoundException('User not found');
 
-    return await this.transactionRepository.findBy({ user });
+    return await this.transactionRepository.find({
+      where: { user },
+      relations: { category: true, globalCategory: true },
+    });
   }
 
   async editComment(id: number, comment: string): Promise<void> {

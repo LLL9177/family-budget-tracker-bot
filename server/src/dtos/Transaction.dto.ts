@@ -1,5 +1,12 @@
-import { IsNumber, IsString, IsOptional } from 'class-validator';
+import {
+  IsNumber,
+  IsString,
+  IsOptional,
+  IsUUID,
+  IsEnum,
+} from 'class-validator';
 import { IsBigInt } from '../decorators/IsBigInt.decorator';
+import { CategoryTypeEnum } from 'src/enums/CategoryType.enum';
 
 export class TransactionDto {
   @IsBigInt()
@@ -8,7 +15,7 @@ export class TransactionDto {
   @IsNumber()
   amount: number;
 
-  @IsString()
+  @IsUUID()
   category: string;
 
   @IsString()

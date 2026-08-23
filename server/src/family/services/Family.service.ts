@@ -18,6 +18,7 @@ import { CreateFamilyDto } from '../../dtos/createFamily.dto';
 import { NotificationService } from '../../notification/services/Notification.service';
 import { IconEnum } from '../../enums/Icon.enum';
 import { NotificationKeyEnum } from '../../enums/NotificationKey.enum';
+import { GlobalCategoryService } from 'src/category/services/GlobalCategory.service';
 
 interface IFamilyService {
   create(data: CreateFamilyDto, user: IJwtPayload): Promise<void>;
@@ -41,6 +42,7 @@ export class FamilyService implements IFamilyService {
     private readonly userService: UserService,
     private readonly fileService: FileService,
     private readonly notificationService: NotificationService,
+    private readonly globalCategoryService: GlobalCategoryService,
   ) {}
 
   async create(data: CreateFamilyDto, user: IJwtPayload): Promise<void> {
@@ -56,6 +58,7 @@ export class FamilyService implements IFamilyService {
       const banner = await this.fileService.getByUrl(
         process.env.DEFAULT_FAMILY_BANNER,
       );
+
       await this.familyRepository.save({
         name: data.name,
         owner: owner,
@@ -72,6 +75,9 @@ export class FamilyService implements IFamilyService {
 
       owner.family = family;
       owner.familyOwned = family;
+
+      // Create and connect to default categories
+      await this.globalCategoryService.connectFamily(family.id);
 
       const roles = JSON.parse(owner.roles) as Roles[];
       if (!roles.includes(Roles.FAMILY_OWNER)) roles.push(Roles.FAMILY_OWNER);

@@ -9,7 +9,9 @@ describe('OneTimePasswordController', () => {
       controllers: [OneTimePasswordController],
     }).compile();
 
-    controller = module.get<OneTimePasswordController>(OneTimePasswordController);
+    controller = module.get<OneTimePasswordController>(
+      OneTimePasswordController,
+    );
   });
 
   it('should be defined', () => {

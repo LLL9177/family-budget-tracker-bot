@@ -1,13 +1,16 @@
+import { CategoryEntity } from '../../category/entities/Category.entity';
 import { FileEntity } from '../../file/entities/File.entity';
 import { UserEntity } from '../../user/entities/User.entity';
 import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { GlobalCategoryEntity } from '../../category/entities/GlobalCategory.entity';
 
 @Entity()
 export class FamilyEntity {
@@ -34,4 +37,10 @@ export class FamilyEntity {
   @OneToOne(() => FileEntity)
   @JoinColumn()
   banner: FileEntity;
+
+  @OneToMany(() => CategoryEntity, (category) => category.family)
+  categories: CategoryEntity[];
+
+  @ManyToMany(() => GlobalCategoryEntity, (globalCategories) => globalCategories.families)
+  globalCategories: CategoryEntity[];
 }

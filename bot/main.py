@@ -9,6 +9,7 @@ import requests
 import functools
 import uvicorn
 import json
+import math
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Literal
@@ -75,7 +76,7 @@ i18n = {
         "btn_job": "💼 Job",
         "btn_credit": "🧾 Credit",
         "btn_other": "Other",
-        "btn_your_option": "✏️ Your option",
+        "btn_rec_user_option": "✏️ Your option",
         "ask_category_name": "Type in the name of the category.",
         "how_much_recieved": "How much did you recieve?",
         "invalid_amount": "Please write a valid amount of money (number)",
@@ -173,7 +174,7 @@ i18n = {
         "btn_job": "💼 Робота",
         "btn_credit": "🧾 Кредит",
         "btn_other": "Інше",
-        "btn_your_option": "✏️ Ваш варіант",
+        "btn_rec_user_option": "✏️ Ваш варіант",
         "ask_category_name": "Напишіть ім'я категорії.",
         "how_much_recieved": "Скільки ви отримали?",
         "invalid_amount": "Будь-ласка напишіть дійсну суму грошей (число)",
@@ -347,6 +348,27 @@ def send_welcome(msg):
 
 
 # ======================== CALLBACK ROUTER ========================
+@bot.callback_query_handler(func=lambda call: call.data.startswith("$"))
+def transaction_callbacks(call):
+    t_type, id, lang = call.data.replace('$', '', 1).split(':')
+    if t_type == '+':
+        recievement_process(call.message, id, lang=lang)
+    elif t_type == '-':
+        payment_process(call.message, id, lang=lang)
+    else:
+        raise "Invalid transaction type. Callback data must be $-:... or $+:..."
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("create-category"))
+def create_category_callback(call):
+    _, c_type, lang = call.data.split(":")
+
+    if c_type == "EARNING":
+        rec_user_option(call.message, lang=lang)
+    else:
+        payment_user_option(call.message, lang=lang)
+
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     # Split "en new_rec" → lang="en", action="new_rec"
@@ -366,16 +388,11 @@ def callback(call):
 
     routes = {
         "new_rec": lambda m: new_rec(m, lang=lang),
-        "rec user_option": lambda m: rec_user_option(m, lang=lang),
-        "rec job": lambda m: recievement_process(m, "Job", lang=lang),
-        "rec credit": lambda m: recievement_process(m, "Credit", lang=lang),
-        "rec other": lambda m: recievement_process(m, "Other", lang=lang),
         "profile": lambda m: show_user_data(m, call.from_user, lang=lang),
         "menu": lambda m: main_menu(m, lang=lang),
         "settings": lambda m: settings(m, lang=lang),
         "set_lang": lambda m: settings(m, lang="uk" if lang == "en" else "en"),
         "new_pay": lambda m: new_payment(m, lang=lang),
-        "pay user_option": lambda m: payment_user_option(m, lang=lang),
         "pay groceries": lambda m: payment_process(m, "Groceries", lang=lang),
         "pay taxes": lambda m: payment_process(m, "Taxes", lang=lang),
         "pay fine": lambda m: payment_process(m, "Fine", lang=lang),
@@ -390,7 +407,6 @@ def callback(call):
     handler = routes.get(action)
     if handler:
         handler(call.message)
-
 
 # ======================== BOT INTERACTIONS ========================
 def set_lang(msg, *, lang):
@@ -449,44 +465,97 @@ def settings(msg, *, lang):
 
 def new_rec(msg, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**
-                                                     fmt) if fmt else i18n[lang][key]
+        fmt) if fmt else i18n[lang][key]
+
+    categories = fetch_categories(msg.from_user.id, "EARNING")
+
     kb = tb.types.InlineKeyboardMarkup()
-    kb.row(
-        tb.types.InlineKeyboardButton(
-            t("btn_job"), callback_data=f"{lang} rec job"),
-        tb.types.InlineKeyboardButton(
-            t("btn_credit"), callback_data=f"{lang} rec credit"),
-    )
-    kb.row(
-        tb.types.InlineKeyboardButton(
-            t("btn_other"), callback_data=f"{lang} rec other"),
-        tb.types.InlineKeyboardButton(t("btn_your_option"), callback_data=f"{
-                                      lang} rec user_option"),
-    )
+    rows = []
+    for i in range(math.ceil(len(categories) / 2)):
+        rows.append([])
+
+    for i in range(len(categories)):
+        rows[i // 2].append(categories[i])
+
+    for row in rows:
+        if len(row) > 1:
+            kb.row(
+                tb.types.InlineKeyboardButton(
+                    row[0]["eng" if lang == "en" else "ukr"],
+                    callback_data=f"$+:{row[0]["id"]}:{lang}"
+                ),
+                tb.types.InlineKeyboardButton(
+                    row[1]["eng" if lang == "en" else "ukr"],
+                    callback_data=f"$+:{row[1]["id"]}:{lang}"
+                ),
+            )
+        else:
+            kb.row(
+                tb.types.InlineKeyboardButton(
+                    row[0]["eng" if lang == "en" else "ukr"],
+                    callback_data=f"$+:{row[0]["id"]}:{lang}"
+                ),
+                tb.types.InlineKeyboardButton(
+                    t("btn_rec_user_option"), 
+                    callback_data=f"create-category:EARNING:{lang}"
+                )
+            )
+
+    if len(rows[-1]) == 2:
+        kb.row(
+            tb.types.InlineKeyboardButton(
+                t("btn_rec_user_option"), 
+                callback_data=f"{lang} rec user_option"
+            )
+        )
+
     kb.row(go_back_btn(lang, "menu"))
-    bot.edit_message_text(t("recieved_from"), msg.chat.id,
-                          msg.message_id, reply_markup=kb)
+    bot.edit_message_text(
+        t("recieved_from"), 
+        msg.chat.id,
+        msg.message_id, 
+        reply_markup=kb
+    )
 
 
 def rec_user_option(msg, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**
-                                                     fmt) if fmt else i18n[lang][key]
+        fmt) if fmt else i18n[lang][key]
+
+    def _create_category(msg):
+        category_name = msg.text
+
+        result = create_category(
+            msg.from_user.id, 
+            'EARNING',
+            category_name,
+            lang
+        )
+
+        if not result.ok:
+            bot.send_message(msg.chat.id, t("something_wrong"))
+            m = bot.send_message(msg.chat.id, t("loading"))
+
+            main_menu(m, lang=lang)
+            return
+
+        m = bot.send_message(msg.chat.id, t("loading"))
+        recievement_process(m, result.text, lang=lang)
+    
     kb = tb.types.InlineKeyboardMarkup()
+
     kb.row(go_back_btn(lang, "new_rec"))
+
     m = bot.edit_message_text(
         t("ask_category_name"),
         msg.chat.id, msg.message_id, reply_markup=kb
     )
-    bot.register_next_step_handler(m, recievement_process, lang=lang)
+    bot.register_next_step_handler(m, _create_category)
 
 
-def recievement_process(msg, category=None, *, lang):
-    def t(key, **fmt): return i18n[lang][key].format(**
-                                                     fmt) if fmt else i18n[lang][key]
-
-    # If called from rec_user_option, category comes from the message text
-    if category is None:
-        category = msg.text
+def recievement_process(msg, category, *, lang):
+    def t(key, **fmt): return i18n[lang][key].format(
+        **fmt) if fmt else i18n[lang][key]
 
     amount = 0
     user_id = 0
@@ -538,7 +607,12 @@ def recievement_process(msg, category=None, *, lang):
             return
 
         result = recievement_process_db(
-            amount, date, user_id, category, comment)
+            amount, 
+            date, 
+            user_id, 
+            category, 
+            comment,
+        )
         bot.send_message(msg.chat.id, t("success")
                          if result else t("something_wrong"))
         m = bot.send_message(msg.chat.id, t("loading"))
@@ -550,32 +624,51 @@ def recievement_process(msg, category=None, *, lang):
 
 def new_payment(msg, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**
-                                                     fmt) if fmt else i18n[lang][key]
+        fmt) if fmt else i18n[lang][key]
+
+    categories = fetch_categories(msg.from_user.id, "PAYMENT")
+    
     kb = tb.types.InlineKeyboardMarkup()
-    kb.row(
-        tb.types.InlineKeyboardButton(
-            t("btn_groceries"), callback_data=f"{lang} pay groceries"),
-        tb.types.InlineKeyboardButton(
-            t("btn_taxes"), callback_data=f"{lang} pay taxes")
-    )
-    kb.row(
-        tb.types.InlineKeyboardButton(
-            t("btn_fine"), callback_data=f"{lang} pay fine"),
-        tb.types.InlineKeyboardButton(
-            t("btn_tech"), callback_data=f"{lang} pay tech")
-    )
-    kb.row(
-        tb.types.InlineKeyboardButton(
-            t("btn_onl_sub"), callback_data=f"{lang} pay onl_sub"),
-        tb.types.InlineKeyboardButton(
-            t("btn_shopping"), callback_data=f"{lang} pay shopping")
-    )
-    kb.row(
-        tb.types.InlineKeyboardButton(
-            t("btn_pay_other"), callback_data=f"{lang} pay other"),
-        tb.types.InlineKeyboardButton(
-            t("btn_pay_user_option"), callback_data=f"{lang} pay user_option")
-    )
+
+    rows = []
+    for i in range(math.ceil(len(categories) / 2)):
+        rows.append([])
+
+    for i in range(len(categories)):
+        rows[i // 2].append(categories[i])
+
+    for row in rows:
+        if len(row) > 1:
+            kb.row(
+            tb.types.InlineKeyboardButton(
+                    row[0]["eng" if lang == "en" else "ukr"],
+                    callback_data=f"$-:{row[0]["id"]}:{lang}"
+                ),
+                tb.types.InlineKeyboardButton(
+                    row[1]["eng" if lang == "en" else "ukr"],
+                    callback_data=f"$-:{row[1]["id"]}:{lang}"
+                ),
+            )
+        else:
+            kb.row(
+                tb.types.InlineKeyboardButton(
+                    row[0]["eng" if lang == "en" else "ukr"],
+                    callback_data=f"$-:{row[0]["id"]}:{lang}"
+                ),
+                tb.types.InlineKeyboardButton(
+                    t("btn_pay_user_option"), 
+                    callback_data=f"create-category:PAYMENT:{lang}"
+                )
+            )
+
+    if len(rows[-1]) == 2:
+        kb.row(
+            tb.types.InlineKeyboardButton(
+                t("btn_pay_user_option"), 
+                callback_data=f"{lang} pay user_option"
+            )
+        )
+
     kb.row(go_back_btn(lang, "menu"))
     bot.edit_message_text(t("chose_category"), msg.chat.id,
                           msg.message_id, reply_markup=kb)
@@ -583,20 +676,43 @@ def new_payment(msg, *, lang):
 
 def payment_user_option(msg, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**
-                                                     fmt) if fmt else i18n[lang][key]
+        fmt) if fmt else i18n[lang][key]
+
+    def _create_category(msg):
+        category_name = msg.text
+
+        result = create_category(
+            msg.from_user.id, 
+            'PAYMENT', 
+            category_name,
+            lang
+        )
+
+        print(result.text)
+        if not result.ok:
+            bot.send_message(msg.chat.id, t("something_wrong"))
+            m = bot.send_message(msg.chat.id, t("loading"))
+
+            main_menu(m, lang=lang)
+            return
+
+        m = bot.send_message(msg.chat.id, t("loading"))
+        payment_process(m, result.text, lang=lang)
+    
     kb = tb.types.InlineKeyboardMarkup()
+
     kb.row(go_back_btn(lang, "new_pay"))
+
     m = bot.edit_message_text(
-        t("what_paid_for"), msg.chat.id, msg.message_id, reply_markup=kb)
-    bot.register_next_step_handler(m, payment_process, lang=lang)
+        t("what_paid_for"),
+        msg.chat.id, msg.message_id, reply_markup=kb
+    )
+    bot.register_next_step_handler(m, _create_category)
 
 
-def payment_process(msg, category=None, *, lang):
+def payment_process(msg, category, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**
-                                                     fmt) if fmt else i18n[lang][key]
-
-    if category is None:
-        category = msg.text
+        fmt) if fmt else i18n[lang][key]
 
     amount = 0
     comment = None
@@ -647,7 +763,12 @@ def payment_process(msg, category=None, *, lang):
             return
 
         res = payment_process_db(
-            amount, date, msg.from_user.id, category, comment)
+            amount, 
+            date, 
+            msg.from_user.id, 
+            category, 
+            comment
+        )
         if not res:
             bot.send_message(msg.chat.id, t("something_wrong"))
             m = bot.send_message(msg.chat.id, t("loading"))
@@ -689,7 +810,7 @@ def show_user_data(msg, from_user, *, lang):
 
 def user_data(msg, from_user, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**
-                                                     fmt) if fmt else i18n[lang][key]
+        fmt) if fmt else i18n[lang][key]
     transactions = get_user_transactions(from_user.id)
 
     if transactions == 404:
@@ -714,7 +835,11 @@ def user_data(msg, from_user, *, lang):
 
     for tx in transactions:
         amount = tx["amount"]
-        category = tx["category"]
+        category = tx[
+            "category" 
+                if "category" in tx.keys() 
+                else "globalCategory"
+        ]["eng" if lang == "en" else "ukr"]
         total_pnl += amount
         categories[category] = categories.get(category, 0) + amount
 
@@ -724,7 +849,14 @@ def user_data(msg, from_user, *, lang):
     tx_lines = ""
     for tx in transactions[:10]:
         amount = tx["amount"]
-        category = translate_category(tx["category"], lang)
+        category = translate_category(
+            tx[
+                "category" 
+                    if "category" in tx.keys() 
+                    else "globalCategory"
+            ]["eng" if lang == "en" else "ukr"],
+            lang
+        )
         date_str = format_date(tx["createdAt"], lang)
         sign = "💸" if amount < 0 else "💰"
         tx_lines += f"{sign} {amount:+} | {category} | {date_str}\n"
@@ -749,12 +881,12 @@ def user_data(msg, from_user, *, lang):
     kb = tb.types.InlineKeyboardMarkup()
     kb.row(go_back_btn(lang, "menu"))
     bot.edit_message_text(text, msg.chat.id, msg.id,
-                          parse_mode="HTML", reply_markup=kb)
+        parse_mode="HTML", reply_markup=kb)
 
 
 def family(msg, from_user, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**
-                                                     fmt) if fmt else i18n[lang][key]
+        fmt) if fmt else i18n[lang][key]
 
     family_data = get_family_data(from_user.id)
 
@@ -772,7 +904,11 @@ def family(msg, from_user, *, lang):
 
     for tx in transactions:
         amount = tx["amount"]
-        category = tx["category"]
+        category = tx[
+            "category" 
+                if "category" in tx.keys() 
+                else "globalCategory"
+        ]["eng" if lang == "en" else "ukr"]
         user_id = tx["user"]["id"]
         username = tx["user"]["username"]
         current_pnl += amount
@@ -843,14 +979,14 @@ def family(msg, from_user, *, lang):
 
 def sync_family(msg, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**
-                                                     fmt) if fmt else i18n[lang][key]
+        fmt) if fmt else i18n[lang][key]
     bot.send_message(msg.chat.id, t("lets_login"))
     sync_account(msg, msg.text, lang=lang)
 
 
 def sync_account(msg, family_id, *, lang):
     def t(key, **fmt): return i18n[lang][key].format(**
-                                                     fmt) if fmt else i18n[lang][key]
+        fmt) if fmt else i18n[lang][key]
 
     def get_password(msg, id, family_id):
         if msg.text in t("google_word"):
@@ -858,8 +994,14 @@ def sync_account(msg, family_id, *, lang):
             return
 
         password = msg.text
-        login_result = login(msg.from_user.id, password,
-                             msg.from_user.username, id, msg.chat.id, lang)
+        login_result = login(
+            msg.from_user.id, 
+            password, 
+            msg.from_user.username, 
+            id, 
+            msg.chat.id, 
+            lang
+        )
 
         if login_result == 401 or login_result == 404:
             bot.send_message(msg.chat.id, t("incorrect_credentials"))
@@ -946,7 +1088,13 @@ def get_family_data(telegram_id):
     return res
 
 
-def payment_process_db(amount, date, telegram_id, category, comment):
+def payment_process_db(
+    amount, 
+    date, 
+    telegram_id, 
+    category, 
+    comment
+):
     res = fetch("/transaction/new", {
         "telegramId": telegram_id,
         "amount": -amount,
@@ -959,14 +1107,18 @@ def payment_process_db(amount, date, telegram_id, category, comment):
 
 
 def recievement_process_db(
-    recieved_amount, recieved_date, telegram_id, category, comment
+    recieved_amount, 
+    recieved_date, 
+    telegram_id, 
+    category_id, 
+    comment, 
 ):
     res = fetch("/transaction/new", {
         "telegramId": telegram_id,
         "amount": recieved_amount,
-        "category": category,
+        "category": category_id,
         "createdAt": recieved_date,
-        "comment": comment
+        "comment": comment,
     })
     if (res.status_code != 201):
         return False
@@ -991,7 +1143,34 @@ def get_user_transactions(telegram_id):
     )
 
 
-def fetch(url, data, method="post"):
+def fetch_categories(user_tg_id, transaction_type):
+    categories =  fetch(f"/category/get?userTelegramId={user_tg_id}", method="get").json()
+    categories = list(filter(
+        lambda x: x["usedIn"] in [transaction_type, "BOTH"], 
+        categories
+    ))
+
+    return categories
+
+
+def create_category(user_tg_id, transaction_type, name, lang):
+    if lang == "en":
+        data = {
+            "userId": user_tg_id,
+            "ukr": name,
+            "usedIn": transaction_type
+        }
+    else:
+        data = {
+            "userId": user_tg_id,
+            "eng": name,
+            "usedIn": transaction_type
+        }
+
+    return fetch("/category/create", data)
+
+
+def fetch(url, data={}, method="post"):
     if method == "post":
         res = requests.post(
             BACKEND_URL + url,
@@ -1013,7 +1192,7 @@ def fetch(url, data, method="post"):
 
 
 def run_api():
-    uvicorn.run(fastapi_app, host="127.0.0.1", port=8000)
+    uvicorn.run(fastapi_app, host="127.0.0.1", port=int(os.getenv("PORT")))
 
 
 if __name__ == "__main__":

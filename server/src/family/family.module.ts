@@ -8,6 +8,7 @@ import { UserModule } from 'src/user/user.module';
 import { FileModule } from '../file/file.module';
 import { AuthModule } from '../auth/auth.module';
 import { NotificationModule } from '../notification/notification.module';
+import { CategoryModule } from '../category/category.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { NotificationModule } from '../notification/notification.module';
     forwardRef(() => UserModule),
     forwardRef(() => FileModule),
     NotificationModule,
+    forwardRef(() => CategoryModule),
   ],
   controllers: [FamilyController],
   providers: [FamilyService, HashService],

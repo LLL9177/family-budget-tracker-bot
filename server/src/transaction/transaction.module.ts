@@ -6,9 +6,10 @@ import { TransactionService } from './services/Transaction.service';
 import { AuthModule } from 'src/auth/auth.module';
 import { MonthlySummaryEntity } from './entities/MonthlySummary.entity';
 import { SummaryService } from './services/Summary.service';
-import { UserEntity } from 'src/user/entities/User.entity';
+import { UserEntity } from '../user/entities/User.entity';
 import { UserModule } from 'src/user/user.module';
 import { FamilyModule } from 'src/family/family.module';
+import { CategoryModule } from 'src/category/category.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { FamilyModule } from 'src/family/family.module';
     AuthModule,
     UserModule,
     FamilyModule,
+    CategoryModule
   ],
   controllers: [TransactionController],
   providers: [TransactionService, SummaryService],
