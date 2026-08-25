@@ -73,6 +73,7 @@ export default function Navigation({ exclude }: { exclude: string }) {
     "tutorial",
     "notifications",
     "switchLanguage",
+    "categories"
   ];
 
   const i18n = {
@@ -92,6 +93,7 @@ export default function Navigation({ exclude }: { exclude: string }) {
         dashboard: "Dashboard",
         switchLanguage: "Switch Language",
         tutorial: "Tutorial",
+        categories: "Categories",
       },
     },
 
@@ -110,7 +112,8 @@ export default function Navigation({ exclude }: { exclude: string }) {
         notifications: "Сповіщення",
         dashboard: "Інфо. панель",
         switchLanguage: "Змінити мову",
-        tutorial: "Посібник"
+        tutorial: "Посібник",
+        categories: "Категорії",
       },
     },
   };
@@ -255,7 +258,9 @@ export default function Navigation({ exclude }: { exclude: string }) {
     } else if (item == t.items.createFamily) {
       navigate("/create_family");
     } else if (item == t.items.tutorial) {
-      navigate("/tutorial")
+      navigate("/tutorial");
+    } else if (item == t.items.categories) {
+      navigate("/categories");
     }
   }
 

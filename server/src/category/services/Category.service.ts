@@ -13,14 +13,18 @@ import { FamilyService } from 'src/family/services/Family.service';
 import { GlobalCategoryService } from './GlobalCategory.service';
 import { GlobalCategoryEntity } from '../entities/GlobalCategory.entity';
 import { UserService } from 'src/user/User.service';
+import { CategoryUsedInEnum } from 'src/enums/CategoryUserIn.enum';
 
 interface ICategoryService {
   create(data: ICreacteCategory): Promise<string | void>;
-  update(data: IUpdateCategory): Promise<void>;
-  delete(id: string): Promise<void>;
+  update(data: IUpdateCategory): Promise<CategoryEntity>;
+  delete(id: string, userId: string): Promise<void>;
   findById(id: string): Promise<CategoryEntity>;
   findByUserTg(
     userTelegramId: bigint,
+  ): Promise<(CategoryEntity | GlobalCategoryEntity)[]>;
+  findByUserId(
+    userId: string,
   ): Promise<(CategoryEntity | GlobalCategoryEntity)[]>;
 }
 
@@ -67,27 +71,55 @@ export class CategoryService implements ICategoryService {
     return (
       await this.repository.save({
         family,
-        eng: data.eng || data.ukr,
-        ukr: data.ukr || data.eng,
+        eng: data.eng ?? data.ukr,
+        ukr: data.ukr ?? data.eng,
         usedIn: data.usedIn,
       })
     ).id;
   }
 
-  async update(data: IUpdateCategory): Promise<void> {
+  async update(data: IUpdateCategory): Promise<CategoryEntity> {
     if (!data.eng && !data.ukr)
       throw new BadRequestException(
         'One of English or Ukrainian versions must be specified',
       );
 
+    const oldCategory = await this.repository.findOne({
+      where: { id: data.id },
+      relations: { transactions: true },
+    });
+    if (!oldCategory) throw new NotFoundException('Category not found');
+
+    if (oldCategory.usedIn !== data.usedIn) {
+      oldCategory.transactions.map((t) => {
+        if (
+          (data.usedIn == CategoryUsedInEnum.PAYMENT && t.amount > 0) ||
+          (data.usedIn == CategoryUsedInEnum.EARNING && t.amount < 0)
+        )
+          throw new BadRequestException(
+            'Cannot change due to transactions under this type already existing.',
+          );
+      });
+    }
+
     await this.repository.save({
       id: data.id,
-      eng: data.eng || undefined,
-      ukr: data.ukr || undefined,
+      eng: data.eng ?? undefined,
+      ukr: data.ukr ?? undefined,
+      usedIn: data.usedIn,
     });
+
+    const category = await this.repository.findOneBy({ id: data.id });
+    if (!category) throw new NotFoundException('Category not found');
+
+    return category;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, userId: string): Promise<void> {
+    const isOwner = await this.familyService.checkOwner(userId);
+    if (!isOwner)
+      throw new BadRequestException('User is not the owner of the family');
+
     await this.repository.delete({ id });
   }
 
@@ -105,10 +137,23 @@ export class CategoryService implements ICategoryService {
     if (!user) throw new NotFoundException('User not found');
 
     const family = await this.familyService.getByUser(user.id);
+    await this.globalCategoryService.connect(family);
 
     const familyCategories = await this.repository.findBy({ family });
     const globalCategories = await this.globalCategoryService.getAll();
 
     return [...globalCategories, ...familyCategories];
+  }
+
+  async findByUserId(
+    userId: string,
+  ): Promise<(CategoryEntity | GlobalCategoryEntity)[]> {
+    const family = await this.familyService.getByUser(userId);
+    const categories = await this.repository.find({ where: { family } });
+
+    await this.globalCategoryService.connect(family);
+    const globalCategories = await this.globalCategoryService.getAll();
+
+    return [...categories, ...globalCategories];
   }
 }

@@ -31,7 +31,7 @@ export class GlobalCategoryEntity {
     () => TransactionEntity,
     (transaction) => transaction.globalCategory,
   )
-  transactions: TransactionEntity;
+  transactions: TransactionEntity[];
 
   @Column({
     enum: CategoryTypeEnum,

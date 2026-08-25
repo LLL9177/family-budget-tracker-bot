@@ -7,12 +7,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryEntity } from './entities/Category.entity';
 import { GlobalCategoryEntity } from './entities/GlobalCategory.entity';
 import { UserModule } from '../user/user.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
     forwardRef(() => FamilyModule),
     TypeOrmModule.forFeature([CategoryEntity, GlobalCategoryEntity]),
     forwardRef(() => UserModule),
+    forwardRef(() => AuthModule)
   ],
   controllers: [CategoryController],
   providers: [CategoryService, GlobalCategoryService],

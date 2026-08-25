@@ -6,12 +6,15 @@ import { UserService } from './User.service';
 import { UserController } from './user.controller';
 import { FileModule } from '../file/file.module';
 import { AuthModule } from '../auth/auth.module';
+import { CategoryModule } from 'src/category/category.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity]),
     FileModule,
     forwardRef(() => AuthModule),
+    CategoryModule,
+    
   ],
   providers: [UserService, HashService],
   exports: [UserService],

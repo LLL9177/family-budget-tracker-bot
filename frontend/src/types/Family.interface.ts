@@ -1,3 +1,4 @@
+import type { ICategory } from "./Category.interface";
 import type { IUserData } from "./UserData.interface";
 
 export interface IFamily {
@@ -14,4 +15,6 @@ export interface IFamily {
     id: string;
     url: string;
   };
+  categories: ICategory[];
+  globalCategories: ICategory[];
 }

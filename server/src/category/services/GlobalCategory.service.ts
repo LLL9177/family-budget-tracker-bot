@@ -4,22 +4,21 @@ import { Repository } from 'typeorm';
 import { CategoryUsedInEnum } from 'src/enums/CategoryUserIn.enum';
 import { FamilyService } from 'src/family/services/Family.service';
 import { forwardRef, Inject, NotFoundException } from '@nestjs/common';
+import { FamilyEntity } from 'src/family/entities/Family.entity';
 
 interface IGlobalCategoryService {
   createAll(): Promise<void>;
-  connectFamily(familyId: string): Promise<void>;
   check(id: string): Promise<boolean>;
   findById(id: string): Promise<GlobalCategoryEntity>;
   findByName(name: string): Promise<GlobalCategoryEntity>;
   getAll(): Promise<GlobalCategoryEntity[]>;
+  connect(family: FamilyEntity): Promise<void>;
 }
 
 export class GlobalCategoryService implements IGlobalCategoryService {
   constructor(
     @InjectRepository(GlobalCategoryEntity)
     private readonly repository: Repository<GlobalCategoryEntity>,
-    @Inject(forwardRef(() => FamilyService))
-    private readonly familyService: FamilyService,
   ) {}
 
   async createAll(): Promise<void> {
@@ -89,19 +88,6 @@ export class GlobalCategoryService implements IGlobalCategoryService {
     }
   }
 
-  async connectFamily(familyId: string): Promise<void> {
-    const family = await this.familyService.getByUuid(familyId);
-    if (!family) throw new NotFoundException('Family not found');
-
-    await this.createAll();
-    const categories = await this.repository.find();
-
-    for (const category of categories) {
-      category.families.push(family);
-      await this.repository.save(category);
-    }
-  }
-
   async check(id: string): Promise<boolean> {
     const category = await this.repository.findOneBy({ id });
 
@@ -129,5 +115,25 @@ export class GlobalCategoryService implements IGlobalCategoryService {
   async getAll(): Promise<GlobalCategoryEntity[]> {
     await this.createAll();
     return await this.repository.find();
+  }
+
+  async connect(family: FamilyEntity): Promise<void> {
+    const categories = await this.repository.find({
+      relations: {
+        families: true,
+      },
+    });
+
+    for (const category of categories) {
+      const alreadyConnected = category.families.some(
+        (connectedFamily) => connectedFamily.id === family.id,
+      );
+
+      if (!alreadyConnected) {
+        category.families.push(family);
+
+        await this.repository.save(category);
+      }
+    }
   }
 }

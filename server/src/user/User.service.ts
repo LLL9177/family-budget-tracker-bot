@@ -6,7 +6,6 @@ import { HashService } from '../auth/services/Hash.service';
 import { UserEntity } from './entities/User.entity';
 import { FileService } from '../file/services/File.service';
 import { FileTypeEnum } from '../enums/FileType.enum';
-import { ISetTelegram } from '../types/SetTelegram.interface';
 
 interface IUserService {
   create(user: UserDto): Promise<void>;
@@ -47,23 +46,29 @@ export class UserService implements IUserService {
     id: string,
     getOwned: boolean = false,
     getPassword: boolean = false,
+    getFamily: boolean = !getOwned,
+    getTelegramRequests: boolean = true,
+    getNotifications: boolean = true,
+    getAvatar: boolean = true,
   ): Promise<UserEntity | null> {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: {
-        family: {
-          joinRequests: true,
-          owner: true,
-          members: {
-            avatar: true,
-          },
-          avatar: true,
-          banner: true,
-        },
+        family: getFamily
+          ? {
+              joinRequests: true,
+              owner: true,
+              members: {
+                avatar: true,
+              },
+              avatar: true,
+              banner: true,
+            }
+          : false,
         familyOwned: getOwned,
-        avatar: true,
-        notifications: true,
-        telegramRequests: true,
+        avatar: getAvatar,
+        notifications: getNotifications,
+        telegramRequests: getTelegramRequests,
       },
     });
     if (!user) throw new NotFoundException('User not found');

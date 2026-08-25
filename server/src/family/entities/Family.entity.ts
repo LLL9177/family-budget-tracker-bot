@@ -5,6 +5,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   OneToMany,
   OneToOne,
@@ -41,6 +42,10 @@ export class FamilyEntity {
   @OneToMany(() => CategoryEntity, (category) => category.family)
   categories: CategoryEntity[];
 
-  @ManyToMany(() => GlobalCategoryEntity, (globalCategories) => globalCategories.families)
-  globalCategories: CategoryEntity[];
+  @JoinTable()
+  @ManyToMany(
+    () => GlobalCategoryEntity,
+    (globalCategories) => globalCategories.families,
+  )
+  globalCategories: GlobalCategoryEntity[];
 }

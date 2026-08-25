@@ -32,6 +32,7 @@ interface IFamilyService {
   rejectJoinFamily(userId: string, ownerId: string): Promise<void>;
   uploadBanner(file: Express.Multer.File, userId: string): Promise<void>;
   uploadAvatar(file: Express.Multer.File, userId: string): Promise<void>;
+  checkOwner(userId: string, familyId?: string): Promise<boolean>;
 }
 
 @Injectable()
@@ -77,7 +78,7 @@ export class FamilyService implements IFamilyService {
       owner.familyOwned = family;
 
       // Create and connect to default categories
-      await this.globalCategoryService.connectFamily(family.id);
+      await this.globalCategoryService.connect(family);
 
       const roles = JSON.parse(owner.roles) as Roles[];
       if (!roles.includes(Roles.FAMILY_OWNER)) roles.push(Roles.FAMILY_OWNER);
@@ -346,5 +347,24 @@ export class FamilyService implements IFamilyService {
     );
 
     await this.familyRepository.save(family);
+  }
+
+  async checkOwner(userId: string, familyId?: string): Promise<boolean> {
+    const user = await this.userService.findById(
+      userId,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+    );
+    if (!user) throw new NotFoundException('User not found');
+
+    const family = familyId
+      ? await this.familyRepository.findOneBy({ id: familyId })
+      : await this.familyRepository.findOneBy({ owner: user });
+
+    return family ? true : false;
   }
 }

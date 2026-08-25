@@ -26,7 +26,6 @@ export class CategoryEntity {
   usedIn: CategoryUsedInEnum;
 
   @ManyToOne(() => FamilyEntity, (family) => family.categories)
-  @JoinColumn()
   family: FamilyEntity;
 
   @OneToMany(() => TransactionEntity, (transaction) => transaction.category)
