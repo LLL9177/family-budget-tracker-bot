@@ -847,6 +847,10 @@ def user_data(msg, from_user, *, lang):
         categories.items(), key=lambda x: abs(x[1]), reverse=True)
 
     tx_lines = ""
+    transactions.sort(
+        reverse=True,
+        key=lambda x: datetime.datetime.fromisoformat(x["createdAt"]).timestamp()
+    )
     for tx in transactions[:10]:
         amount = tx["amount"]
         category = translate_category(
