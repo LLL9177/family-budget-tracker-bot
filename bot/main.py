@@ -837,9 +837,9 @@ def user_data(msg, from_user, *, lang):
         amount = tx["amount"]
         category = tx[
             "category" 
-                if "category" in tx.keys() 
+                if tx["category"] 
                 else "globalCategory"
-        ]["eng" if lang == "en" else "ukr"]
+        ]["eng" if lang == "en" else "ukr"],
         total_pnl += amount
         categories[category] = categories.get(category, 0) + amount
 
@@ -852,7 +852,7 @@ def user_data(msg, from_user, *, lang):
         category = translate_category(
             tx[
                 "category" 
-                    if "category" in tx.keys() 
+                    if tx["category"] 
                     else "globalCategory"
             ]["eng" if lang == "en" else "ukr"],
             lang
@@ -906,7 +906,7 @@ def family(msg, from_user, *, lang):
         amount = tx["amount"]
         category = tx[
             "category" 
-                if "category" in tx.keys() 
+                if tx["category"] 
                 else "globalCategory"
         ]["eng" if lang == "en" else "ukr"]
         user_id = tx["user"]["id"]

@@ -21,7 +21,6 @@ import { GetUserDto } from '../dtos/getUser.dto';
 import { FamilyGuard } from '../family/family.guard';
 import { BotGuard } from '../bot/bot.guard';
 import { TransactionDto } from '../dtos/Transaction.dto';
-import { CategoryTypeEnum } from 'src/enums/CategoryType.enum';
 
 @Controller('transaction')
 export class TransactionController {

@@ -106,7 +106,7 @@ export class TransactionService implements ITransactionService {
   ): Promise<TransactionEntity[] | null> {
     return await this.transactionRepository.find({
       where: { familyId: familyUuid },
-      relations: { user: true },
+      relations: { user: true, category: true, globalCategory: true },
     });
   }
 
