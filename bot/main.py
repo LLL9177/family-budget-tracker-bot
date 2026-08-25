@@ -839,7 +839,7 @@ def user_data(msg, from_user, *, lang):
             "category" 
                 if tx["category"] 
                 else "globalCategory"
-        ]["eng" if lang == "en" else "ukr"],
+        ]["eng" if lang == "en" else "ukr"]
         total_pnl += amount
         categories[category] = categories.get(category, 0) + amount
 
