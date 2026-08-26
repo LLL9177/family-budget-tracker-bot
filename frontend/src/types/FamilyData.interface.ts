@@ -1,37 +1,39 @@
+import type { ICategory } from "@/types/Category.interface";
+
 export interface IFamilyData {
   pnl: number;
   totalSpent: number;
   totalEarned: number;
   mostSpentOn: {
-    key: string | null;
+    key: ICategory | string | null;
     value: number;
   };
   leastSpentOn: {
-    key: string | null,
+    key: ICategory | string | null;
     value: number;
   };
   mostEarnedFrom: {
-    key: string | null;
+    key: ICategory | string | null;
     value: number;
   };
   leastEarnedFrom: {
-    key: string | null;
+    key: ICategory | string | null;
     value: number;
   };
   topSpender: {
-    spender: string; // for now
+    spender: string;
     value: number;
   };
   smallestSpender: {
-    spender: string; // for now
+    spender: string;
     value: number;
   };
   topEarner: {
-    earner: string; // for now
+    earner: string;
     value: number;
   };
   smallestEarner: {
-    earner: string; // for now
+    earner: string;
     value: number;
-  }
+  };
 }

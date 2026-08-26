@@ -504,8 +504,8 @@ def new_rec(msg, *, lang):
     if len(rows[-1]) == 2:
         kb.row(
             tb.types.InlineKeyboardButton(
-                t("btn_rec_user_option"), 
-                callback_data=f"{lang} rec user_option"
+                t("btn_rec_user_option"),
+                callback_data=f"create-category:EARNING:{lang}"
             )
         )
 
@@ -665,7 +665,7 @@ def new_payment(msg, *, lang):
         kb.row(
             tb.types.InlineKeyboardButton(
                 t("btn_pay_user_option"), 
-                callback_data=f"{lang} pay user_option"
+                callback_data=f"create-category:PAYMENT:{lang}"
             )
         )
 
@@ -688,7 +688,6 @@ def payment_user_option(msg, *, lang):
             lang
         )
 
-        print(result.text)
         if not result.ok:
             bot.send_message(msg.chat.id, t("something_wrong"))
             m = bot.send_message(msg.chat.id, t("loading"))

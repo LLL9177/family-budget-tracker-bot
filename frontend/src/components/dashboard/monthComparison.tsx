@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { IMonthlySummary } from "@/types/MonthlySummary.interface";
+import type { ICategory } from "@/types/Category.interface";
 
 type Props = {
   data:
@@ -57,25 +58,40 @@ export default function MonthComparison({
   if (!data) return null;
   if (!data.current || !data.prev) return null;
 
-  const t = i18n[localStorage.getItem("lang") == "en" ? "en" : "uk"];
+  const lang = localStorage.getItem("lang") === "en" ? "en" : "uk";
+  const t = i18n[lang];
+
+  function getCategoryName(category: ICategory | string) {
+    if (typeof category == "string") return category;
+    if (!category) return "None";
+
+    return lang === "en" ? category.eng : category.ukr;
+  }
 
   return (
     <div className="mt-2 h-87 w-full rounded-xl bg-card bg-gradient-to-t from-primary/5 to-card">
       <Table className="h-full overflow-x-scroll bg-[rgba(0,0,0,0)]">
         <TableCaption>{caption}</TableCaption>
+
         <TableHeader>
-          <TableHead>{t.property}</TableHead>
-          <TableHead>{monthOneName}</TableHead>
-          <TableHead>{monthTwoName}</TableHead>
-          <TableHead>{t.difference}</TableHead>
+          <TableRow>
+            <TableHead>{t.property}</TableHead>
+            <TableHead>{monthOneName}</TableHead>
+            <TableHead>{monthTwoName}</TableHead>
+            <TableHead>{t.difference}</TableHead>
+          </TableRow>
         </TableHeader>
+
         <TableBody>
           <TableRow>
             <TableCell>{t.pnl}</TableCell>
             <TableCell>{data.current.pnl}</TableCell>
             <TableCell>{data.prev.pnl}</TableCell>
-            <TableCell>{data.current.pnl - data.prev.pnl}</TableCell>
+            <TableCell>
+              {data.current.pnl - data.prev.pnl}
+            </TableCell>
           </TableRow>
+
           <TableRow>
             <TableCell>{t.totalSpent}</TableCell>
             <TableCell>{-data.current.totalSpent}</TableCell>
@@ -84,6 +100,7 @@ export default function MonthComparison({
               {data.current.totalSpent - data.prev.totalSpent}
             </TableCell>
           </TableRow>
+
           <TableRow>
             <TableCell>{t.totalEarned}</TableCell>
             <TableCell>{data.current.totalEarned}</TableCell>
@@ -92,24 +109,42 @@ export default function MonthComparison({
               {data.current.totalEarned - data.prev.totalEarned}
             </TableCell>
           </TableRow>
+
           <TableRow>
             <TableCell>{t.topSpentOn}</TableCell>
-            <TableCell>{data.current.mostSpentOn ?? "-"}</TableCell>
-            <TableCell>{data.prev.mostSpentOn ?? "-"}</TableCell>
+
+            <TableCell>
+              {getCategoryName(data.current.mostSpentOn)}
+            </TableCell>
+
+            <TableCell>
+              {getCategoryName(data.prev.mostSpentOn)}
+            </TableCell>
+
             <TableCell>{t.uncomparable}</TableCell>
           </TableRow>
+
           <TableRow>
             <TableCell>{t.mostEarnedFrom}</TableCell>
-            <TableCell>{data.current.mostEarnedFrom ?? "-"}</TableCell>
-            <TableCell>{data.prev.mostEarnedFrom ?? "-"}</TableCell>
+
+            <TableCell>
+              {getCategoryName(data.current.mostEarnedFrom)}
+            </TableCell>
+
+            <TableCell>
+              {getCategoryName(data.prev.mostEarnedFrom)}
+            </TableCell>
+
             <TableCell>{t.uncomparable}</TableCell>
           </TableRow>
+
           <TableRow>
             <TableCell>{t.topSpender}</TableCell>
             <TableCell>{data.current.topSpenderId ?? "-"}</TableCell>
-            <TableCell> {data.prev.topSpenderId ?? "-"}</TableCell>
+            <TableCell>{data.prev.topSpenderId ?? "-"}</TableCell>
             <TableCell>{t.uncomparable}</TableCell>
           </TableRow>
+
           <TableRow>
             <TableCell>{t.topEarner}</TableCell>
             <TableCell>{data.current.topEarnerId ?? "-"}</TableCell>

@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { ICategory } from "@/types/Category.interface";
 
 type Props = {
   topEarnerCategories: [string, number][] | undefined;
@@ -32,7 +33,15 @@ const i18n = {
 export default function EarnerCategoryLeaderboard({
   topEarnerCategories,
 }: Props) {
-  const t = i18n[localStorage.getItem("lang") == "en" ? "en" : "uk"];
+  const lang = localStorage.getItem("lang") == "en" ? "en" : "uk";
+  const t = i18n[lang];
+
+  function getCategoryName(category: ICategory | string) {
+    if (typeof category == "string") return category;
+    if (!category) return "None";
+
+    return lang === "en" ? category.eng : category.ukr;
+  }
 
   return (
     <div className="overflox-x-scroll max-w-120 rounded-xl bg-card bg-gradient-to-t from-primary/5 to-card p-1 pb-2">
@@ -49,7 +58,7 @@ export default function EarnerCategoryLeaderboard({
               <TableRow>
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{category[1]}</TableCell>
-                <TableCell>{category[0]}</TableCell>
+                <TableCell>{getCategoryName(category[0])}</TableCell>
               </TableRow>
             ))}
           </TableBody>

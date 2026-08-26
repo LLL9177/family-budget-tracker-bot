@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import type { ICategory } from "@/types/Category.interface";
 
 type Props = {
   data: {
@@ -12,10 +13,10 @@ type Props = {
     smallestSpender: string;
     biggestEarner: string;
     smallestEarner: string;
-    mostSpentOn: string;
-    leastSpentOn: string;
-    mostEarnedFrom: string;
-    leastEarnedFrom: string;
+    mostSpentOn: ICategory | string;
+    leastSpentOn: ICategory | string;
+    mostEarnedFrom: ICategory | string;
+    leastEarnedFrom: ICategory | string;
     pnl: number;
   };
 };
@@ -64,7 +65,15 @@ export function SectionCards({ data }: Props) {
     return data;
   }
 
-  const t = i18n[localStorage.getItem("lang") == "en" ? "en" : "uk"];
+  const lang = localStorage.getItem("lang") == "en" ? "en" : "uk";
+  const t = i18n[lang];
+
+  function getCategoryName(category: ICategory | string) {
+    if (typeof category == "string") return category;
+    if (!category) return "None";
+
+    return lang === "en" ? category.eng : category.ukr;
+  }
 
   return (
     <div className="flex w-screen flex-row gap-4 overflow-x-auto px-6 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:w-full lg:px-0 @xl/main:flex-row @5xl/main:flex-row dark:*:data-[slot=card]:bg-card">
@@ -118,7 +127,7 @@ export function SectionCards({ data }: Props) {
         <CardHeader>
           <CardDescription>{t.mostSpentOn}</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {shortenIfNeeded(data.mostSpentOn, 15)}
+            {shortenIfNeeded(getCategoryName(data.mostSpentOn), 15)}
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
@@ -126,7 +135,7 @@ export function SectionCards({ data }: Props) {
             {t.leastSpentOn}
           </div>
           <div className="text-muted-foreground">
-            {shortenIfNeeded(data.leastSpentOn, 30)}
+            {shortenIfNeeded(getCategoryName(data.leastSpentOn), 30)}
           </div>
         </CardFooter>
       </Card>
