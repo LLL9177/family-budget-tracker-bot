@@ -276,8 +276,8 @@ export default function Navigation({ exclude }: { exclude: string }) {
     navigateTo(item);
   }
 
-  const growUp = cornerPositionRef.current.y > window.innerHeight / 2;
-  const growLeft = cornerPositionRef.current.x > window.innerWidth / 2;
+  const growUp = position.y > window.innerHeight / 2;
+  const growLeft = position.x > window.innerWidth / 2;
 
   return (
     <>

@@ -160,10 +160,6 @@ function CategoryCard({
 
   const t = i18n[localStorage.getItem("lang") === "en" ? "en" : "uk"];
 
-  useEffect(() => {
-    setEditedCategory(category);
-  }, [category]);
-
   async function handleDelete() {
     if (!onDelete) return;
 
@@ -260,7 +256,10 @@ function CategoryCard({
                 size="icon"
                 variant="ghost"
                 className="rounded-xl"
-                onClick={() => setEditing(true)}
+                onClick={() => {
+                  setEditedCategory(category);
+                  setEditing(true);
+                }}
                 disabled={deleting}
               >
                 <Pencil className="h-4 w-4" />
