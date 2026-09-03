@@ -829,6 +829,12 @@ def user_data(msg, from_user, *, lang):
         return
 
     transactions = transactions.json()
+    transactions = list(
+        filter(
+            lambda x: datetime.datetime.fromisoformat(x["createdAt"]).month == datetime.datetime.now().month,
+            transactions
+        )
+    )
     total_pnl = 0
     categories = {}
 
@@ -900,6 +906,12 @@ def family(msg, from_user, *, lang):
         return
 
     transactions = family_data.json()
+    transactions = list(
+        filter(
+            lambda x: datetime.datetime.fromisoformat(x["createdAt"]).month == datetime.datetime.now().month, 
+            transactions
+        )
+    )
     current_pnl = 0
     categories = {}
     members = {}
